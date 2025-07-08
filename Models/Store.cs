@@ -12,6 +12,13 @@
         public string Currency { get; set; }
         public bool IsActivated { get; set; }
 
-        //language 
+        public string UserId { get; set; }
+        public ApplicationUser User { get; set; }
+
+        public ICollection<Product> Products { get; set; }
+        public ICollection<Invoice> Invoices { get; set; }
+        public ICollection<Page> Pages { get; set; }
+        public ICollection<ContactInformation> ContactInformations { get; set; }
+        public PurchaseCompletionOptions PurchaseCompletionOptions { get; set; }
     }
 }

@@ -8,6 +8,12 @@
         public decimal Price { get; set; }
         public int Quantity { get; set; }
 
-        //type
+        public int CategoryId { get; set; }
+        public Category Category { get; set; }
+
+        public int StoreId { get; set; }
+        public Store Store { get; set; }
+
+        public ICollection<InvoiceItem> InvoiceItems { get; set; }
     }
 }

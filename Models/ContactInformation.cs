@@ -9,5 +9,8 @@
         public string Facebook { get; set; }
         public string WhatsApp { get; set; }
         public string Instagram { get; set; }
+
+        public int StoreId { get; set; }
+        public Store Store { get; set; }
     }
 }

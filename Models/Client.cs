@@ -9,6 +9,11 @@
         public string Address { get; set; }
         public string Notes { get; set; }
         public string TextNumber { get; set; }
-        public bool IsDeleted { get; set; } 
+        public bool IsDeleted { get; set; }
+
+        public string UserId { get; set; }
+        public ApplicationUser User { get; set; }
+
+        public ICollection<Invoice> Invoices { get; set; }
     }
 }

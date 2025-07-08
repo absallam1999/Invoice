@@ -8,7 +8,11 @@
         public string Image { get; set; }
         public string Infooter { get; set; }
         public string Inheader { get; set; }
+        
+        public int StoreId { get; set; }
+        public Store Store { get; set; }
 
-        //language 
+        public int LanguageId { get; set; }
+        public Language Language { get; set; }
     }
 }

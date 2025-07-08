@@ -10,6 +10,9 @@
         public string Message {  get; set; }
         public string Image { get; set; }
         public string Terms { get; set; }
-        public bool IsDelete {  get; set; }
+        public bool IsDeleted {  get; set; }
+
+        public int PaymentId { get; set; }
+        public Payment Payment { get; set; }
     }
 }

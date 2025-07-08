@@ -28,6 +28,8 @@ namespace invoice
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
            .AddEntityFrameworkStores<ApplicationDbContext>();
 
+            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
             // Secret Key from configuration
             var jwtKey = builder.Configuration["Jwt:Key"];
             var jwtIssuer = builder.Configuration["Jwt:Issuer"];
