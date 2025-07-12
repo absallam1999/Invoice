@@ -86,6 +86,7 @@ namespace invoice.Controllers
             });
         }
 
+        [Authorize]
         [HttpPut("update")]
         public async Task<IActionResult> Update([FromBody] UpdateUserDTO dto)
         {
@@ -107,7 +108,6 @@ namespace invoice.Controllers
             return Ok(new { Message = "User updated successfully." });
         }
 
-        [AllowAnonymous]
         [HttpPost("forget")]
         public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordDTO dto)
         {
@@ -120,7 +120,6 @@ namespace invoice.Controllers
             return Ok(new { Message = "Password reset token generated.", Token = token });
         }
 
-        [AllowAnonymous]
         [HttpPost("reset")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto)
         {
@@ -135,6 +134,7 @@ namespace invoice.Controllers
             return Ok(new { Message = "Password reset successful." });
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAccount(string id)
         {
