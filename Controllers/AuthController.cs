@@ -95,7 +95,12 @@ namespace invoice.Controllers
 
             var user = await userManager.FindByIdAsync(dto.Id);
             if (user.UserName == null)
-                return NotFound(new { Message = "User not found." });
+                return NotFound(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "User not found.",
+                    Data = null
+                });
 
             user.UserName = dto.UserName;
             user.Email = dto.Email;
@@ -103,9 +108,19 @@ namespace invoice.Controllers
 
             var updateResult = await userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
-                return BadRequest(new { Errors = updateResult.Errors });
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Error Update User.",
+                    Data = updateResult.Errors
+                });
 
-            return Ok(new { Message = "User updated successfully." });
+            return Ok(new GeneralResponse<object>
+            {
+                Success = true,
+                Message = "User Updated Successfully.",
+                Data = null
+            });
         }
 
         [HttpPost("forget")]
@@ -113,11 +128,21 @@ namespace invoice.Controllers
         {
             var user = await userManager.FindByEmailAsync(dto.Email);
             if (user == null)
-                return NotFound(new { Message = "User not found." });
+                return NotFound(new GeneralResponse<object> 
+                {
+                    Success = false,
+                    Message = "User not found.",
+                    Data = null
+                });
 
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
 
-            return Ok(new { Message = "Password reset token generated.", Token = token });
+            return Ok(new GeneralResponse<object>
+            {
+                Success = false,
+                Message = "Password reset token generated.",
+                Data = token
+            });
         }
 
         [HttpPost("reset")]
@@ -125,13 +150,28 @@ namespace invoice.Controllers
         {
             var user = await userManager.FindByEmailAsync(dto.Email);
             if (user == null)
-                return NotFound(new { Message = "User not found." });
+                return NotFound(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "User not found.",
+                    Data = null
+                });
 
             var result = await userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
             if (!result.Succeeded)
-                return BadRequest(new { Errors = result.Errors });
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Error Reset Password",
+                    Data = result.Errors
+                }); 
 
-            return Ok(new { Message = "Password reset successful." });
+            return Ok(new GeneralResponse<object>
+            {
+                Success = true,
+                Message = "Password Reset Successfully..",
+                Data = null
+            });
         }
 
         [Authorize]
@@ -141,13 +181,28 @@ namespace invoice.Controllers
             var userId = User.FindFirstValue(id);
             var user = await userManager.FindByIdAsync(userId);
             if (user == null)
-                return NotFound(new { Message = "User not found." });
+                return NotFound(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "User not found.",
+                    Data = null
+                });
 
             var result = await userManager.DeleteAsync(user);
             if (!result.Succeeded)
-                return BadRequest(new { Errors = result.Errors });
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Error Delete User.",
+                    Data = result.Errors
+                });
 
-            return Ok(new { Message = "Account deleted successfully." });
+            return Ok(new GeneralResponse<object>
+            {
+                Success = true,
+                Message = "Account Deleted Successfully.",
+                Data = null
+            });
         }
 
         private string GenerateJwtToken(ApplicationUser user)
