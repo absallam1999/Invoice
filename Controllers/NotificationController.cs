@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using invoice.Models;
-using invoice.Data;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using invoice.Data;
+using invoice.Models;
 using invoice.DTO;
-using System.Linq;
 
 namespace invoice.Controllers
 {
@@ -25,12 +22,20 @@ namespace invoice.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var notifications = await _repository.GetAll();
-            return Ok(new GeneralResponse<IEnumerable<Notification>>
+            var items = await _repository.GetAll();
+            var dtoList = items.Select(n => new NotificationDetailsDTO
+            {
+                Id = n.Id,
+                Title = n.Title,
+                Message = n.Message,
+                UserId = n.UserId
+            });
+
+            return Ok(new GeneralResponse<IEnumerable<NotificationDetailsDTO>>
             {
                 Success = true,
                 Message = "All notifications retrieved.",
-                Data = notifications
+                Data = dtoList
             });
         }
 
@@ -48,16 +53,24 @@ namespace invoice.Controllers
                 });
             }
 
-            return Ok(new GeneralResponse<Notification>
+            var dto = new NotificationDetailsDTO
+            {
+                Id = notification.Id,
+                Title = notification.Title,
+                Message = notification.Message,
+                UserId = notification.UserId
+            };
+
+            return Ok(new GeneralResponse<NotificationDetailsDTO>
             {
                 Success = true,
                 Message = "Notification found.",
-                Data = notification
+                Data = dto
             });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Notification notification)
+        public async Task<IActionResult> Create([FromBody] CreateNotificationDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -69,19 +82,35 @@ namespace invoice.Controllers
                 });
             }
 
+            var notification = new Notification
+            {
+                Title = dto.Title,
+                Message = dto.Message,
+                UserId = dto.UserId
+            };
+
             await _repository.Add(notification);
-            return Ok(new GeneralResponse<Notification>
+
+            var result = new NotificationDetailsDTO
+            {
+                Id = notification.Id,
+                Title = notification.Title,
+                Message = notification.Message,
+                UserId = notification.UserId
+            };
+
+            return Ok(new GeneralResponse<NotificationDetailsDTO>
             {
                 Success = true,
                 Message = "Notification created successfully.",
-                Data = notification
+                Data = result
             });
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] Notification updated)
+        public async Task<IActionResult> Update(string id, [FromBody] UpdateNotificationDTO dto)
         {
-            if (id != updated.Id)
+            if (id != dto.Id)
             {
                 return BadRequest(new GeneralResponse<object>
                 {
@@ -102,17 +131,25 @@ namespace invoice.Controllers
                 });
             }
 
-            existing.Title = updated.Title;
-            existing.Message = updated.Message;
-            existing.UserId = updated.UserId;
+            existing.Title = dto.Title;
+            existing.Message = dto.Message;
+            existing.UserId = dto.UserId;
 
             await _repository.Update(existing);
 
-            return Ok(new GeneralResponse<Notification>
+            var updated = new NotificationDetailsDTO
+            {
+                Id = existing.Id,
+                Title = existing.Title,
+                Message = existing.Message,
+                UserId = existing.UserId
+            };
+
+            return Ok(new GeneralResponse<NotificationDetailsDTO>
             {
                 Success = true,
                 Message = "Notification updated successfully.",
-                Data = existing
+                Data = updated
             });
         }
 
@@ -144,9 +181,17 @@ namespace invoice.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var all = await _repository.GetAll();
-            var userNotifications = all.Where(n => n.UserId == userId);
+            var userNotifications = all
+                .Where(n => n.UserId == userId)
+                .Select(n => new NotificationDetailsDTO
+                {
+                    Id = n.Id,
+                    Title = n.Title,
+                    Message = n.Message,
+                    UserId = n.UserId
+                });
 
-            return Ok(new GeneralResponse<IEnumerable<Notification>>
+            return Ok(new GeneralResponse<IEnumerable<NotificationDetailsDTO>>
             {
                 Success = true,
                 Message = "User notifications retrieved.",

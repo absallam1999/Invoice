@@ -1,9 +1,8 @@
-﻿using invoice.Data;
-using invoice.DTO;
-using invoice.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+using invoice.Data;
+using invoice.Models;
+using invoice.DTO;
 
 namespace invoice.Controllers
 {
@@ -23,11 +22,21 @@ namespace invoice.Controllers
         public async Task<IActionResult> GetAll()
         {
             var items = await _repository.GetAll();
-            return Ok(new GeneralResponse<object>
+            var dtoList = items.Select(c => new ContactInformationDetailsDTO
+            {
+                Id = c.Id,
+                Location = c.location,
+                Facebook = c.Facebook,
+                WhatsApp = c.WhatsApp,
+                Instagram = c.Instagram,
+                StoreId = c.StoreId
+            });
+
+            return Ok(new GeneralResponse<IEnumerable<ContactInformationDetailsDTO>>
             {
                 Success = true,
                 Message = "Contact information list retrieved successfully.",
-                Data = items
+                Data = dtoList
             });
         }
 
@@ -45,16 +54,26 @@ namespace invoice.Controllers
                 });
             }
 
-            return Ok(new GeneralResponse<object>
+            var dto = new ContactInformationDetailsDTO
+            {
+                Id = item.Id,
+                Location = item.location,
+                Facebook = item.Facebook,
+                WhatsApp = item.WhatsApp,
+                Instagram = item.Instagram,
+                StoreId = item.StoreId
+            };
+
+            return Ok(new GeneralResponse<ContactInformationDetailsDTO>
             {
                 Success = true,
                 Message = "Contact information retrieved successfully.",
-                Data = item
+                Data = dto
             });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ContactInformation contact)
+        public async Task<IActionResult> Create([FromBody] CreateContactInformationDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -66,19 +85,39 @@ namespace invoice.Controllers
                 });
             }
 
+            var contact = new ContactInformation
+            {
+                location = dto.Location,
+                Facebook = dto.Facebook,
+                WhatsApp = dto.WhatsApp,
+                Instagram = dto.Instagram,
+                StoreId = dto.StoreId
+            };
+
             await _repository.Add(contact);
-            return Ok(new GeneralResponse<object>
+
+            var result = new ContactInformationDetailsDTO
+            {
+                Id = contact.Id,
+                Location = contact.location,
+                Facebook = contact.Facebook,
+                WhatsApp = contact.WhatsApp,
+                Instagram = contact.Instagram,
+                StoreId = contact.StoreId
+            };
+
+            return Ok(new GeneralResponse<ContactInformationDetailsDTO>
             {
                 Success = true,
                 Message = "Contact information created successfully.",
-                Data = contact
+                Data = result
             });
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] ContactInformation updated)
+        public async Task<IActionResult> Update(string id, [FromBody] UpdateContactInformationDTO dto)
         {
-            if (id != updated.Id)
+            if (id != dto.Id)
             {
                 return BadRequest(new GeneralResponse<object>
                 {
@@ -99,19 +138,29 @@ namespace invoice.Controllers
                 });
             }
 
-            existing.location = updated.location;
-            existing.Facebook = updated.Facebook;
-            existing.WhatsApp = updated.WhatsApp;
-            existing.Instagram = updated.Instagram;
-            existing.StoreId = updated.StoreId;
+            existing.location = dto.Location;
+            existing.Facebook = dto.Facebook;
+            existing.WhatsApp = dto.WhatsApp;
+            existing.Instagram = dto.Instagram;
+            existing.StoreId = dto.StoreId;
 
             await _repository.Update(existing);
 
-            return Ok(new GeneralResponse<object>
+            var updated = new ContactInformationDetailsDTO
+            {
+                Id = existing.Id,
+                Location = existing.location,
+                Facebook = existing.Facebook,
+                WhatsApp = existing.WhatsApp,
+                Instagram = existing.Instagram,
+                StoreId = existing.StoreId
+            };
+
+            return Ok(new GeneralResponse<ContactInformationDetailsDTO>
             {
                 Success = true,
                 Message = "Contact information updated successfully.",
-                Data = existing
+                Data = updated
             });
         }
 

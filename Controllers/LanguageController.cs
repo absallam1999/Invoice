@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using invoice.Models;
 using invoice.Data;
 using invoice.DTO;
+using invoice.DTO.Language;
 using Microsoft.AspNetCore.Authorization;
 using invoice.Models.Enums;
 
@@ -25,11 +24,18 @@ namespace invoice.Controllers
         public async Task<IActionResult> GetAll()
         {
             var languages = await _repository.GetAll();
-            return Ok(new GeneralResponse<IEnumerable<Language>>
+            var dtoList = languages.Select(l => new LanguageDetailsDTO
+            {
+                Id = l.Id,
+                Name = l.Name,
+                Target = l.Target
+            });
+
+            return Ok(new GeneralResponse<IEnumerable<LanguageDetailsDTO>>
             {
                 Success = true,
                 Message = "Languages retrieved successfully.",
-                Data = languages
+                Data = dtoList
             });
         }
 
@@ -47,16 +53,23 @@ namespace invoice.Controllers
                 });
             }
 
-            return Ok(new GeneralResponse<Language>
+            var dto = new LanguageDetailsDTO
+            {
+                Id = language.Id,
+                Name = language.Name,
+                Target = language.Target
+            };
+
+            return Ok(new GeneralResponse<LanguageDetailsDTO>
             {
                 Success = true,
                 Message = "Language retrieved successfully.",
-                Data = language
+                Data = dto
             });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Language language)
+        public async Task<IActionResult> Create([FromBody] CreateLanguageDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -68,20 +81,31 @@ namespace invoice.Controllers
                 });
             }
 
+            var language = new Language
+            {
+                Name = dto.Name,
+                Target = dto.Target
+            };
+
             await _repository.Add(language);
 
-            return Ok(new GeneralResponse<Language>
+            return Ok(new GeneralResponse<LanguageDetailsDTO>
             {
                 Success = true,
                 Message = "Language created successfully.",
-                Data = language
+                Data = new LanguageDetailsDTO
+                {
+                    Id = language.Id,
+                    Name = language.Name,
+                    Target = language.Target
+                }
             });
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] Language updated)
+        public async Task<IActionResult> Update(string id, [FromBody] UpdateLanguageDTO dto)
         {
-            if (id != updated.Id)
+            if (id != dto.Id)
             {
                 return BadRequest(new GeneralResponse<object>
                 {
@@ -102,14 +126,20 @@ namespace invoice.Controllers
                 });
             }
 
-            existing.Name = updated.Name;
+            existing.Name = dto.Name;
+            existing.Target = dto.Target;
             await _repository.Update(existing);
 
-            return Ok(new GeneralResponse<Language>
+            return Ok(new GeneralResponse<LanguageDetailsDTO>
             {
                 Success = true,
                 Message = "Language updated successfully.",
-                Data = existing
+                Data = new LanguageDetailsDTO
+                {
+                    Id = existing.Id,
+                    Name = existing.Name,
+                    Target = existing.Target
+                }
             });
         }
 
@@ -141,16 +171,40 @@ namespace invoice.Controllers
         public async Task<IActionResult> GetLanguagesForPages()
         {
             var all = await _repository.GetAll();
-            var filtered = all.Where(l => l.Target == LanguageTarget.Page);
-            return Ok(filtered);
+            var filtered = all.Where(l => l.Target == LanguageTarget.Page)
+                              .Select(l => new LanguageDetailsDTO
+                              {
+                                  Id = l.Id,
+                                  Name = l.Name,
+                                  Target = l.Target
+                              });
+
+            return Ok(new GeneralResponse<IEnumerable<LanguageDetailsDTO>>
+            {
+                Success = true,
+                Message = "Languages for pages retrieved.",
+                Data = filtered
+            });
         }
 
         [HttpGet("Target-invoice")]
         public async Task<IActionResult> GetLanguagesForInvoices()
         {
             var all = await _repository.GetAll();
-            var filtered = all.Where(l => l.Target == LanguageTarget.Invoice);
-            return Ok(filtered);
+            var filtered = all.Where(l => l.Target == LanguageTarget.Invoice)
+                              .Select(l => new LanguageDetailsDTO
+                              {
+                                  Id = l.Id,
+                                  Name = l.Name,
+                                  Target = l.Target
+                              });
+
+            return Ok(new GeneralResponse<IEnumerable<LanguageDetailsDTO>>
+            {
+                Success = true,
+                Message = "Languages for invoices retrieved.",
+                Data = filtered
+            });
         }
     }
 }

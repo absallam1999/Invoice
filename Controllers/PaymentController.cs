@@ -4,8 +4,6 @@ using invoice.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using invoice.DTO;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace invoice.Controllers
 {

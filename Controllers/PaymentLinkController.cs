@@ -1,9 +1,9 @@
 ﻿using invoice.Data;
-using invoice.DTO;
+using invoice.DTO.PaymentLink;
 using invoice.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+using invoice.DTO;
 
 namespace invoice.Controllers
 {
@@ -54,7 +54,7 @@ namespace invoice.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] PaymentLink link)
+        public async Task<IActionResult> Create([FromBody] CreatePaymentLinkDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -66,6 +66,19 @@ namespace invoice.Controllers
                 });
             }
 
+            var link = new PaymentLink
+            {
+                Link = dto.Link,
+                Value = dto.Value,
+                PaymentsNumber = dto.PaymentsNumber,
+                Description = dto.Description,
+                Message = dto.Message,
+                Image = dto.Image,
+                Terms = dto.Terms,
+                IsDeleted = dto.IsDeleted,
+                PaymentId = dto.PaymentId
+            };
+
             await _repository.Add(link);
             return Ok(new GeneralResponse<object>
             {
@@ -76,9 +89,9 @@ namespace invoice.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] PaymentLink updated)
+        public async Task<IActionResult> Update(string id, [FromBody] UpdatePaymentLinkDTO dto)
         {
-            if (id != updated.Id)
+            if (id != dto.Id)
             {
                 return BadRequest(new GeneralResponse<object>
                 {
@@ -99,15 +112,15 @@ namespace invoice.Controllers
                 });
             }
 
-            existing.Link = updated.Link;
-            existing.Value = updated.Value;
-            existing.PaymentsNumber = updated.PaymentsNumber;
-            existing.Description = updated.Description;
-            existing.Message = updated.Message;
-            existing.Image = updated.Image;
-            existing.Terms = updated.Terms;
-            existing.IsDeleted = updated.IsDeleted;
-            existing.PaymentId = updated.PaymentId;
+            existing.Link = dto.Link;
+            existing.Value = dto.Value;
+            existing.PaymentsNumber = dto.PaymentsNumber;
+            existing.Description = dto.Description;
+            existing.Message = dto.Message;
+            existing.Image = dto.Image;
+            existing.Terms = dto.Terms;
+            existing.IsDeleted = dto.IsDeleted;
+            existing.PaymentId = dto.PaymentId;
 
             await _repository.Update(existing);
 

@@ -1,9 +1,9 @@
 ﻿using invoice.Data;
 using invoice.DTO;
+using invoice.DTO.PaymentMethod;
 using invoice.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace invoice.Controllers
 {
@@ -54,7 +54,7 @@ namespace invoice.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] PaymentMethod method)
+        public async Task<IActionResult> Create([FromBody] CreatePaymentMethodDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -66,7 +66,9 @@ namespace invoice.Controllers
                 });
             }
 
+            var method = new PaymentMethod { Name = dto.Name };
             await _repository.Add(method);
+
             return Ok(new GeneralResponse<object>
             {
                 Success = true,
@@ -76,9 +78,9 @@ namespace invoice.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] PaymentMethod updated)
+        public async Task<IActionResult> Update(string id, [FromBody] UpdatePaymentMethodDTO dto)
         {
-            if (id != updated.Id)
+            if (id != dto.Id)
             {
                 return BadRequest(new GeneralResponse<object>
                 {
@@ -99,7 +101,7 @@ namespace invoice.Controllers
                 });
             }
 
-            existing.Name = updated.Name;
+            existing.Name = dto.Name;
             await _repository.Update(existing);
 
             return Ok(new GeneralResponse<object>
