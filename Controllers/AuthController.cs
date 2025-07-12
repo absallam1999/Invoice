@@ -1,6 +1,7 @@
 ﻿using invoice.DTO;
 using invoice.DTO.Auth;
 using invoice.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -35,7 +36,7 @@ namespace invoice.Controllers
             var result = await userManager.CreateAsync(user, register.Password);
             if (result.Succeeded)
             {
-                return Ok(new GeneralResponse<string>
+                return Ok(new GeneralResponse<object>
                 {
                     Success = true,
                     Message = "User registered successfully.",
@@ -44,7 +45,7 @@ namespace invoice.Controllers
             }
             else
             {
-                return BadRequest(new GeneralResponse<string>
+                return BadRequest(new GeneralResponse<object>
                 {
                     Success = false,
                     Message = "User registration failed.",
@@ -64,7 +65,7 @@ namespace invoice.Controllers
                 if (result)
                 {
                     var token = GenerateJwtToken(user);
-                    return Ok(new GeneralResponse<string>
+                    return Ok(new GeneralResponse<object>
                     {
                         Success = true,
                         Message = "User loggedin successfully.",
@@ -77,13 +78,78 @@ namespace invoice.Controllers
                     });
                 }
             }
-            return BadRequest(new GeneralResponse<string>
+            return BadRequest(new GeneralResponse<object>
             {
                 Success = false,
                 Message = "Invalid login attempt.",
                 Data = null
             });
         }
+
+        [HttpPut("update")]
+        public async Task<IActionResult> Update([FromBody] UpdateUserDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await userManager.FindByIdAsync(dto.Id);
+            if (user.UserName == null)
+                return NotFound(new { Message = "User not found." });
+
+            user.UserName = dto.UserName;
+            user.Email = dto.Email;
+            user.PhoneNumber = dto.PhoneNumber;
+
+            var updateResult = await userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+                return BadRequest(new { Errors = updateResult.Errors });
+
+            return Ok(new { Message = "User updated successfully." });
+        }
+
+        [AllowAnonymous]
+        [HttpPost("forget")]
+        public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordDTO dto)
+        {
+            var user = await userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+                return NotFound(new { Message = "User not found." });
+
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+            return Ok(new { Message = "Password reset token generated.", Token = token });
+        }
+
+        [AllowAnonymous]
+        [HttpPost("reset")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto)
+        {
+            var user = await userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+                return NotFound(new { Message = "User not found." });
+
+            var result = await userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+            if (!result.Succeeded)
+                return BadRequest(new { Errors = result.Errors });
+
+            return Ok(new { Message = "Password reset successful." });
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAccount(string id)
+        {
+            var userId = User.FindFirstValue(id);
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound(new { Message = "User not found." });
+
+            var result = await userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+                return BadRequest(new { Errors = result.Errors });
+
+            return Ok(new { Message = "Account deleted successfully." });
+        }
+
         private string GenerateJwtToken(ApplicationUser user)
         {
             var claims = new[]
