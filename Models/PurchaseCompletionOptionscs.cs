@@ -1,11 +1,14 @@
-﻿namespace invoice.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace invoice.Models
 {
     public class PurchaseCompletionOptions
     {
-        public int Id { get; set; }
+        [Key]
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public bool SendEmail { get; set; }
 
-        public int StoreId { get; set; }
+        public string StoreId { get; set; }
         public Store Store { get; set; }
     }
 }

@@ -1,22 +1,23 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace invoice.Models
+namespace invoice.DTO.Client
 {
-    public class Client
+    public class CreateClientDTO
     {
-        [Key]
-        public string Id { get; set; } = Guid.NewGuid().ToString(); 
+        [Required]
         public string Name { get; set; }
-        public string Email { get; set; } 
+
+        [EmailAddress]
+        public string Email { get; set; }
+
+        [Phone]
         public string PhoneNumber { get; set; }
+
         public string Address { get; set; }
         public string Notes { get; set; }
         public string TextNumber { get; set; }
-        public bool IsDeleted { get; set; }
 
+        [Required]
         public string UserId { get; set; }
-        public ApplicationUser User { get; set; }
-
-        public ICollection<Invoice> Invoices { get; set; }
     }
 }

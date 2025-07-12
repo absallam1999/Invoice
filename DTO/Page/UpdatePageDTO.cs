@@ -1,21 +1,27 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace invoice.Models
+namespace invoice.DTO.Page
 {
-    public class Page
+    public class UpdatePageDTO
     {
-        [Key]
-        public string Id { get; set; } = Guid.NewGuid().ToString(); 
-        public string Title { get; set; }
-        public string Content { get; set; }
-        public string Image { get; set; }
-        public string Infooter { get; set; }
-        public string Inheader { get; set; }
-        
-        public string StoreId { get; set; }
-        public Store Store { get; set; }
+        [Required(ErrorMessage = "Id is required.")]
+        public string Id { get; set; }
 
+        [Required]
+        public string Title { get; set; }
+
+        public string Content { get; set; }
+
+        public string Image { get; set; }
+
+        public string Infooter { get; set; }
+
+        public string Inheader { get; set; }
+
+        [Required]
+        public string StoreId { get; set; }
+
+        [Required]
         public string LanguageId { get; set; }
-        public Language Language { get; set; }
     }
 }

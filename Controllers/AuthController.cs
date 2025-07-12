@@ -1,5 +1,7 @@
 ﻿using invoice.DTO;
+using invoice.DTO.Auth;
 using invoice.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -11,6 +13,7 @@ namespace invoice.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class AuthController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
@@ -65,7 +68,7 @@ namespace invoice.Controllers
                     return Ok(new GeneralResponse<string>
                     {
                         Success = true,
-                        Message = "User logged in successfully.",
+                        Message = "User loggedin successfully.",
                         Data = new LoginResultDTO
                         {
                             Token = token,

@@ -1,16 +1,22 @@
-﻿namespace invoice.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace invoice.Models
 {
     public class Payment
     {
-        public int Id { get; set; }
+        [Key]
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; }
         public decimal Cost { get; set; }
         public DateTime Date { get; set; }
 
-        public int InvoiceId { get; set; }
+        public string UserId { get; set; }
+        public ApplicationUser User { get; set; }
+
+        public string InvoiceId { get; set; }
         public Invoice Invoice { get; set; }
 
-        public int PaymentMethodId { get; set; }
+        public string PaymentMethodId { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
 
         public PaymentLink PaymentLink { get; set; }

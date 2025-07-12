@@ -1,4 +1,4 @@
-﻿namespace invoice.DTO
+﻿namespace invoice.DTO.Auth
 {
     public class LoginDTO
     {

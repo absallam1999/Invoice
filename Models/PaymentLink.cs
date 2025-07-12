@@ -1,8 +1,11 @@
-﻿namespace invoice.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace invoice.Models
 {
     public class PaymentLink
     {
-        public int Id { get; set; }
+        [Key]
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Link { get; set; }
         public double Value { get; set; }
         public string PaymentsNumber {  get; set; }
@@ -12,7 +15,7 @@
         public string Terms { get; set; }
         public bool IsDeleted {  get; set; }
 
-        public int PaymentId { get; set; }
+        public string PaymentId { get; set; }
         public Payment Payment { get; set; }
     }
 }

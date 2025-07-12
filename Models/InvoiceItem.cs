@@ -1,11 +1,14 @@
-﻿namespace invoice.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace invoice.Models
 {
     public class InvoiceItem
     {
-        public int Id { get; set; }
-        public int InvoiceId { get; set; }
+        [Key]
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string InvoiceId { get; set; }
         public Invoice Invoice { get; set; }
-        public int ProductId { get; set; }
+        public string ProductId { get; set; }
         public Product Product { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
