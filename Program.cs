@@ -36,7 +36,6 @@ namespace invoice
                 });
             });
 
-            // Secret Key from configuration
             var jwtKey = builder.Configuration["Jwt:Key"];
             var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 
