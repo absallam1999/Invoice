@@ -22,12 +22,26 @@ namespace invoice.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var payments = await _repository.GetAll();
-            return Ok(new GeneralResponse<IEnumerable<Payment>>
+            var payments = await _repository.GetAll(p => p.Invoice, p => p.PaymentMethod, p => p.User);
+            var result = payments.Select(p => new PaymentDetailsDTO
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Cost = p.Cost,
+                Date = p.Date,
+                InvoiceId = p.InvoiceId,
+                InvoiceNumber = p.Invoice.Number,
+                PaymentMethodId = p.PaymentMethodId,
+                PaymentMethodName = p.PaymentMethod.Name,
+                UserId = p.UserId,
+                UserName = p.User.UserName
+            });
+
+            return Ok(new GeneralResponse<IEnumerable<PaymentDetailsDTO>>
             {
                 Success = true,
                 Message = "Payments retrieved successfully.",
-                Data = payments
+                Data = result
             });
         }
 
@@ -35,10 +49,10 @@ namespace invoice.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetById(string id)
         {
-            var payment = await _repository.GetById(id);
+            var payment = await _repository.GetById(id, p => p.Invoice, p => p.PaymentMethod, p => p.User);
             if (payment == null)
             {
-                return NotFound(new GeneralResponse<Payment>
+                return NotFound(new GeneralResponse<object>
                 {
                     Success = false,
                     Message = $"Payment with ID {id} not found.",
@@ -46,11 +60,25 @@ namespace invoice.Controllers
                 });
             }
 
-            return Ok(new GeneralResponse<Payment>
+            var dto = new PaymentDetailsDTO
+            {
+                Id = payment.Id,
+                Name = payment.Name,
+                Cost = payment.Cost,
+                Date = payment.Date,
+                InvoiceId = payment.InvoiceId,
+                InvoiceNumber = payment.Invoice?.Number,
+                PaymentMethodId = payment.PaymentMethodId,
+                PaymentMethodName = payment.PaymentMethod?.Name,
+                UserId = payment.UserId,
+                UserName = payment.User?.UserName
+            };
+
+            return Ok(new GeneralResponse<PaymentDetailsDTO>
             {
                 Success = true,
                 Message = "Payment retrieved successfully.",
-                Data = payment
+                Data = dto
             });
         }
 

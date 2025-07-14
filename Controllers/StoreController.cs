@@ -22,7 +22,13 @@ namespace invoice.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var stores = await _repository.GetAll();
+            var stores = await _repository.GetAll(
+                s => s.Products,
+                s => s.Invoices,
+                s => s.PurchaseCompletionOptions,
+                s => s.ContactInformations
+            );
+
             return Ok(new GeneralResponse<IEnumerable<Store>>
             {
                 Success = true,
@@ -34,7 +40,13 @@ namespace invoice.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var store = await _repository.GetById(id);
+            var store = await _repository.GetById(id,
+                s => s.Products,
+                s => s.Invoices,
+                s => s.PurchaseCompletionOptions,
+                s => s.ContactInformations
+            );
+
             if (store == null)
             {
                 return NotFound(new GeneralResponse<Store>

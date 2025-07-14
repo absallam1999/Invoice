@@ -106,11 +106,18 @@ namespace invoice.Controllers
 
             await _repository.Add(category);
 
-            return Ok(new GeneralResponse<Category>
+            var result = new CategoryDetailsDTO
+            {
+                Id = category.Id,
+                Name = category.Name,
+                Products = new List<ProductDetailsDTO>()
+            };
+
+            return Ok(new GeneralResponse<CategoryDetailsDTO>
             {
                 Success = true,
                 Message = "Category created successfully.",
-                Data = category
+                Data = result
             });
         }
 
@@ -124,6 +131,16 @@ namespace invoice.Controllers
                     Success = false,
                     Message = "ID mismatch.",
                     Data = null
+                });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed.",
+                    Data = ModelState
                 });
             }
 
@@ -141,11 +158,27 @@ namespace invoice.Controllers
             existing.Name = dto.Name;
             await _repository.Update(existing);
 
-            return Ok(new GeneralResponse<Category>
+            var result = new CategoryDetailsDTO
+            {
+                Id = existing.Id,
+                Name = existing.Name,
+                Products = existing.Products.Select(p => new ProductDetailsDTO
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Image = p.Image,
+                    Price = p.Price,
+                    Quantity = p.Quantity,
+                    StoreId = p.StoreId,
+                    CategoryId = p.CategoryId
+                }).ToList()
+            };
+
+            return Ok(new GeneralResponse<CategoryDetailsDTO>
             {
                 Success = true,
                 Message = "Category updated successfully.",
-                Data = existing
+                Data = result
             });
         }
 

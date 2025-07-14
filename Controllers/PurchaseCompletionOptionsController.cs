@@ -22,19 +22,27 @@ namespace invoice.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var options = await _repository.GetAll();
-            return Ok(new GeneralResponse<object>
+            var options = await _repository.GetAll(o => o.Store);
+
+            var result = options.Select(o => new PurchaseCompletionOptionsDTO
+            {
+                Id = o.Id,
+                SendEmail = o.SendEmail,
+                StoreId = o.StoreId
+            });
+
+            return Ok(new GeneralResponse<IEnumerable<PurchaseCompletionOptionsDTO>>
             {
                 Success = true,
                 Message = "Options retrieved successfully.",
-                Data = options
+                Data = result
             });
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var option = await _repository.GetById(id);
+            var option = await _repository.GetById(id, o => o.Store);
             if (option == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -45,11 +53,18 @@ namespace invoice.Controllers
                 });
             }
 
-            return Ok(new GeneralResponse<object>
+            var dto = new PurchaseCompletionOptionsDTO
+            {
+                Id = option.Id,
+                SendEmail = option.SendEmail,
+                StoreId = option.StoreId
+            };
+
+            return Ok(new GeneralResponse<PurchaseCompletionOptionsDTO>
             {
                 Success = true,
                 Message = "Option retrieved successfully.",
-                Data = option
+                Data = dto
             });
         }
 
@@ -73,7 +88,8 @@ namespace invoice.Controllers
             };
 
             await _repository.Add(option);
-            return Ok(new GeneralResponse<object>
+
+            return Ok(new GeneralResponse<PurchaseCompletionOptions>
             {
                 Success = true,
                 Message = "Option created successfully.",
@@ -109,7 +125,8 @@ namespace invoice.Controllers
             existing.StoreId = dto.StoreId;
 
             await _repository.Update(existing);
-            return Ok(new GeneralResponse<object>
+
+            return Ok(new GeneralResponse<PurchaseCompletionOptions>
             {
                 Success = true,
                 Message = "Option updated successfully.",
@@ -132,6 +149,7 @@ namespace invoice.Controllers
             }
 
             await _repository.Delete(id);
+
             return Ok(new GeneralResponse<object>
             {
                 Success = true,

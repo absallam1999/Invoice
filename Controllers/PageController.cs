@@ -22,7 +22,7 @@ namespace invoice.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var pages = await _repository.GetAll();
+            var pages = await _repository.GetAll(p => p.Store, p => p.Language);
             var result = pages.Select(p => new PageDetailsDTO
             {
                 Id = p.Id,
@@ -32,7 +32,9 @@ namespace invoice.Controllers
                 Infooter = p.Infooter,
                 Inheader = p.Inheader,
                 StoreId = p.StoreId,
-                LanguageId = p.LanguageId
+                StoreName = p.Store.Name,
+                LanguageId = p.LanguageId,
+                LanguageName = p.Language.Name
             });
 
             return Ok(new GeneralResponse<IEnumerable<PageDetailsDTO>>
@@ -46,7 +48,7 @@ namespace invoice.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var page = await _repository.GetById(id);
+            var page = await _repository.GetById(id, p => p.Store, p => p.Language);
             if (page == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -66,7 +68,9 @@ namespace invoice.Controllers
                 Infooter = page.Infooter,
                 Inheader = page.Inheader,
                 StoreId = page.StoreId,
-                LanguageId = page.LanguageId
+                StoreName = page.Store?.Name,
+                LanguageId = page.LanguageId,
+                LanguageName = page.Language?.Name
             };
 
             return Ok(new GeneralResponse<PageDetailsDTO>

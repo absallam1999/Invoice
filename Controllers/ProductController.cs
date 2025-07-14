@@ -22,7 +22,11 @@ namespace invoice.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var products = await _repository.GetAll();
+            var products = await _repository.GetAll(
+                p => p.Category,
+                p => p.Store
+            );
+
             var result = products.Select(p => new ProductDetailsDTO
             {
                 Id = p.Id,
@@ -35,18 +39,23 @@ namespace invoice.Controllers
                 StoreId = p.StoreId,
                 StoreName = p.Store?.Name
             });
-            return Ok(new GeneralResponse<object>
+
+            return Ok(new GeneralResponse<IEnumerable<ProductDetailsDTO>>
             {
                 Success = true,
                 Message = "Products retrieved successfully.",
-                Data = products
+                Data = result
             });
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var product = await _repository.GetById(id);
+            var product = await _repository.GetById(id,
+                p => p.Category,
+                p => p.Store
+            );
+
             if (product == null)
                 return NotFound(new GeneralResponse<object>
                 {
@@ -55,11 +64,24 @@ namespace invoice.Controllers
                     Data = null
                 });
 
-            return Ok(new GeneralResponse<object>
+            var productDTO = new ProductDetailsDTO
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Image = product.Image,
+                Price = product.Price,
+                Quantity = product.Quantity,
+                CategoryId = product.CategoryId,
+                CategoryName = product.Category?.Name,
+                StoreId = product.StoreId,
+                StoreName = product.Store?.Name
+            };
+
+            return Ok(new GeneralResponse<ProductDetailsDTO>
             {
                 Success = true,
                 Message = "Product retrieved successfully.",
-                Data = product
+                Data = productDTO
             });
         }
 
@@ -86,7 +108,7 @@ namespace invoice.Controllers
 
             await _repository.Add(product);
 
-            return Ok(new GeneralResponse<object>
+            return Ok(new GeneralResponse<Product>
             {
                 Success = true,
                 Message = "Product created successfully.",
@@ -123,7 +145,7 @@ namespace invoice.Controllers
 
             await _repository.Update(product);
 
-            return Ok(new GeneralResponse<object>
+            return Ok(new GeneralResponse<Product>
             {
                 Success = true,
                 Message = "Product updated successfully.",

@@ -23,11 +23,21 @@ namespace invoice.Controllers
         public async Task<IActionResult> GetAll()
         {
             var items = await _repository.GetAll();
-            return Ok(new GeneralResponse<object>
+            var dtoList = items.Select(i => new InvoiceItemDetailsDTO
+            {
+                Id = i.Id,
+                InvoiceId = i.InvoiceId,
+                ProductId = i.ProductId,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice,
+                Subtotal = i.Subtotal
+            });
+
+            return Ok(new GeneralResponse<IEnumerable<InvoiceItemDetailsDTO>>
             {
                 Success = true,
                 Message = "Invoice items retrieved successfully.",
-                Data = items
+                Data = dtoList
             });
         }
 
@@ -36,18 +46,30 @@ namespace invoice.Controllers
         {
             var item = await _repository.GetById(id);
             if (item == null)
+            {
                 return NotFound(new GeneralResponse<object>
                 {
                     Success = false,
                     Message = $"Invoice item with ID {id} not found.",
                     Data = null
                 });
+            }
 
-            return Ok(new GeneralResponse<object>
+            var dto = new InvoiceItemDetailsDTO
+            {
+                Id = item.Id,
+                InvoiceId = item.InvoiceId,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice,
+                Subtotal = item.Subtotal
+            };
+
+            return Ok(new GeneralResponse<InvoiceItemDetailsDTO>
             {
                 Success = true,
                 Message = "Invoice item retrieved successfully.",
-                Data = item
+                Data = dto
             });
         }
 
@@ -55,12 +77,14 @@ namespace invoice.Controllers
         public async Task<IActionResult> Create([FromBody] CreateInvoiceItemDTO dto)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(new GeneralResponse<object>
                 {
                     Success = false,
                     Message = "Validation failed.",
                     Data = ModelState
                 });
+            }
 
             var item = new InvoiceItem
             {
@@ -73,11 +97,21 @@ namespace invoice.Controllers
 
             await _repository.Add(item);
 
-            return Ok(new GeneralResponse<object>
+            var result = new InvoiceItemDetailsDTO
+            {
+                Id = item.Id,
+                InvoiceId = item.InvoiceId,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice,
+                Subtotal = item.Subtotal
+            };
+
+            return Ok(new GeneralResponse<InvoiceItemDetailsDTO>
             {
                 Success = true,
                 Message = "Invoice item created successfully.",
-                Data = item
+                Data = result
             });
         }
 
@@ -85,29 +119,35 @@ namespace invoice.Controllers
         public async Task<IActionResult> Update(string id, [FromBody] UpdateInvoiceItemDTO dto)
         {
             if (id != dto.Id)
+            {
                 return BadRequest(new GeneralResponse<object>
                 {
                     Success = false,
                     Message = "ID mismatch.",
                     Data = null
                 });
+            }
 
             if (!ModelState.IsValid)
+            {
                 return BadRequest(new GeneralResponse<object>
                 {
                     Success = false,
                     Message = "Validation failed.",
                     Data = ModelState
                 });
+            }
 
             var existing = await _repository.GetById(id);
             if (existing == null)
+            {
                 return NotFound(new GeneralResponse<object>
                 {
                     Success = false,
                     Message = $"Invoice item with ID {id} not found.",
                     Data = null
                 });
+            }
 
             existing.InvoiceId = dto.InvoiceId;
             existing.ProductId = dto.ProductId;
@@ -117,11 +157,21 @@ namespace invoice.Controllers
 
             await _repository.Update(existing);
 
-            return Ok(new GeneralResponse<object>
+            var result = new InvoiceItemDetailsDTO
+            {
+                Id = existing.Id,
+                InvoiceId = existing.InvoiceId,
+                ProductId = existing.ProductId,
+                Quantity = existing.Quantity,
+                UnitPrice = existing.UnitPrice,
+                Subtotal = existing.Subtotal
+            };
+
+            return Ok(new GeneralResponse<InvoiceItemDetailsDTO>
             {
                 Success = true,
                 Message = "Invoice item updated successfully.",
-                Data = existing
+                Data = result
             });
         }
 
@@ -130,12 +180,14 @@ namespace invoice.Controllers
         {
             var item = await _repository.GetById(id);
             if (item == null)
+            {
                 return NotFound(new GeneralResponse<object>
                 {
                     Success = false,
                     Message = $"Invoice item with ID {id} not found.",
                     Data = null
                 });
+            }
 
             await _repository.Delete(id);
 

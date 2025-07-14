@@ -9,6 +9,8 @@
         public string Infooter { get; set; }
         public string Inheader { get; set; }
         public string StoreId { get; set; }
+        public string StoreName { get; set; }
         public string LanguageId { get; set; }
+        public string LanguageName { get; set; }
     }
 }

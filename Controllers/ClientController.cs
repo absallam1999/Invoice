@@ -36,10 +36,10 @@ namespace invoice.Controllers
                 UserId = c.UserId
             });
 
-            return Ok(new GeneralResponse<object>
+            return Ok(new GeneralResponse<IEnumerable<ClientDetailsDTO>>
             {
                 Success = true,
-                Message = "Clients retrieved successfully",
+                Message = "Clients retrieved successfully.",
                 Data = result
             });
         }
@@ -49,11 +49,14 @@ namespace invoice.Controllers
         {
             var client = await _repository.GetById(id);
             if (client == null)
+            {
                 return NotFound(new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = "Client not found"
+                    Message = $"Client with ID {id} not found.",
+                    Data = null
                 });
+            }
 
             var dto = new ClientDetailsDTO
             {
@@ -68,10 +71,10 @@ namespace invoice.Controllers
                 UserId = client.UserId
             };
 
-            return Ok(new GeneralResponse<object>
+            return Ok(new GeneralResponse<ClientDetailsDTO>
             {
                 Success = true,
-                Message = "Client retrieved successfully",
+                Message = "Client retrieved successfully.",
                 Data = dto
             });
         }
@@ -80,7 +83,14 @@ namespace invoice.Controllers
         public async Task<IActionResult> Create([FromBody] CreateClientDTO dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed.",
+                    Data = ModelState
+                });
+            }
 
             var client = new Client
             {
@@ -96,11 +106,24 @@ namespace invoice.Controllers
 
             await _repository.Add(client);
 
-            return CreatedAtAction(nameof(GetById), new { id = client.Id }, new GeneralResponse<object>
+            var result = new ClientDetailsDTO
+            {
+                Id = client.Id,
+                Name = client.Name,
+                Email = client.Email,
+                PhoneNumber = client.PhoneNumber,
+                Address = client.Address,
+                Notes = client.Notes,
+                TextNumber = client.TextNumber,
+                IsDeleted = client.IsDeleted,
+                UserId = client.UserId
+            };
+
+            return Ok(new GeneralResponse<ClientDetailsDTO>
             {
                 Success = true,
-                Message = "Client created successfully",
-                Data = client
+                Message = "Client created successfully.",
+                Data = result
             });
         }
 
@@ -108,14 +131,35 @@ namespace invoice.Controllers
         public async Task<IActionResult> Update(string id, [FromBody] UpdateClientDTO dto)
         {
             if (id != dto.Id)
-                return BadRequest("ID mismatch.");
+            {
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "ID mismatch.",
+                    Data = null
+                });
+            }
 
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed.",
+                    Data = ModelState
+                });
+            }
 
             var client = await _repository.GetById(id);
             if (client == null)
-                return NotFound();
+            {
+                return NotFound(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = $"Client with ID {id} not found.",
+                    Data = null
+                });
+            }
 
             client.Name = dto.Name;
             client.Email = dto.Email;
@@ -128,10 +172,24 @@ namespace invoice.Controllers
 
             await _repository.Update(client);
 
-            return Ok(new GeneralResponse<object>
+            var updated = new ClientDetailsDTO
+            {
+                Id = client.Id,
+                Name = client.Name,
+                Email = client.Email,
+                PhoneNumber = client.PhoneNumber,
+                Address = client.Address,
+                Notes = client.Notes,
+                TextNumber = client.TextNumber,
+                IsDeleted = client.IsDeleted,
+                UserId = client.UserId
+            };
+
+            return Ok(new GeneralResponse<ClientDetailsDTO>
             {
                 Success = true,
-                Message = "Client updated successfully"
+                Message = "Client updated successfully.",
+                Data = updated
             });
         }
 
@@ -140,14 +198,22 @@ namespace invoice.Controllers
         {
             var client = await _repository.GetById(id);
             if (client == null)
-                return NotFound();
+            {
+                return NotFound(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = $"Client with ID {id} not found.",
+                    Data = null
+                });
+            }
 
             await _repository.Delete(id);
 
             return Ok(new GeneralResponse<object>
             {
                 Success = true,
-                Message = "Client deleted successfully"
+                Message = "Client deleted successfully.",
+                Data = null
             });
         }
     }

@@ -13,7 +13,6 @@ namespace invoice.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-
     public class AuthController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
@@ -28,10 +27,18 @@ namespace invoice.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDTO register)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed.",
+                    Data = ModelState
+                });
+
             var user = new ApplicationUser
             {
                 UserName = register.UserName,
-                Email = register.Email,
+                Email = register.Email
             };
             var result = await userManager.CreateAsync(user, register.Password);
             if (result.Succeeded)
@@ -43,32 +50,37 @@ namespace invoice.Controllers
                     Data = user.Id
                 });
             }
-            else
+
+            return BadRequest(new GeneralResponse<object>
             {
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "User registration failed.",
-                    Data = string.Join(", ", result.Errors.Select(e => e.Description))
-                });
-            }
+                Success = false,
+                Message = "User registration failed.",
+                Data = result.Errors
+            });
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO login)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed.",
+                    Data = ModelState
+                });
 
             var user = await userManager.FindByEmailAsync(login.Email);
             if (user != null)
             {
-                var result = await userManager.CheckPasswordAsync(user, login.Password);
-                if (result)
+                var isPasswordValid = await userManager.CheckPasswordAsync(user, login.Password);
+                if (isPasswordValid)
                 {
                     var token = GenerateJwtToken(user);
                     return Ok(new GeneralResponse<object>
                     {
                         Success = true,
-                        Message = "User loggedin successfully.",
+                        Message = "User logged in successfully.",
                         Data = new LoginResultDTO
                         {
                             Token = token,
@@ -78,6 +90,7 @@ namespace invoice.Controllers
                     });
                 }
             }
+
             return BadRequest(new GeneralResponse<object>
             {
                 Success = false,
@@ -91,10 +104,15 @@ namespace invoice.Controllers
         public async Task<IActionResult> Update([FromBody] UpdateUserDTO dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed.",
+                    Data = ModelState
+                });
 
             var user = await userManager.FindByIdAsync(dto.Id);
-            if (user.UserName == null)
+            if (user == null)
                 return NotFound(new GeneralResponse<object>
                 {
                     Success = false,
@@ -106,19 +124,19 @@ namespace invoice.Controllers
             user.Email = dto.Email;
             user.PhoneNumber = dto.PhoneNumber;
 
-            var updateResult = await userManager.UpdateAsync(user);
-            if (!updateResult.Succeeded)
+            var result = await userManager.UpdateAsync(user);
+            if (!result.Succeeded)
                 return BadRequest(new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = "Error Update User.",
-                    Data = updateResult.Errors
+                    Message = "Error updating user.",
+                    Data = result.Errors
                 });
 
             return Ok(new GeneralResponse<object>
             {
                 Success = true,
-                Message = "User Updated Successfully.",
+                Message = "User updated successfully.",
                 Data = null
             });
         }
@@ -126,9 +144,17 @@ namespace invoice.Controllers
         [HttpPost("forget")]
         public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordDTO dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed.",
+                    Data = ModelState
+                });
+
             var user = await userManager.FindByEmailAsync(dto.Email);
             if (user == null)
-                return NotFound(new GeneralResponse<object> 
+                return NotFound(new GeneralResponse<object>
                 {
                     Success = false,
                     Message = "User not found.",
@@ -139,7 +165,7 @@ namespace invoice.Controllers
 
             return Ok(new GeneralResponse<object>
             {
-                Success = false,
+                Success = true,
                 Message = "Password reset token generated.",
                 Data = token
             });
@@ -148,6 +174,14 @@ namespace invoice.Controllers
         [HttpPost("reset")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed.",
+                    Data = ModelState
+                });
+
             var user = await userManager.FindByEmailAsync(dto.Email);
             if (user == null)
                 return NotFound(new GeneralResponse<object>
@@ -162,23 +196,31 @@ namespace invoice.Controllers
                 return BadRequest(new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = "Error Reset Password",
+                    Message = "Error resetting password.",
                     Data = result.Errors
-                }); 
+                });
 
             return Ok(new GeneralResponse<object>
             {
                 Success = true,
-                Message = "Password Reset Successfully..",
+                Message = "Password reset successfully.",
                 Data = null
             });
         }
 
         [Authorize]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAccount(string id)
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO dto)
         {
-            var userId = User.FindFirstValue(id);
+            if (!ModelState.IsValid)
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed.",
+                    Data = ModelState
+                });
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await userManager.FindByIdAsync(userId);
             if (user == null)
                 return NotFound(new GeneralResponse<object>
@@ -188,19 +230,53 @@ namespace invoice.Controllers
                     Data = null
                 });
 
-            var result = await userManager.DeleteAsync(user);
+            var result = await userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
             if (!result.Succeeded)
                 return BadRequest(new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = "Error Delete User.",
+                    Message = "Error changing password.",
                     Data = result.Errors
                 });
 
             return Ok(new GeneralResponse<object>
             {
                 Success = true,
-                Message = "Account Deleted Successfully.",
+                Message = "Password changed successfully.",
+                Data = null
+            });
+        }
+
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAccount(string id)
+        {
+            var user = await userManager.FindByIdAsync(id);
+            if (user == null)
+                return NotFound(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "User not found.",
+                    Data = null
+                });
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (user.Id != currentUserId)
+                return Forbid();
+
+            var result = await userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Error deleting user.",
+                    Data = result.Errors
+                });
+
+            return Ok(new GeneralResponse<object>
+            {
+                Success = true,
+                Message = "Account deleted successfully.",
                 Data = null
             });
         }
@@ -209,18 +285,21 @@ namespace invoice.Controllers
         {
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id)
-            };
+            new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id)
+        };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
             var token = new JwtSecurityToken(
                 issuer: configuration["Jwt:Issuer"],
                 audience: null,
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds);
+                signingCredentials: creds
+            );
+
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }

@@ -23,11 +23,18 @@ namespace invoice.Controllers
         public async Task<IActionResult> GetAll()
         {
             var methods = await _repository.GetAll();
-            return Ok(new GeneralResponse<object>
+
+            var result = methods.Select(m => new PaymentMethodDTO
+            {
+                Id = m.Id,
+                Name = m.Name
+            });
+
+            return Ok(new GeneralResponse<IEnumerable<PaymentMethodDTO>>
             {
                 Success = true,
                 Message = "Payment methods retrieved successfully.",
-                Data = methods
+                Data = result
             });
         }
 
@@ -45,11 +52,17 @@ namespace invoice.Controllers
                 });
             }
 
-            return Ok(new GeneralResponse<object>
+            var dto = new PaymentMethodDTO
+            {
+                Id = method.Id,
+                Name = method.Name
+            };
+
+            return Ok(new GeneralResponse<PaymentMethodDTO>
             {
                 Success = true,
                 Message = "Payment method retrieved successfully.",
-                Data = method
+                Data = dto
             });
         }
 
@@ -69,7 +82,7 @@ namespace invoice.Controllers
             var method = new PaymentMethod { Name = dto.Name };
             await _repository.Add(method);
 
-            return Ok(new GeneralResponse<object>
+            return Ok(new GeneralResponse<PaymentMethod>
             {
                 Success = true,
                 Message = "Payment method created successfully.",
@@ -104,7 +117,7 @@ namespace invoice.Controllers
             existing.Name = dto.Name;
             await _repository.Update(existing);
 
-            return Ok(new GeneralResponse<object>
+            return Ok(new GeneralResponse<PaymentMethod>
             {
                 Success = true,
                 Message = "Payment method updated successfully.",

@@ -1,42 +1,59 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using invoice.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
-namespace invoice.Data
+public class Repository<T> : IRepository<T> where T : class
 {
-    public class Repository<T> : IRepository<T> where T : class
+    private readonly ApplicationDbContext context;
+    private readonly DbSet<T> dbSet;
+
+    public Repository(ApplicationDbContext _context)
     {
-        private readonly ApplicationDbContext context;
-        private readonly DbSet<T> dbSet;
+        context = _context;
+        dbSet = _context.Set<T>();
+    }
 
-        public Repository(ApplicationDbContext _context)
+    public async Task<IEnumerable<T>> GetAll(params Expression<Func<T, object>>[] includes)
+    {
+        IQueryable<T> query = dbSet;
+        if (includes != null)
         {
-            context = _context;
-            dbSet = _context.Set<T>();
+            foreach (var include in includes)
+                query = query.Include(include);
         }
+        return await query.ToListAsync();
+    }
 
-        public async Task<IEnumerable<T>> GetAll() => await dbSet.ToListAsync();
-
-        public async Task<T> GetById(string id) => await dbSet.FindAsync(id);
-
-        public async Task Add(T entity)
+    public async Task<T> GetById(string id, params Expression<Func<T, object>>[] includes)
+    {
+        IQueryable<T> query = dbSet;
+        if (includes != null)
         {
-            await dbSet.AddAsync(entity);
+            foreach (var include in includes)
+                query = query.Include(include);
+        }
+        return await query.FirstOrDefaultAsync(e => EF.Property<string>(e, "Id") == id);
+    }
+
+    public async Task Add(T entity)
+    {
+        await dbSet.AddAsync(entity);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task Update(T entity)
+    {
+        dbSet.Update(entity);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task Delete(string id)
+    {
+        var entity = await dbSet.FindAsync(id);
+        if (entity != null)
+        {
+            dbSet.Remove(entity);
             await context.SaveChangesAsync();
-        }
-
-        public async Task Update(T entity)
-        {
-            dbSet.Update(entity);
-            await context.SaveChangesAsync();
-        }
-
-        public async Task Delete(string id)
-        {
-            var entity = await dbSet.FindAsync(id);
-            if (entity != null)
-            {
-                dbSet.Remove(entity);
-                await context.SaveChangesAsync();
-            }
         }
     }
 }

@@ -22,13 +22,14 @@ namespace invoice.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var items = await _repository.GetAll();
-            var dtoList = items.Select(n => new NotificationDetailsDTO
+            var notifications = await _repository.GetAll(n => n.User);
+            var dtoList = notifications.Select(n => new NotificationDetailsDTO
             {
                 Id = n.Id,
                 Title = n.Title,
                 Message = n.Message,
-                UserId = n.UserId
+                UserId = n.UserId,
+                UserName = n.User?.UserName
             });
 
             return Ok(new GeneralResponse<IEnumerable<NotificationDetailsDTO>>
@@ -42,7 +43,7 @@ namespace invoice.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var notification = await _repository.GetById(id);
+            var notification = await _repository.GetById(id, n => n.User);
             if (notification == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -58,7 +59,8 @@ namespace invoice.Controllers
                 Id = notification.Id,
                 Title = notification.Title,
                 Message = notification.Message,
-                UserId = notification.UserId
+                UserId = notification.UserId,
+                UserName = notification.User?.UserName
             };
 
             return Ok(new GeneralResponse<NotificationDetailsDTO>
@@ -91,19 +93,11 @@ namespace invoice.Controllers
 
             await _repository.Add(notification);
 
-            var result = new NotificationDetailsDTO
-            {
-                Id = notification.Id,
-                Title = notification.Title,
-                Message = notification.Message,
-                UserId = notification.UserId
-            };
-
-            return Ok(new GeneralResponse<NotificationDetailsDTO>
+            return Ok(new GeneralResponse<Notification>
             {
                 Success = true,
                 Message = "Notification created successfully.",
-                Data = result
+                Data = notification
             });
         }
 
@@ -137,19 +131,11 @@ namespace invoice.Controllers
 
             await _repository.Update(existing);
 
-            var updated = new NotificationDetailsDTO
-            {
-                Id = existing.Id,
-                Title = existing.Title,
-                Message = existing.Message,
-                UserId = existing.UserId
-            };
-
-            return Ok(new GeneralResponse<NotificationDetailsDTO>
+            return Ok(new GeneralResponse<Notification>
             {
                 Success = true,
                 Message = "Notification updated successfully.",
-                Data = updated
+                Data = existing
             });
         }
 
@@ -168,6 +154,7 @@ namespace invoice.Controllers
             }
 
             await _repository.Delete(id);
+
             return Ok(new GeneralResponse<object>
             {
                 Success = true,
@@ -180,15 +167,16 @@ namespace invoice.Controllers
         public async Task<IActionResult> GetUserNotifications()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var all = await _repository.GetAll();
-            var userNotifications = all
+            var notifications = await _repository.GetAll(n => n.User);
+            var userNotifications = notifications
                 .Where(n => n.UserId == userId)
                 .Select(n => new NotificationDetailsDTO
                 {
                     Id = n.Id,
                     Title = n.Title,
                     Message = n.Message,
-                    UserId = n.UserId
+                    UserId = n.UserId,
+                    UserName = n.User?.UserName
                 });
 
             return Ok(new GeneralResponse<IEnumerable<NotificationDetailsDTO>>

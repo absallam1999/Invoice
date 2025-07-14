@@ -35,7 +35,7 @@ namespace invoice.Controllers
             return Ok(new GeneralResponse<IEnumerable<ContactInformationDetailsDTO>>
             {
                 Success = true,
-                Message = "Contact information list retrieved successfully.",
+                Message = "Contact information retrieved successfully.",
                 Data = dtoList
             });
         }
@@ -49,7 +49,7 @@ namespace invoice.Controllers
                 return NotFound(new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = $"No contact information found with ID {id}.",
+                    Message = $"Contact information with ID {id} not found.",
                     Data = null
                 });
             }
@@ -127,13 +127,23 @@ namespace invoice.Controllers
                 });
             }
 
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed.",
+                    Data = ModelState
+                });
+            }
+
             var existing = await _repository.GetById(id);
             if (existing == null)
             {
                 return NotFound(new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = $"No contact information found with ID {id}.",
+                    Message = $"Contact information with ID {id} not found.",
                     Data = null
                 });
             }
@@ -173,12 +183,13 @@ namespace invoice.Controllers
                 return NotFound(new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = $"No contact information found with ID {id}.",
+                    Message = $"Contact information with ID {id} not found.",
                     Data = null
                 });
             }
 
             await _repository.Delete(id);
+
             return Ok(new GeneralResponse<object>
             {
                 Success = true,

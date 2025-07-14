@@ -23,11 +23,27 @@ namespace invoice.Controllers
         public async Task<IActionResult> GetAll()
         {
             var invoices = await _repository.GetAll();
-            return Ok(new GeneralResponse<object>
+            var dtoList = invoices.Select(i => new InvoiceDetailsDTO
+            {
+                Id = i.Id,
+                Number = i.Number,
+                CreateAt = i.CreateAt,
+                TaxNumber = i.TaxNumber,
+                Value = i.Value,
+                Description = i.Description,
+                InvoiceStatus = i.InvoiceStatus,
+                InvoiceType = i.InvoiceType,
+                UserId = i.UserId,
+                StoreId = i.StoreId,
+                ClientId = i.ClientId,
+                LanguageId = i.LanguageId
+            });
+
+            return Ok(new GeneralResponse<IEnumerable<InvoiceDetailsDTO>>
             {
                 Success = true,
                 Message = "Invoices retrieved successfully.",
-                Data = invoices
+                Data = dtoList
             });
         }
 
@@ -45,11 +61,27 @@ namespace invoice.Controllers
                 });
             }
 
-            return Ok(new GeneralResponse<object>
+            var dto = new InvoiceDetailsDTO
+            {
+                Id = invoice.Id,
+                Number = invoice.Number,
+                CreateAt = invoice.CreateAt,
+                TaxNumber = invoice.TaxNumber,
+                Value = invoice.Value,
+                Description = invoice.Description,
+                InvoiceStatus = invoice.InvoiceStatus,
+                InvoiceType = invoice.InvoiceType,
+                UserId = invoice.UserId,
+                StoreId = invoice.StoreId,
+                ClientId = invoice.ClientId,
+                LanguageId = invoice.LanguageId
+            };
+
+            return Ok(new GeneralResponse<InvoiceDetailsDTO>
             {
                 Success = true,
                 Message = "Invoice retrieved successfully.",
-                Data = invoice
+                Data = dto
             });
         }
 
@@ -83,11 +115,27 @@ namespace invoice.Controllers
 
             await _repository.Add(invoice);
 
-            return Ok(new GeneralResponse<object>
+            var result = new InvoiceDetailsDTO
+            {
+                Id = invoice.Id,
+                Number = invoice.Number,
+                CreateAt = invoice.CreateAt,
+                TaxNumber = invoice.TaxNumber,
+                Value = invoice.Value,
+                Description = invoice.Description,
+                InvoiceStatus = invoice.InvoiceStatus,
+                InvoiceType = invoice.InvoiceType,
+                UserId = invoice.UserId,
+                StoreId = invoice.StoreId,
+                ClientId = invoice.ClientId,
+                LanguageId = invoice.LanguageId
+            };
+
+            return Ok(new GeneralResponse<InvoiceDetailsDTO>
             {
                 Success = true,
                 Message = "Invoice created successfully.",
-                Data = invoice
+                Data = result
             });
         }
 
@@ -139,11 +187,27 @@ namespace invoice.Controllers
 
             await _repository.Update(invoice);
 
-            return Ok(new GeneralResponse<object>
+            var result = new InvoiceDetailsDTO
+            {
+                Id = invoice.Id,
+                Number = invoice.Number,
+                CreateAt = invoice.CreateAt,
+                TaxNumber = invoice.TaxNumber,
+                Value = invoice.Value,
+                Description = invoice.Description,
+                InvoiceStatus = invoice.InvoiceStatus,
+                InvoiceType = invoice.InvoiceType,
+                UserId = invoice.UserId,
+                StoreId = invoice.StoreId,
+                ClientId = invoice.ClientId,
+                LanguageId = invoice.LanguageId
+            };
+
+            return Ok(new GeneralResponse<InvoiceDetailsDTO>
             {
                 Success = true,
                 Message = "Invoice updated successfully.",
-                Data = invoice
+                Data = result
             });
         }
 
