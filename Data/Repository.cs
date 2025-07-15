@@ -56,4 +56,14 @@ public class Repository<T> : IRepository<T> where T : class
             await context.SaveChangesAsync();
         }
     }
+    public async Task<IEnumerable<T>> Query(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+    {
+        IQueryable<T> query = dbSet;
+        if (includes != null)
+        {
+            foreach (var include in includes)
+                query = query.Include(include);
+        }
+        return await query.Where(predicate).ToListAsync();
+    }
 }

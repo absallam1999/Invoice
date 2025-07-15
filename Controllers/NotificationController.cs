@@ -163,27 +163,35 @@ namespace invoice.Controllers
             });
         }
 
-        [HttpGet("my")]
-        public async Task<IActionResult> GetUserNotifications()
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetUserNotifications(string userId)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var notifications = await _repository.GetAll(n => n.User);
-            var userNotifications = notifications
-                .Where(n => n.UserId == userId)
-                .Select(n => new NotificationDetailsDTO
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest(new GeneralResponse<object>
                 {
-                    Id = n.Id,
-                    Title = n.Title,
-                    Message = n.Message,
-                    UserId = n.UserId,
-                    UserName = n.User?.UserName
+                    Success = false,
+                    Message = "User ID is required.",
+                    Data = null
                 });
+            }
+
+            var notifications = await _repository.Query(n => n.UserId == userId, n => n.User);
+
+            var result = notifications.Select(n => new NotificationDetailsDTO
+            {
+                Id = n.Id,
+                Title = n.Title,
+                Message = n.Message,
+                UserId = n.UserId,
+                UserName = n.User?.UserName
+            });
 
             return Ok(new GeneralResponse<IEnumerable<NotificationDetailsDTO>>
             {
                 Success = true,
-                Message = "User notifications retrieved.",
-                Data = userNotifications
+                Message = "User notifications retrieved successfully.",
+                Data = result
             });
         }
     }

@@ -8,6 +8,7 @@ namespace invoice.Data
      {
         Task<IEnumerable<T>> GetAll(params Expression<Func<T, object>>[] includes);
         Task<T> GetById(string id, params Expression<Func<T, object>>[] includes);
+        Task<IEnumerable<T>> Query(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
         Task Add(T entity);
         Task Update(T entity);
         Task Delete(string id);

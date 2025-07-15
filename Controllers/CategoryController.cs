@@ -22,7 +22,7 @@ namespace invoice.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var categories = await _repository.GetAll();
+            var categories = await _repository.GetAll(c => c.Products);
 
             var result = categories.Select(c => new CategoryDetailsDTO
             {
@@ -37,7 +37,7 @@ namespace invoice.Controllers
                     Quantity = p.Quantity,
                     StoreId = p.StoreId,
                     CategoryId = p.CategoryId
-                }).ToList()
+                }).ToList() ?? new List<ProductDetailsDTO>()
             });
 
             return Ok(new GeneralResponse<IEnumerable<CategoryDetailsDTO>>
@@ -51,7 +51,7 @@ namespace invoice.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var category = await _repository.GetById(id);
+            var category = await _repository.GetById(id, c => c.Products);
             if (category == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -75,7 +75,7 @@ namespace invoice.Controllers
                     Quantity = p.Quantity,
                     StoreId = p.StoreId,
                     CategoryId = p.CategoryId
-                }).ToList()
+                }).ToList() ?? new List<ProductDetailsDTO>()
             };
 
             return Ok(new GeneralResponse<CategoryDetailsDTO>
@@ -144,7 +144,7 @@ namespace invoice.Controllers
                 });
             }
 
-            var existing = await _repository.GetById(id);
+            var existing = await _repository.GetById(id, c => c.Products);
             if (existing == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -171,7 +171,7 @@ namespace invoice.Controllers
                     Quantity = p.Quantity,
                     StoreId = p.StoreId,
                     CategoryId = p.CategoryId
-                }).ToList()
+                }).ToList() ?? new List<ProductDetailsDTO>()
             };
 
             return Ok(new GeneralResponse<CategoryDetailsDTO>

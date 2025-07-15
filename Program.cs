@@ -26,8 +26,8 @@ namespace invoice
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                    // REOMVE AFTER "Bearer" with new Token:
-                    Description = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBYnNhbGxhbSIsImp0aSI6ImY0NmNkM2MyLTBiYmItNDExMi1hNjI3LWI1YjM0MWJmMjliYyIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiNzdhZDA2MWEtOWFjNS00OTllLWI4MGUtODMxOTU1MTZjN2U4IiwiZXhwIjoxNzUyNDgzNjQzLCJpc3MiOiJJbnZvaWNlIn0.TJC-BW54Ncx_j01KscE3pkzWNgI3eYPBcZ0YkgoF6x8"
+                    // ADD AFTER "Bearer" with new Token:
+                    Description = "Bearer "
                 });
 
                 options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement {

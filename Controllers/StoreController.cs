@@ -4,6 +4,9 @@ using invoice.Data;
 using invoice.DTO.Store;
 using invoice.DTO;
 using Microsoft.AspNetCore.Authorization;
+using invoice.DTO.Invoice;
+using invoice.DTO.Product;
+using invoice.DTO.PurchaseCompletionOptions;
 
 namespace invoice.Controllers
 {
@@ -29,40 +32,138 @@ namespace invoice.Controllers
                 s => s.ContactInformations
             );
 
-            return Ok(new GeneralResponse<IEnumerable<Store>>
+            var result = stores.Select(store => new
+            {
+                Id = store.Id,
+                Name = store.Name,
+                Description = store.Description,
+                Url = store.Url,
+                Logo = store.Logo,
+                UserId = store.UserId,
+                IsActivated = store.IsActivated,
+
+                ContactInformations = store.ContactInformations?.Select(ci => new ContactInformationDetailsDTO
+                {
+                    Id = ci.Id,
+                    Location = ci.location,
+                    Facebook = ci.Facebook,
+                    WhatsApp = ci.WhatsApp,
+                    Instagram = ci.Instagram,
+                    StoreId = ci.StoreId
+                }).ToList() ?? new List<ContactInformationDetailsDTO>(),
+
+                PurchaseCompletionOption = store.PurchaseCompletionOptions == null
+                    ? null
+                    : new PurchaseCompletionOptionsDTO
+                    {
+                        Id = store.PurchaseCompletionOptions.Id,
+                        SendEmail = store.PurchaseCompletionOptions.SendEmail,
+                        StoreId = store.PurchaseCompletionOptions.StoreId
+                    }
+            });
+
+            return Ok(new GeneralResponse<object>
             {
                 Success = true,
                 Message = "Stores retrieved successfully.",
-                Data = stores
+                Data = result
             });
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var store = await _repository.GetById(id,
-                s => s.Products,
-                s => s.Invoices,
-                s => s.PurchaseCompletionOptions,
-                s => s.ContactInformations
-            );
-
-            if (store == null)
+            try
             {
-                return NotFound(new GeneralResponse<Store>
+                var store = await _repository.GetById(id,
+                    s => s.Products,
+                    s => s.Invoices,
+                    s => s.User,
+                    s => s.ContactInformations,
+                    s => s.PurchaseCompletionOptions
+                );
+
+                if (store == null)
+                {
+                    return NotFound(new GeneralResponse<object>
+                    {
+                        Success = false,
+                        Message = $"Store with ID {id} not found.",
+                        Data = null
+                    });
+                }
+
+                var result = new
+                {
+                    Id = store.Id,
+                    Name = store.Name,
+                    UserId = store.UserId,
+
+                    ContactInformations = store.ContactInformations?.Select(ci => new ContactInformationDetailsDTO
+                    {
+                        Id = ci.Id,
+                        Location = ci.location,
+                        Facebook = ci.Facebook,
+                        WhatsApp = ci.WhatsApp,
+                        Instagram = ci.Instagram,
+                        StoreId = ci.StoreId
+                    }).ToList() ?? new List<ContactInformationDetailsDTO>(),
+
+                    Products = store.Products?.Select(p => new ProductDetailsDTO
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Image = p.Image,
+                        Price = p.Price,
+                        Quantity = p.Quantity,
+                        CategoryId = p.CategoryId,
+                        CategoryName = p.Category?.Name,
+                        StoreId = p.StoreId,
+                        StoreName = p.Store?.Name
+                    }).ToList() ?? new List<ProductDetailsDTO>(),
+
+                    Invoices = store.Invoices?.Select(i => new InvoiceDetailsDTO
+                    {
+                        Id = i.Id,
+                        Number = i.Number,
+                        CreateAt = i.CreateAt,
+                        TaxNumber = i.TaxNumber,
+                        Value = i.Value,
+                        Description = i.Description,
+                        InvoiceStatus = i.InvoiceStatus,
+                        InvoiceType = i.InvoiceType,
+                        UserId = i.UserId,
+                        StoreId = i.StoreId,
+                        ClientId = i.ClientId,
+                        LanguageId = i.LanguageId
+                    }).ToList() ?? new List<InvoiceDetailsDTO>(),
+
+                    PurchaseCompletionOption = store.PurchaseCompletionOptions == null
+                    ? null
+                    : new PurchaseCompletionOptionsDTO
+                    {
+                        Id = store.PurchaseCompletionOptions.Id,
+                        SendEmail = store.PurchaseCompletionOptions.SendEmail,
+                        StoreId = store.PurchaseCompletionOptions.StoreId
+                    }
+                };
+
+                return Ok(new GeneralResponse<object>
+                {
+                    Success = true,
+                    Message = "Store retrieved successfully.",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = $"Store with ID {id} not found.",
+                    Message = $"Internal server error: {ex.Message}",
                     Data = null
                 });
             }
-
-            return Ok(new GeneralResponse<Store>
-            {
-                Success = true,
-                Message = "Store retrieved successfully.",
-                Data = store
-            });
         }
 
         [HttpPost]
