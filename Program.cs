@@ -26,7 +26,7 @@ namespace invoice
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                    // ADD AFTER "Bearer" with new Token:
+                    // ADD new Token AFTER: "Bearer 'New Token Here'":
                     Description = "Bearer "
                 });
 
