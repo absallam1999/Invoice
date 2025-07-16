@@ -5,7 +5,7 @@ namespace invoice.DTO.Client
     public class UpdateClientDTO
     {
         [Required(ErrorMessage = "Id is required.")]
-        public string Id { get; set; }
+       public string Id { get; set; }
 
         [Required]
         public string Name { get; set; }

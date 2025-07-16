@@ -4,7 +4,7 @@ namespace invoice.DTO.Client
 {
     public class CreateClientDTO
     {
-        [Required]
+        [Required(ErrorMessage = "Name is required.")]
         public string Name { get; set; }
 
         [EmailAddress]
@@ -17,7 +17,6 @@ namespace invoice.DTO.Client
         public string Notes { get; set; }
         public string TextNumber { get; set; }
 
-        [Required]
-        public string UserId { get; set; }
+       
     }
 }

@@ -2,14 +2,19 @@
 {
     public class ClientDetailsDTO
     {
-        public string Id { get; set; }
+        public string ClientId { get; set; }
         public string Name { get; set; }
-        public string Email { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Address { get; set; }
-        public string Notes { get; set; }
-        public string TextNumber { get; set; }
-        public bool IsDeleted { get; set; }
-        public string UserId { get; set; }
+        public string? Email { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Address { get; set; }
+        public string? Notes { get; set; }
+        public string? TextNumber { get; set; }
+
+        public DateTime  cteateAt { get; set; }
+        //invoice count
+        //invoice details + id
+        public string InvoiceId { get; set; }
+        public int InvoiceCount { get; set; }
+
     }
 }

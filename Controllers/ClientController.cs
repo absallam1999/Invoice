@@ -4,6 +4,7 @@ using invoice.Data;
 using invoice.DTO.Client;
 using invoice.DTO;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace invoice.Controllers
 {
@@ -22,18 +23,19 @@ namespace invoice.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var clients = await _repository.GetAll();
-            var result = clients.Select(c => new ClientDetailsDTO
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+
+            var clients = await _repository.GetAll(userId,c => c.Invoices);
+            var result = clients.Select(c => new GetAllClientsDTO
             {
-                Id = c.Id,
+                ClientId = c.Id,
                 Name = c.Name,
                 Email = c.Email,
                 PhoneNumber = c.PhoneNumber,
-                Address = c.Address,
-                Notes = c.Notes,
-                TextNumber = c.TextNumber,
-                IsDeleted = c.IsDeleted,
-                UserId = c.UserId
+                InvoiceCount = c.Invoices?.Count ?? 0
             });
 
             return Ok(new GeneralResponse<IEnumerable<ClientDetailsDTO>>
@@ -47,7 +49,11 @@ namespace invoice.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var client = await _repository.GetById(id);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var client = await _repository.GetById(id, userId, c => c.Invoices);
             if (client == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -60,15 +66,19 @@ namespace invoice.Controllers
 
             var dto = new ClientDetailsDTO
             {
-                Id = client.Id,
+                ClientId = client.Id,
                 Name = client.Name,
                 Email = client.Email,
                 PhoneNumber = client.PhoneNumber,
                 Address = client.Address,
                 Notes = client.Notes,
                 TextNumber = client.TextNumber,
-                IsDeleted = client.IsDeleted,
-                UserId = client.UserId
+                InvoiceCount= client.Invoices?.Count ?? 0,
+              //  InvoiceId= client.Invoices.
+                //IsDeleted = client.IsDeleted,
+                //UserId = client.UserId
+
+                //invoice
             };
 
             return Ok(new GeneralResponse<ClientDetailsDTO>
@@ -80,8 +90,12 @@ namespace invoice.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateClientDTO dto)
+        public async Task<IActionResult> Create([FromBody] ClientInfoDTO dto)
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+          
             if (!ModelState.IsValid)
             {
                 return BadRequest(new GeneralResponse<object>
@@ -91,7 +105,7 @@ namespace invoice.Controllers
                     Data = ModelState
                 });
             }
-
+            //chick email - phonenumber
             var client = new Client
             {
                 Name = dto.Name,
@@ -100,24 +114,26 @@ namespace invoice.Controllers
                 Address = dto.Address,
                 Notes = dto.Notes,
                 TextNumber = dto.TextNumber,
-                UserId = dto.UserId,
-                IsDeleted = false
+                UserId = userId,
+             
             };
 
             await _repository.Add(client);
 
-            var result = new ClientDetailsDTO
-            {
-                Id = client.Id,
-                Name = client.Name,
-                Email = client.Email,
-                PhoneNumber = client.PhoneNumber,
-                Address = client.Address,
-                Notes = client.Notes,
-                TextNumber = client.TextNumber,
-                IsDeleted = client.IsDeleted,
-                UserId = client.UserId
-            };
+            var result = client.Id;
+
+              //  new ClientDetailsDTO
+            //{
+            //    Id = client.Id,
+            //    Name = client.Name,
+            //    Email = client.Email,
+            //    PhoneNumber = client.PhoneNumber,
+            //    Address = client.Address,
+            //    Notes = client.Notes,
+            //    TextNumber = client.TextNumber,
+            //    //IsDeleted = client.IsDeleted,
+            //    //UserId = client.UserId
+            //};
 
             return Ok(new GeneralResponse<ClientDetailsDTO>
             {
@@ -128,18 +144,24 @@ namespace invoice.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] UpdateClientDTO dto)
+        public async Task<IActionResult> Update(string id, [FromBody] ClientInfoDTO dto)
         {
-            if (id != dto.Id)
-            {
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "ID mismatch.",
-                    Data = null
-                });
-            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
+            //if (id != dto.id)
+            //{
+            //    return BadRequest(new GeneralResponse<object>
+            //    {
+            //        Success = false,
+            //        Message = "ID mismatch.",
+            //        Data = null
+            //    });
+            //}
+
+
+            //check email phone
             if (!ModelState.IsValid)
             {
                 return BadRequest(new GeneralResponse<object>
@@ -150,7 +172,9 @@ namespace invoice.Controllers
                 });
             }
 
-            var client = await _repository.GetById(id);
+
+
+            var client = await _repository.GetById(id, userId);
             if (client == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -167,23 +191,23 @@ namespace invoice.Controllers
             client.Address = dto.Address;
             client.Notes = dto.Notes;
             client.TextNumber = dto.TextNumber;
-            client.UserId = dto.UserId;
-            client.IsDeleted = dto.IsDeleted;
+           
 
             await _repository.Update(client);
 
-            var updated = new ClientDetailsDTO
-            {
-                Id = client.Id,
-                Name = client.Name,
-                Email = client.Email,
-                PhoneNumber = client.PhoneNumber,
-                Address = client.Address,
-                Notes = client.Notes,
-                TextNumber = client.TextNumber,
-                IsDeleted = client.IsDeleted,
-                UserId = client.UserId
-            };
+            var updated = client.Id;
+            //    new ClientDetailsDTO
+            //{
+            //    Id = client.Id,
+            //    Name = client.Name,
+            //    Email = client.Email,
+            //    PhoneNumber = client.PhoneNumber,
+            //    Address = client.Address,
+            //    Notes = client.Notes,
+            //    TextNumber = client.TextNumber,
+            //    //IsDeleted = client.IsDeleted,
+            //    //UserId = client.UserId
+            //};
 
             return Ok(new GeneralResponse<ClientDetailsDTO>
             {
@@ -196,7 +220,12 @@ namespace invoice.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var client = await _repository.GetById(id);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+
+            var client = await _repository.GetById(id, userId);
             if (client == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -206,6 +235,7 @@ namespace invoice.Controllers
                     Data = null
                 });
             }
+
 
             await _repository.Delete(id);
 
