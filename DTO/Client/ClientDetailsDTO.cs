@@ -1,4 +1,6 @@
-﻿namespace invoice.DTO.Client
+﻿using invoice.DTO.Invoice;
+
+namespace invoice.DTO.Client
 {
     public class ClientDetailsDTO
     {
@@ -11,10 +13,9 @@
         public string? TextNumber { get; set; }
 
         public DateTime  cteateAt { get; set; }
-        //invoice count
-        //invoice details + id
-        public string InvoiceId { get; set; }
+       
         public int InvoiceCount { get; set; }
 
+        public List<GetAllInvoiceDTO> Invoices { get; set; }
     }
 }

@@ -1,4 +1,6 @@
 ﻿
+using invoice.DTO.Invoice;
+
 namespace invoice.DTO.Client
 {
     public class GetAllClientsDTO
@@ -8,7 +10,9 @@ namespace invoice.DTO.Client
         public string Name { get; set; }
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
-        public int InvoiceCount { get; set; }  
+        public int InvoiceCount { get; set; }
+
+       
 
 
     }
