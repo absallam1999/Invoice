@@ -10,11 +10,10 @@ namespace invoice.Data
         Task<T> GetById( string id, string userId = null, params Expression<Func<T, object>>[] includes);
         Task<IEnumerable<T>> Query(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
        
-        Task Add(T entity);
-        Task Update(T entity);
-        Task Delete(string idl);
+        Task<OperationResult> Add(T entity);
+        Task<OperationResult<T>> Update(T entity);
+        Task <OperationResult> Delete(string idl);
 
-        //Task<IEnumerable<T>> Filter(Expression<Func<T, bool>> filter, params Expression<Func<T, object>>[] includes);
    
     }
 }

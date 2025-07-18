@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace invoice.Models
 {
-    public class Client : ISoftDeleteable
+    public class Client : ISoftDeleteable ,IUserId
     {
         [Key]
         public string Id { get; set; } = Guid.NewGuid().ToString(); 

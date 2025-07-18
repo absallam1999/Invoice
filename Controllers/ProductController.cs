@@ -4,6 +4,10 @@ using invoice.Data;
 using invoice.Models;
 using invoice.DTO;
 using invoice.DTO.Product;
+using System.Security.Claims;
+using invoice.DTO.Client;
+using invoice.Models.Interfaces;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace invoice.Controllers
 {
@@ -22,24 +26,25 @@ namespace invoice.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var products = await _repository.GetAll(
-                p => p.Category,
-                p => p.Store
-            );
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
-            var result = products.Select(p => new ProductDetailsDTO
+            var product = await _repository.GetAll(userId);
+            var result = product.Select(p => new GetAllProductDTO
             {
-                Id = p.Id,
-                Name = p.Name,
-                Image = p.Image,
-                Price = p.Price,
-                Quantity = p.Quantity,
-                CategoryId = p.CategoryId,
-                CategoryName = p.Category?.Name,
-                StoreId = p.StoreId,
-                StoreName = p.Store?.Name
+                    ProductId=p.Id,
+                    Image=p.Image,
+                    Price=p.Price,
+                    Quantity=p.Quantity
             });
-
+            //if (result == null)
+            //    return NotFound(new GeneralResponse<object>
+            //    {
+            //        Success = false,
+            //        Message = "Product not found.",
+            //        Data = null
+            //    });
             return Ok(new GeneralResponse<IEnumerable<ProductDetailsDTO>>
             {
                 Success = true,
@@ -51,11 +56,13 @@ namespace invoice.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var product = await _repository.GetById(id,
-                p => p.Category,
-                p => p.Store
-            );
 
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var product = await _repository.GetById(id, userId, c => c.InvoiceItems);
+               
             if (product == null)
                 return NotFound(new GeneralResponse<object>
                 {
@@ -66,15 +73,16 @@ namespace invoice.Controllers
 
             var productDTO = new ProductDetailsDTO
             {
-                Id = product.Id,
+                ProductId = product.Id,
                 Name = product.Name,
                 Image = product.Image,
                 Price = product.Price,
                 Quantity = product.Quantity,
-                CategoryId = product.CategoryId,
-                CategoryName = product.Category?.Name,
-                StoreId = product.StoreId,
-                StoreName = product.Store?.Name
+               // NumberOfSales= product.InvoiceItems?.Count ?? 0,
+                //CategoryId = product.CategoryId,
+                //CategoryName = product.Category?.Name,
+                //StoreId = product.StoreId,
+                //StoreName = product.Store?.Name
             };
 
             return Ok(new GeneralResponse<ProductDetailsDTO>
@@ -86,27 +94,47 @@ namespace invoice.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateProductDTO dto)
+        public async Task<IActionResult> Create([FromBody] ProductInfoDTO dto)
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
             if (!ModelState.IsValid)
+            {
                 return BadRequest(new GeneralResponse<object>
                 {
                     Success = false,
                     Message = "Validation failed.",
                     Data = ModelState
                 });
+            }
+
+            string? imageFromReq = await GetImageNameFn(dto.Image);
 
             var product = new Product
             {
                 Name = dto.Name,
-                Image = dto.Image,
+                Image = imageFromReq,
                 Price = dto.Price,
                 Quantity = dto.Quantity,
                 CategoryId = dto.CategoryId,
-                StoreId = dto.StoreId
+                InPOS = dto.InPOS,
+                InStoe = dto.InStoe,
+                UserId = userId,
             };
 
-            await _repository.Add(product);
+            var result = await _repository.Add(product);
+
+            if (!result.Success)
+            {
+                return StatusCode(500, new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = result.Message ?? "Failed to create product.",
+                    Data = null
+                });
+            }
 
             return Ok(new GeneralResponse<Product>
             {
@@ -117,17 +145,13 @@ namespace invoice.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] UpdateProductDTO dto)
+        public async Task<IActionResult> Update(string id, [FromBody] ProductInfoDTO dto)
         {
-            if (id != dto.Id)
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "ID mismatch.",
-                    Data = null
-                });
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
-            var product = await _repository.GetById(id);
+            var product = await _repository.GetById(id, userId);
             if (product == null)
                 return NotFound(new GeneralResponse<object>
                 {
@@ -136,27 +160,49 @@ namespace invoice.Controllers
                     Data = null
                 });
 
-            product.Name = dto.Name;
-            product.Image = dto.Image;
+            if (!ModelState.IsValid)
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed.",
+                    Data = ModelState
+                });
+            string? imageFromReq = await GetImageNameFn(dto.Image);
+
+             product.Name = dto.Name;
+            product.Image = imageFromReq;
             product.Price = dto.Price;
             product.Quantity = dto.Quantity;
             product.CategoryId = dto.CategoryId;
-            product.StoreId = dto.StoreId;
+            product.InPOS = dto.InPOS;
+            product.InStoe = dto.InStoe;
+            product.UserId = userId;
 
-            await _repository.Update(product);
 
-            return Ok(new GeneralResponse<Product>
+            var result = await _repository.Update(product);
+
+            if (!result.Success)
+                return BadRequest(result.Message);
+
+            return Ok(new
             {
-                Success = true,
-                Message = "Product updated successfully.",
-                Data = product
+                result.Success,
+                result.Message,
+                result.Data
             });
+
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var product = await _repository.GetById(id);
+
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var product = await _repository.GetById(id, userId);
             if (product == null)
                 return NotFound(new GeneralResponse<object>
                 {
@@ -165,14 +211,34 @@ namespace invoice.Controllers
                     Data = null
                 });
 
-            await _repository.Delete(id);
+            var result = await _repository.Delete(id);
 
-            return Ok(new GeneralResponse<object>
-            {
-                Success = true,
-                Message = "Product deleted successfully.",
-                Data = null
-            });
+
+            if (!result.Success)
+                return NotFound(new { result.Message });
+
+            return Ok(new { result.Message });
+           
         }
+
+        #region imageFunc
+        public  async Task<string> GetImageNameFn(IFormFile image)
+
+        {
+            if (image != null && image.Length > 0)
+            {
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images", fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(stream);
+                }
+                return fileName;
+
+            }
+            return null;
+        }
+        #endregion
     }
 }

@@ -62,6 +62,7 @@ namespace invoice
                           .AllowAnyHeader();
                 });
             });
+          
 
             var jwtKey = builder.Configuration["Jwt:Key"];
             var jwtIssuer = builder.Configuration["Jwt:Issuer"];
@@ -85,6 +86,7 @@ namespace invoice
             });
 
             var app = builder.Build();
+            app.UseStaticFiles();
 
             app.UseCors("AllowAll");
 

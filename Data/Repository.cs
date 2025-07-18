@@ -51,37 +51,98 @@ public class Repository<T> : IRepository<T> where T : class
         return await query.FirstOrDefaultAsync(e => EF.Property<string>(e, "Id") == id);
     }
 
-    public async Task Add(T entity)
+    public async Task<OperationResult> Add(T entity)
     {
-        await dbSet.AddAsync(entity);
-        await context.SaveChangesAsync();
+        try
+        {
+            await dbSet.AddAsync(entity);
+            await context.SaveChangesAsync();
+
+            return new OperationResult { Success = true };
+        }
+        catch (Exception ex)
+        {
+            return new OperationResult { Success = false, Message = ex.Message };
+        }
     }
 
-    public async Task Update(T entity)
+
+    public async Task<OperationResult<T>> Update(T entity)
     {
-        dbSet.Update(entity);
-        await context.SaveChangesAsync();
+        try
+        {
+            dbSet.Update(entity);
+            await context.SaveChangesAsync();
+
+            return new OperationResult<T>
+            {
+                Success = true,
+                Message = "Entity updated successfully.",
+                Data = entity
+            };
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return new OperationResult<T>
+            {
+                Success = false,
+                Message = "Update failed due to concurrency conflict.",
+                Data = null
+            };
+        }
+        catch (Exception ex)
+        {
+            return new OperationResult<T>
+            {
+                Success = false,
+                Message = $"Update failed: {ex.Message}",
+                Data = null
+            };
+        }
     }
 
-    public async Task Delete(string id)
+    public async Task<OperationResult>  Delete(string id)
     {
         var entity = await dbSet.FindAsync(id);
 
-        if (entity != null)
+        if (entity == null)
+        {
+            return new OperationResult
+            {
+                Success = false,
+                Message = "Entity not found."
+            };
+        }
+
+        try
         {
             if (entity is ISoftDeleteable softDeletable)
             {
                 softDeletable.IsDeleted = true;
-                dbSet.Update(entity); 
+                dbSet.Update(entity);
             }
             else
             {
-                dbSet.Remove(entity); 
+                dbSet.Remove(entity);
             }
 
             await context.SaveChangesAsync();
+
+            return new OperationResult
+            {
+                Success = true,
+                Message = "Entity deleted successfully."
+            };
         }
-    }
+        catch (Exception ex)
+        {
+            return new OperationResult
+            {
+                Success = false,
+                Message = $"Delete failed: {ex.Message}"
+            };
+        }
+        }
 
     public async Task<IEnumerable<T>> Query(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
     {
