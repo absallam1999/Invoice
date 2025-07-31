@@ -5,9 +5,7 @@ using invoice.Models;
 using invoice.DTO;
 using invoice.DTO.Product;
 using System.Security.Claims;
-using invoice.DTO.Client;
-using invoice.Models.Interfaces;
-using static System.Net.Mime.MediaTypeNames;
+
 
 namespace invoice.Controllers
 {

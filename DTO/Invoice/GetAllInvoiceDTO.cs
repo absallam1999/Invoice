@@ -8,12 +8,15 @@ namespace invoice.DTO.Invoice
     {
         
         public string InvoiceId { get; set; } 
-        public string InvoiceNumber { get; set; }
+        public string InvoiceCode { get; set; }
         public DateTime InvoiceCreateAt { get; set; }
-        public double InvoiceValue { get; set; }
+        public decimal InvoiceValue { get; set; }
        
-        public InvoiceStatus InvoiceStatus { get; set; }
+        public string InvoiceStatus { get; set; }
         public InvoiceType InvoiceType { get; set; }
+
+        public string ClientId { get; set; }
+        public string ClientName { get; set; }
 
 
     

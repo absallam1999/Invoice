@@ -80,9 +80,9 @@ namespace invoice.Controllers
                     InvoiceId = i.Id,
                     InvoiceCreateAt=i.CreateAt,
                     InvoiceValue=i.Value,
-                    InvoiceNumber = i.Number,
-                    InvoiceStatus=i.InvoiceStatus,
-                    InvoiceType=i.InvoiceType,
+                    InvoiceCode = i.Code,
+                    InvoiceStatus = i.IsPaid ? "paid " : "active",
+                    InvoiceType = i.InvoiceType,
                 }).ToList()
 
             };
@@ -171,8 +171,8 @@ namespace invoice.Controllers
                     InvoiceId = i.Id,
                     InvoiceCreateAt = i.CreateAt,
                     InvoiceValue = i.Value,
-                    InvoiceNumber = i.Number,
-                    InvoiceStatus = i.InvoiceStatus,
+                    InvoiceCode = i.Code,
+                    InvoiceStatus = i.IsPaid? "paid ":"active",
                     InvoiceType = i.InvoiceType,
                 }).ToList()
             };
@@ -306,8 +306,8 @@ namespace invoice.Controllers
                     InvoiceId = i.Id,
                     InvoiceCreateAt = i.CreateAt,
                     InvoiceValue = i.Value,
-                    InvoiceNumber = i.Number,
-                    InvoiceStatus = i.InvoiceStatus,
+                    InvoiceCode = i.Code,
+                    InvoiceStatus = i.IsPaid ? "paid " : "active",
                     InvoiceType = i.InvoiceType,
                 }).ToList()
             };

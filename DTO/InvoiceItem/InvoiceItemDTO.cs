@@ -2,7 +2,7 @@
 
 namespace invoice.DTO.InvoiceItem
 {
-    public class CreateInvoiceItemDTO
+    public class InvoiceItemDTO
     {
         [Required(ErrorMessage = "Id is required.")]
         public string ProductId { get; set; }

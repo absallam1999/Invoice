@@ -74,7 +74,7 @@ namespace invoice.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateInvoiceItemDTO dto)
+        public async Task<IActionResult> Create([FromBody] InvoiceItemDTO dto)
         {
             if (!ModelState.IsValid)
             {
