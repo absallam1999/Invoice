@@ -2,6 +2,7 @@
 using invoice.DTO;
 using invoice.DTO.Client;
 using invoice.DTO.Invoice;
+using invoice.DTO.InvoiceItem;
 using invoice.Models;
 using invoice.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -64,7 +65,11 @@ namespace invoice.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var invoice = await _invoiceRepository.GetById(id);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var invoice = await _invoiceRepository.GetById(userId, id);
             if (invoice == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -77,18 +82,28 @@ namespace invoice.Controllers
 
             var dto = new InvoiceDetailsDTO
             {
-                Id = invoice.Id,
-                Number = invoice.Code,
+                //url,
+                Code = invoice.Code,
                 CreateAt = invoice.CreateAt,
                 TaxNumber = invoice.TaxNumber,
                 Value = invoice.Value,
-                Description = invoice.Description,
                 InvoiceStatus = invoice.IsPaid ? "paid " : "active",
                 InvoiceType = invoice.InvoiceType,
-                UserId = invoice.UserId,
-                StoreId = invoice.StoreId,
-                ClientId = invoice.ClientId,
-                LanguageId = invoice.LanguageId
+                ClientName = invoice.Client.Name,
+                ClientEmail=invoice.Client.Email,
+                ClientPhone=invoice.Client.PhoneNumber,
+                Language = invoice.Language.Name,
+                TermsConditions=invoice.TermsConditions,
+                Items=invoice.InvoiceItems.Select(i=>new InvoiceItemDetailsDTO
+                {
+                   
+                    ProductName = i.Product.Name,
+                    ProductImge=i.Product.Image,
+                    UnitPrice = i.UnitPrice,
+                    Quantity = i.Quantity,
+                    Subtotal =i.Product.Price
+                }).ToList(),
+
             };
 
             return Ok(new GeneralResponse<InvoiceDetailsDTO>
@@ -115,20 +130,14 @@ namespace invoice.Controllers
                     Data = ModelState
                 });
             }
-
-
             var invoice = new Invoice
             {
                 // Code = dto.Code,
-                CreateAt = dto.CreateAt,
+                CreateAt = dto.CreateAt ?? DateTime.UtcNow,
                 // TaxNumber = dto.TaxNumber,
-
-               // Description = dto.Description,
-                //  InvoiceStatus = dto.InvoiceStatus,
-                //  InvoiceStatus=InvoiceStatus.Active,
-                InvoiceType = dto.InvoiceType,
+                IsPaid = false,
+                InvoiceType = InvoiceType.Detailed,
                 UserId = userId,
-                //StoreId = dto.StoreId,
                 ClientId = dto.ClientId,
                 LanguageId = dto.LanguageId,
                 TermsConditions = dto.TermsConditions,
@@ -172,90 +181,104 @@ namespace invoice.Controllers
                 return StatusCode(500, new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = result.Message ?? "Failed to create client.",
+                    Message = result.Message ?? "Failed to create invoice.",
                     Data = null
                 });
             }
 
-            return Ok(new GeneralResponse<ClientDetailsDTO>
+
+
+            return Ok(new GeneralResponse<InvoiceInfoDTO>
             {
                 Success = true,
-                Message = "Client updated successfully.",
-                Data = null
+                Message = "invoice created successfully.",
+                Data = invoice.Id,
+                
             });
+
         }
 
         [HttpPut("{id}")]
-        //public async Task<IActionResult> Update(string id, [FromBody] InvoiceInfoDTO dto)
-        //{
-        //    if (id != dto.Id)
-        //    {
-        //        return BadRequest(new GeneralResponse<object>
-        //        {
-        //            Success = false,
-        //            Message = "Mismatched ID.",
-        //            Data = null
-        //        });
-        //    }
+        public async Task<IActionResult> Update(string id, [FromBody] InvoiceInfoDTO dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(new GeneralResponse<object>
-        //        {
-        //            Success = false,
-        //            Message = "Validation failed.",
-        //            Data = ModelState
-        //        });
-        //    }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed.",
+                    Data = ModelState
+                });
+            }
+            var invoice = new Invoice
+            {
+                // Code = dto.Code,
+                CreateAt = dto.CreateAt ?? DateTime.UtcNow,
+                // TaxNumber = dto.TaxNumber,
+                InvoiceType = InvoiceType.Detailed,
+                UserId = userId,
+                ClientId = dto.ClientId,
+                LanguageId = dto.LanguageId,
+                TermsConditions = dto.TermsConditions,
+                Value = 0,
 
-        //    var invoice = await _invoiceRepository.GetById(id);
-        //    if (invoice == null)
-        //    {
-        //        return NotFound(new GeneralResponse<object>
-        //        {
-        //            Success = false,
-        //            Message = $"Invoice with ID {id} not found.",
-        //            Data = null
-        //        });
-        //    }
 
-        //  //  invoice.Code = dto.nu;
-        //    invoice.CreateAt = dto.CreateAt;
-        //    invoice.TaxNumber = dto.TaxNumber;
-        //    invoice.Value = dto.Value;
-        //    invoice.Description = dto.Description;
-        //    //invoice.InvoiceStatus = dto.InvoiceStatus;
-        //    invoice.InvoiceType = dto.InvoiceType;
-        //    invoice.UserId = dto.UserId;
-        //    invoice.StoreId = dto.StoreId;
-        //    invoice.ClientId = dto.ClientId;
-        //    invoice.LanguageId = dto.LanguageId;
+            };
+            invoice.InvoiceItems = new List<InvoiceItem>();
 
-        //    await _invoiceRepository.Update(invoice);
+            foreach (var item in dto.Items)
+            {
+                var product = await _productRepository.GetById(item.ProductId, userId);
+                if (product == null) return BadRequest($"Product {item.ProductId} not found");
 
-        //    var result = new InvoiceDetailsDTO
-        //    {
-        //        Id = invoice.Id,
-        //        Number = invoice.Code,
-        //        CreateAt = invoice.CreateAt,
-        //        TaxNumber = invoice.TaxNumber,
-        //        Value = invoice.Value,
-        //        Description = invoice.Description,
-        //        InvoiceStatus = invoice.IsPaid ? "paid " : "active",
-        //        InvoiceType = invoice.InvoiceType,
-        //        UserId = invoice.UserId,
-        //        StoreId = invoice.StoreId,
-        //        ClientId = invoice.ClientId,
-        //        LanguageId = invoice.LanguageId
-        //    };
+                invoice.InvoiceItems.Add(new InvoiceItem
+                {
+                    ProductId = product.Id,
+                    Quantity = item.Quantity,
+                    UnitPrice = product.Price,
 
-        //    return Ok(new GeneralResponse<InvoiceDetailsDTO>
-        //    {
-        //        Success = true,
-        //        Message = "Invoice updated successfully.",
-        //        Data = result
-        //    });
-        //}
+                });
+
+                invoice.Value += product.Price * item.Quantity;
+
+                invoice.FinalValue = invoice.Value;
+
+                if (dto.DiscountType == DiscountType.Amount)
+                {
+                    invoice.FinalValue -= dto.DiscountValue ?? 0;
+                }
+                else if (dto.DiscountType == DiscountType.Percentage)
+                {
+                    invoice.FinalValue -= (invoice.Value * (dto.DiscountValue ?? 0) / 100);
+                }
+
+            }
+
+            var result = await _invoiceRepository.Update(invoice);
+            if (!result.Success)
+            {
+                return StatusCode(500, new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = result.Message ?? "Failed to Update invoice.",
+                    Data = null
+                });
+            }
+
+
+
+            return Ok(new GeneralResponse<InvoiceInfoDTO>
+            {
+                Success = true,
+                Message = "invoice updated successfully.",
+                Data = invoice.Id
+            });
+        }
+           
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)

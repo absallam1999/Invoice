@@ -4,6 +4,9 @@
     public enum InvoiceType
     {
         Online,
-        InStore
+        PaymentLink,
+        Detailed,
+        Cashier
+        
     }
 }

@@ -3,8 +3,9 @@
     [Flags]
     public enum InvoiceStatus
     {
-        Pending,
+        Pending ,
         Active,
-        Paid
+        Paid,
+        Refund
     }
 }
