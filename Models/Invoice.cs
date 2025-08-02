@@ -19,8 +19,8 @@ namespace invoice.Models
         //public string Description { get; set; }
         public bool IsDelete { get; set; }=false;
 
-        // public InvoiceStatus InvoiceStatus { get; set; }
-        public bool IsPaid { get; set; }=false ;
+        public InvoiceStatus InvoiceStatus { get; set; }
+       // public bool IsPaid { get; set; }=false ;
         public InvoiceType InvoiceType { get; set; }
 
         public string? TermsConditions { get; set; }
@@ -38,6 +38,7 @@ namespace invoice.Models
         public Language Language { get; set; }
 
         public Payment Payment { get; set; }
+        public PayInvoicec PayInvoicec { get; set; }
         public ICollection<InvoiceItem> InvoiceItems { get; set; }
     }
 }

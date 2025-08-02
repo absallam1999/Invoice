@@ -22,13 +22,16 @@ namespace invoice.Controllers
         private readonly IRepository<Invoice> _invoiceRepository;
         private readonly IRepository<InvoiceItem> _invoiceItemRepository;
         private readonly IRepository<Product> _productRepository;
+        private readonly IRepository<PayInvoice> _PayinvoicRepository;
 
 
-        public InvoiceController(IRepository<Invoice> invoiceRepository, IRepository<Product> productRepository, IRepository<InvoiceItem> invoiceItemRepository)
+        public InvoiceController(IRepository<Invoice> invoiceRepository, IRepository<Product> productRepository, IRepository<InvoiceItem> invoiceItemRepository
+            , IRepository<PayInvoice> PayinvoicRepository)
         {
             _invoiceRepository = invoiceRepository;
             _productRepository = productRepository;
             _invoiceItemRepository = invoiceItemRepository;
+            _PayinvoicRepository = PayinvoicRepository;
         }
 
         [HttpGet]
@@ -39,14 +42,17 @@ namespace invoice.Controllers
                 return Unauthorized();
 
 
-            var invoices = await _invoiceRepository.GetAll(userId,i => i.Client);
+          
+            var invoices = (await _invoiceRepository.GetAll(userId, i => i.Client))
+                .OrderByDescending(i => i.CreateAt);
+
             var dtoList = invoices.Select(i => new GetAllInvoiceDTO
             {
                 InvoiceId = i.Id,
                 InvoiceCode = i.Code,
                 InvoiceCreateAt  = i.CreateAt,
-                InvoiceValue  = i.Value,
-                InvoiceStatus = i.IsPaid ? "paid " : "active",
+                InvoiceValue  = i.FinalValue,
+                InvoiceStatus = i.InvoiceStatus,
                 InvoiceType = i.InvoiceType,
                 ClientId = i.ClientId,
                 ClientName=i.Client.Name,
@@ -87,8 +93,9 @@ namespace invoice.Controllers
                 CreateAt = invoice.CreateAt,
                 TaxNumber = invoice.TaxNumber,
                 Value = invoice.Value,
-                InvoiceStatus = invoice.IsPaid ? "paid " : "active",
+                InvoiceStatus = invoice.InvoiceStatus,
                 InvoiceType = invoice.InvoiceType,
+                PayAt = invoice.PayInvoicec?.PayAt,
                 ClientName = invoice.Client.Name,
                 ClientEmail=invoice.Client.Email,
                 ClientPhone=invoice.Client.PhoneNumber,
@@ -101,7 +108,8 @@ namespace invoice.Controllers
                     ProductImge=i.Product.Image,
                     UnitPrice = i.UnitPrice,
                     Quantity = i.Quantity,
-                    Subtotal =i.Product.Price
+                    Subtotal = i.UnitPrice * i.Quantity
+
                 }).ToList(),
 
             };
@@ -135,7 +143,7 @@ namespace invoice.Controllers
                 // Code = dto.Code,
                 CreateAt = dto.CreateAt ?? DateTime.UtcNow,
                 // TaxNumber = dto.TaxNumber,
-                IsPaid = false,
+                InvoiceStatus=InvoiceStatus.Active,
                 InvoiceType = InvoiceType.Detailed,
                 UserId = userId,
                 ClientId = dto.ClientId,
@@ -188,7 +196,7 @@ namespace invoice.Controllers
 
 
 
-            return Ok(new GeneralResponse<InvoiceInfoDTO>
+            return Ok(new GeneralResponse<string>
             {
                 Success = true,
                 Message = "invoice created successfully.",
@@ -214,20 +222,23 @@ namespace invoice.Controllers
                     Data = ModelState
                 });
             }
-            var invoice = new Invoice
+            var invoice = await _invoiceRepository.GetById(userId, id);
+            if (invoice == null)
             {
-                // Code = dto.Code,
-                CreateAt = dto.CreateAt ?? DateTime.UtcNow,
-                // TaxNumber = dto.TaxNumber,
-                InvoiceType = InvoiceType.Detailed,
-                UserId = userId,
-                ClientId = dto.ClientId,
-                LanguageId = dto.LanguageId,
-                TermsConditions = dto.TermsConditions,
-                Value = 0,
+                return NotFound(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = $"Invoice with ID {id} not found.",
+                    Data = null
+                });
+            }
+            invoice.CreateAt = dto.CreateAt ?? invoice.CreateAt;
+            invoice.InvoiceType = InvoiceType.Detailed;
+            invoice.ClientId = dto.ClientId;
+            invoice.LanguageId = dto.LanguageId;
+            invoice.TermsConditions = dto.TermsConditions;
+            invoice.Value = 0;
 
-
-            };
             invoice.InvoiceItems = new List<InvoiceItem>();
 
             foreach (var item in dto.Items)
@@ -271,10 +282,114 @@ namespace invoice.Controllers
 
 
 
-            return Ok(new GeneralResponse<InvoiceInfoDTO>
+            return Ok(new GeneralResponse<string>
             {
                 Success = true,
                 Message = "invoice updated successfully.",
+                Data = invoice.Id
+            });
+        }
+
+        [HttpPut("PayInvoice/`{id}")]
+        public async Task<IActionResult> PayInvoice(string id, [FromBody] PayinvoiceDTO dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed.",
+                    Data = ModelState
+                });
+            }
+
+            var invoice = await _invoiceRepository.GetById(userId, id);
+            if (invoice == null)
+            {
+                return NotFound(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = $"Invoice with ID {id} not found.",
+                    Data = null
+                });
+            }
+            invoice.InvoiceStatus = InvoiceStatus.Paid;
+
+            PayInvoice Payinvoice = new PayInvoice
+            {
+                PayAt = dto.PayAt,
+                PaymentMethodId = dto.PaymentMethodId,
+                InvoiceId = id,
+            };
+            var resultPayment = await _PayinvoicRepository.Add(Payinvoice);
+            if (!resultPayment.Success)
+            {
+                return StatusCode(500, new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = resultPayment.Message ?? "Failed to record payment.",
+                    Data = null
+                });
+            }
+
+            var resultInvoice = await _invoiceRepository.Update(invoice);
+            if (!resultInvoice.Success)
+            {
+                return StatusCode(500, new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = resultInvoice.Message ?? "Failed to update invoice status.",
+                    Data = null
+                });
+            }
+            return Ok(new GeneralResponse<object>
+            {
+                Success = true,
+                Message = "Invoice paid successfully.",
+                Data =null
+            });
+        }
+        [HttpPut("RefundInvoice/{id}")]
+        public async Task<IActionResult> RefundInvoice(string id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            
+            var invoice = await _invoiceRepository.GetById(userId, id);
+            if (invoice == null)
+            {
+                return NotFound(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = $"Invoice with ID {id} not found.",
+                    Data = null
+                });
+            }
+
+            invoice.InvoiceStatus = InvoiceStatus.Refund;
+           
+
+            var result = await _invoiceRepository.Update(invoice);
+            if (!result.Success)
+            {
+                return StatusCode(500, new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = result.Message ?? "Failed to Refund invoice.",
+                    Data = null
+                });
+            }
+
+            return Ok(new GeneralResponse<string>
+            {
+                Success = true,
+                Message = "invoice Refunded successfully.",
                 Data = invoice.Id
             });
         }

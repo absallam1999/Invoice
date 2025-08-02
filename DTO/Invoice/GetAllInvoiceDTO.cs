@@ -12,7 +12,7 @@ namespace invoice.DTO.Invoice
         public DateTime InvoiceCreateAt { get; set; }
         public decimal InvoiceValue { get; set; }
        
-        public string InvoiceStatus { get; set; }
+        public InvoiceStatus InvoiceStatus { get; set; }
         public InvoiceType InvoiceType { get; set; }
 
         public string ClientId { get; set; }

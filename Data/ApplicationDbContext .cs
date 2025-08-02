@@ -23,6 +23,7 @@ namespace invoice.Data
         public DbSet<Language> Languages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<PurchaseCompletionOptions> PurchaseCompletionOptions { get; set; }
+        public DbSet<PayInvoicec> PayInvoicecs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

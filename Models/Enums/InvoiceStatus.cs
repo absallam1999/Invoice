@@ -1,11 +1,15 @@
-﻿namespace invoice.Models.Enums
+﻿using System.Text.Json.Serialization;
+
+namespace invoice.Models.Enums
 {
-    [Flags]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+
     public enum InvoiceStatus
     {
-        Pending ,
-        Active,
-        Paid,
-        Refund
+       
+        Draft = 0,
+        Active = 1,
+        Paid = 2,
+        Refund = 3
     }
 }
