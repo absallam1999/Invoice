@@ -13,8 +13,8 @@ namespace invoice.Models
 
         public decimal Value { get; set; }
         public DiscountType? DiscountType { get; set; }
-        public decimal? DiscountValue { get; set; } 
-        public decimal FinalValue { get; set; }  
+        public decimal? DiscountValue { get; set; }
+        public decimal FinalValue { get; set; } 
 
         //public string Description { get; set; }
         public bool IsDelete { get; set; }=false;
@@ -31,7 +31,7 @@ namespace invoice.Models
         public string StoreId { get; set; }
         public Store Store { get; set; }
 
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
         public Client Client { get; set; }
 
         public string LanguageId { get; set; }

@@ -10,6 +10,7 @@ namespace invoice.Models
         public Invoice Invoice { get; set; }
         public string ProductId { get; set; }
         public Product Product { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
        // public decimal Subtotal { get; set; }

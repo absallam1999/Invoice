@@ -1,16 +1,12 @@
 ﻿using invoice.Data;
 using invoice.DTO;
-using invoice.DTO.Client;
 using invoice.DTO.Invoice;
 using invoice.DTO.InvoiceItem;
 using invoice.Models;
 using invoice.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace invoice.Controllers
 {
@@ -122,6 +118,26 @@ namespace invoice.Controllers
             });
         }
 
+        public async Task<string> GenerateInvoiceCode()
+        {
+            string NewCode;
+            var invoices = await _invoiceItemRepository.GetAll();
+
+              var codes=invoices
+               .Select(item => item.Invoice.Code)
+               .ToList();
+            var random = new Random();
+            do
+            {
+
+                string datePart = DateTime.Now.ToString("MMdd");
+                string randomPart = random.Next(100, 1000).ToString();
+                 NewCode = datePart + randomPart;
+            }
+
+            while(codes.Contains(NewCode));
+            return NewCode;
+        }
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] InvoiceInfoDTO dto)
         {
@@ -140,7 +156,7 @@ namespace invoice.Controllers
             }
             var invoice = new Invoice
             {
-                // Code = dto.Code,
+                Code = await GenerateInvoiceCode(),
                 CreateAt = dto.CreateAt ?? DateTime.UtcNow,
                 // TaxNumber = dto.TaxNumber,
                 InvoiceStatus=InvoiceStatus.Active,
@@ -246,6 +262,16 @@ namespace invoice.Controllers
                 var product = await _productRepository.GetById(item.ProductId, userId);
                 if (product == null) return BadRequest($"Product {item.ProductId} not found");
 
+
+
+                if (product.Quantity != null)
+                {
+                    if (product.Quantity < item.Quantity)
+                        return BadRequest($"Product Quantity not Enough for {product.Name}");
+
+                    product.Quantity -= item.Quantity;
+                    await _productRepository.Update(product);
+                }
                 invoice.InvoiceItems.Add(new InvoiceItem
                 {
                     ProductId = product.Id,
@@ -290,7 +316,7 @@ namespace invoice.Controllers
             });
         }
 
-        [HttpPut("PayInvoice/`{id}")]
+        [HttpPut("PayInvoice/{id}")]
         public async Task<IActionResult> PayInvoice(string id, [FromBody] PayinvoiceDTO dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -422,5 +448,8 @@ namespace invoice.Controllers
                 Data = null
             });
         }
+
+      
+
     }
 }
