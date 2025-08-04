@@ -15,18 +15,18 @@ namespace invoice.Controllers
     [Authorize]
     public class InvoiceController : ControllerBase
     {
-        private readonly IRepository<Invoice> _invoiceRepository;
+        private readonly IInvoiceRepository _invoiceRepository;
         private readonly IRepository<InvoiceItem> _invoiceItemRepository;
         private readonly IRepository<Product> _productRepository;
         private readonly IRepository<PayInvoice> _PayinvoicRepository;
 
 
-        public InvoiceController(IRepository<Invoice> invoiceRepository, IRepository<Product> productRepository, IRepository<InvoiceItem> invoiceItemRepository
-            , IRepository<PayInvoice> PayinvoicRepository)
+        public InvoiceController(IRepository<Invoice> InvoiceRepository, IRepository<Product> ProductRepository, IRepository<InvoiceItem> InvoiceItemRepository
+            , IRepository<PayInvoice> PayinvoicRepository , IInvoiceRepository invoiceRepository)
         {
             _invoiceRepository = invoiceRepository;
-            _productRepository = productRepository;
-            _invoiceItemRepository = invoiceItemRepository;
+            _productRepository = ProductRepository;
+            _invoiceItemRepository = InvoiceItemRepository;
             _PayinvoicRepository = PayinvoicRepository;
         }
 
@@ -88,10 +88,10 @@ namespace invoice.Controllers
                 Code = invoice.Code,
                 CreateAt = invoice.CreateAt,
                 TaxNumber = invoice.TaxNumber,
-                Value = invoice.Value,
+                Value = invoice.FinalValue,
                 InvoiceStatus = invoice.InvoiceStatus,
                 InvoiceType = invoice.InvoiceType,
-                PayAt = invoice.PayInvoicec?.PayAt,
+                PayAt = invoice.PayInvoice?.PayAt,
                 ClientName = invoice.Client.Name,
                 ClientEmail=invoice.Client.Email,
                 ClientPhone=invoice.Client.PhoneNumber,
@@ -118,26 +118,7 @@ namespace invoice.Controllers
             });
         }
 
-        public async Task<string> GenerateInvoiceCode()
-        {
-            string NewCode;
-            var invoices = await _invoiceItemRepository.GetAll();
-
-              var codes=invoices
-               .Select(item => item.Invoice.Code)
-               .ToList();
-            var random = new Random();
-            do
-            {
-
-                string datePart = DateTime.Now.ToString("MMdd");
-                string randomPart = random.Next(100, 1000).ToString();
-                 NewCode = datePart + randomPart;
-            }
-
-            while(codes.Contains(NewCode));
-            return NewCode;
-        }
+       
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] InvoiceInfoDTO dto)
         {
@@ -156,7 +137,7 @@ namespace invoice.Controllers
             }
             var invoice = new Invoice
             {
-                Code = await GenerateInvoiceCode(),
+                Code = await _invoiceRepository.GenerateInvoiceCode(userId),
                 CreateAt = dto.CreateAt ?? DateTime.UtcNow,
                 // TaxNumber = dto.TaxNumber,
                 InvoiceStatus=InvoiceStatus.Active,

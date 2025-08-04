@@ -14,12 +14,12 @@ namespace invoice.Controllers
     [ApiController]
     public class POSController : ControllerBase
     {
-        private readonly IRepository<Invoice> _invoiceRepository;
+        private readonly IInvoiceRepository _invoiceRepository;
         private readonly IRepository<InvoiceItem> _invoiceItemRepository;
         private readonly IRepository<Product> _productRepository;
 
 
-        public POSController(IRepository<Invoice> invoiceRepository, IRepository<Product> productRepository, IRepository<InvoiceItem> invoiceItemRepository
+        public POSController(IInvoiceRepository invoiceRepository, IRepository<Product> productRepository, IRepository<InvoiceItem> invoiceItemRepository
             )
         {
             _invoiceRepository = invoiceRepository;
@@ -45,7 +45,7 @@ namespace invoice.Controllers
             }
             var invoice = new Invoice
             {
-                //Code = await GenerateInvoiceCode(),
+                Code = await _invoiceRepository.GenerateInvoiceCode(userId),
                 CreateAt = DateTime.UtcNow,
                 // TaxNumber = dto.TaxNumber,
                 InvoiceStatus = InvoiceStatus.Active,

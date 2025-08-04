@@ -12,8 +12,9 @@ namespace invoice.Models
         public decimal Price { get; set; }
         public int? Quantity { get; set; } = null;
         public bool IsDeleted { get; set; } = false;
-        public bool InPOS { get; set; } = false;
-        public bool InStoe { get; set; } = false;
+        public bool InProductList { get; set; } = true;
+        public bool InPOS { get; set; } = true;
+        public bool InStoe { get; set; } = true;
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
        

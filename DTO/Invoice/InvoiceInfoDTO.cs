@@ -9,8 +9,9 @@ namespace invoice.DTO.Invoice
         public DateTime? CreateAt { get; set; }
 
         //public string TaxNumber { get; set; }
-        public string ClientId { get; set; }
-        public string LanguageId { get; set; }
+        //public string ClientId { get; set; }
+        public string? ClientId { get; set; }
+        public string? LanguageId { get; set; }
         public string? TermsConditions { get; set; }
         public DiscountType? DiscountType { get; set; }
         public decimal? DiscountValue { get; set; }

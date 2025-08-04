@@ -38,7 +38,7 @@ namespace invoice.Models
         public Language Language { get; set; }
 
         public Payment Payment { get; set; }
-        public PayInvoicec PayInvoicec { get; set; }
+        public PayInvoice PayInvoice { get; set; }
         public ICollection<InvoiceItem> InvoiceItems { get; set; }
     }
 }

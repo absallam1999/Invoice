@@ -14,11 +14,11 @@ namespace invoice.Controllers
     [Authorize]
     public class ProductController : ControllerBase
     {
-        private readonly IRepository<Product> _repository;
+        private readonly IRepository<Product> _productrepository;
 
-        public ProductController(IRepository<Product> repository)
+        public ProductController(IRepository<Product> productrepository)
         {
-            _repository = repository;
+            _productrepository = productrepository;
         }
 
         [HttpGet]
@@ -28,7 +28,7 @@ namespace invoice.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var product = await _repository.GetAll(userId);
+            var product = await _productrepository.GetAll(userId);
             var result = product.Select(p => new GetAllProductDTO
             {
                     ProductId=p.Id,
@@ -59,7 +59,7 @@ namespace invoice.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var product = await _repository.GetById(id, userId, c => c.InvoiceItems);
+            var product = await _productrepository.GetById(id, userId, c => c.InvoiceItems);
                
             if (product == null)
                 return NotFound(new GeneralResponse<object>
@@ -122,7 +122,7 @@ namespace invoice.Controllers
                 UserId = userId,
             };
 
-            var result = await _repository.Add(product);
+            var result = await _productrepository.Add(product);
 
             if (!result.Success)
             {
@@ -141,6 +141,7 @@ namespace invoice.Controllers
                 Data = product
             });
         }
+       
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] ProductInfoDTO dto)
@@ -149,7 +150,7 @@ namespace invoice.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var product = await _repository.GetById(id, userId);
+            var product = await _productrepository.GetById(id, userId);
             if (product == null)
                 return NotFound(new GeneralResponse<object>
                 {
@@ -177,7 +178,7 @@ namespace invoice.Controllers
             product.UserId = userId;
 
 
-            var result = await _repository.Update(product);
+            var result = await _productrepository.Update(product);
 
             if (!result.Success)
                 return BadRequest(result.Message);
@@ -200,7 +201,7 @@ namespace invoice.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var product = await _repository.GetById(id, userId);
+            var product = await _productrepository.GetById(id, userId);
             if (product == null)
                 return NotFound(new GeneralResponse<object>
                 {
@@ -209,7 +210,7 @@ namespace invoice.Controllers
                     Data = null
                 });
 
-            var result = await _repository.Delete(id);
+            var result = await _productrepository.Delete(id);
 
 
             if (!result.Success)
@@ -219,7 +220,25 @@ namespace invoice.Controllers
            
         }
 
+        [HttpGet("available-products")]
+        public async Task<IActionResult> GetAvailableProducts()
+        {
+            var products = await _productrepository.Query(
+                p => (p.Quantity == null || p.Quantity > 0) && p.InPOS == true,
+                p => p.Category 
+            );
+
+            return Ok(new GeneralResponse<IEnumerable<Product>>
+            {
+                Success = true,
+                Message = "Available products retrieved successfully.",
+                Data = products
+            });
+        }
+
+
         #region imageFunc
+        [NonAction]
         public  async Task<string> GetImageNameFn(IFormFile image)
 
         {

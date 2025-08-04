@@ -81,7 +81,7 @@ namespace invoice.Controllers
                     InvoiceCreateAt=i.CreateAt,
                     InvoiceValue=i.Value,
                     InvoiceCode = i.Code,
-                    InvoiceStatus = i.IsPaid ? "paid " : "active",
+                    InvoiceStatus = i.InvoiceStatus,
                     InvoiceType = i.InvoiceType,
                 }).ToList()
 
@@ -172,7 +172,7 @@ namespace invoice.Controllers
                     InvoiceCreateAt = i.CreateAt,
                     InvoiceValue = i.Value,
                     InvoiceCode = i.Code,
-                    InvoiceStatus = i.IsPaid? "paid ":"active",
+                    InvoiceStatus = i.InvoiceStatus,
                     InvoiceType = i.InvoiceType,
                 }).ToList()
             };
@@ -191,9 +191,7 @@ namespace invoice.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
-
-           
-           
+            
             if (!ModelState.IsValid)
             {
                 return BadRequest(new GeneralResponse<object>
@@ -307,7 +305,7 @@ namespace invoice.Controllers
                     InvoiceCreateAt = i.CreateAt,
                     InvoiceValue = i.Value,
                     InvoiceCode = i.Code,
-                    InvoiceStatus = i.IsPaid ? "paid " : "active",
+                    InvoiceStatus = i.InvoiceStatus,
                     InvoiceType = i.InvoiceType,
                 }).ToList()
             };
@@ -348,5 +346,8 @@ namespace invoice.Controllers
 
             return Ok(new { result.Message });
         }
+
+
+
     }
 }
