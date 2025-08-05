@@ -5,9 +5,7 @@
 
 
         public string Id { get; set; } = Guid.NewGuid().ToString();
-        public DateTime? PayAt { get; set; }= DateTime.UtcNow;
-
-
+        public DateTime PayAt { get; set; }= DateTime.UtcNow;
         public string PaymentMethodId { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
    

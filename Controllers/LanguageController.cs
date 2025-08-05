@@ -28,7 +28,7 @@ namespace invoice.Controllers
             {
                 Id = l.Id,
                 Name = l.Name,
-                Target = l.Target
+                //Target = l.Target
             });
 
             return Ok(new GeneralResponse<IEnumerable<LanguageDetailsDTO>>

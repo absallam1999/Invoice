@@ -89,6 +89,9 @@ namespace invoice.Controllers
                 CreateAt = invoice.CreateAt,
                 TaxNumber = invoice.TaxNumber,
                 Value = invoice.FinalValue,
+                FinalValue= invoice.FinalValue,
+                DiscountValue = invoice.DiscountValue,
+                DiscountType = invoice.DiscountType,
                 InvoiceStatus = invoice.InvoiceStatus,
                 InvoiceType = invoice.InvoiceType,
                 PayAt = invoice.PayInvoice?.PayAt,
@@ -148,13 +151,12 @@ namespace invoice.Controllers
                 TermsConditions = dto.TermsConditions,
                 Value = 0,
 
-
             };
             invoice.InvoiceItems = new List<InvoiceItem>();
 
             foreach (var item in dto.Items)
             {
-                var product =await _productRepository.GetById(item.ProductId, userId);
+                var product = await _productRepository.GetById(item.ProductId, userId);
                 if (product == null) return BadRequest($"Product {item.ProductId} not found");
 
                 invoice.InvoiceItems.Add(new InvoiceItem
@@ -166,19 +168,25 @@ namespace invoice.Controllers
                 });
 
                 invoice.Value += product.Price * item.Quantity;
-
+            }
                 invoice.FinalValue = invoice.Value;
 
                 if (dto.DiscountType == DiscountType.Amount)
                 {
                     invoice.FinalValue -= dto.DiscountValue ?? 0;
+                    invoice.DiscountType= DiscountType.Amount;
+                    invoice.DiscountValue=dto.DiscountValue;
                 }
                 else if (dto.DiscountType == DiscountType.Percentage)
                 {
                     invoice.FinalValue -= (invoice.Value * (dto.DiscountValue ?? 0) / 100);
+                    invoice.DiscountType = DiscountType.Percentage;
+                    invoice.DiscountValue = dto.DiscountValue;
                 }
+            if (invoice.FinalValue < 0)
+                invoice.FinalValue = 0;
 
-            }
+
 
             var result = await _invoiceRepository.Add(invoice);
             if (!result.Success)
@@ -190,9 +198,7 @@ namespace invoice.Controllers
                     Data = null
                 });
             }
-
-
-
+            
             return Ok(new GeneralResponse<string>
             {
                 Success = true,
@@ -258,23 +264,29 @@ namespace invoice.Controllers
                     ProductId = product.Id,
                     Quantity = item.Quantity,
                     UnitPrice = product.Price,
-
                 });
 
                 invoice.Value += product.Price * item.Quantity;
-
+            }
                 invoice.FinalValue = invoice.Value;
 
                 if (dto.DiscountType == DiscountType.Amount)
                 {
                     invoice.FinalValue -= dto.DiscountValue ?? 0;
+                    invoice.DiscountType = DiscountType.Amount;
+                    invoice.DiscountValue = dto.DiscountValue;
                 }
                 else if (dto.DiscountType == DiscountType.Percentage)
                 {
                     invoice.FinalValue -= (invoice.Value * (dto.DiscountValue ?? 0) / 100);
+                    invoice.DiscountType = DiscountType.Percentage;
+                    invoice.DiscountValue = dto.DiscountValue;
                 }
+                if (invoice.FinalValue < 0)
+                    invoice.FinalValue = 0;
 
-            }
+
+            
 
             var result = await _invoiceRepository.Update(invoice);
             if (!result.Success)
@@ -328,7 +340,7 @@ namespace invoice.Controllers
 
             PayInvoice Payinvoice = new PayInvoice
             {
-                PayAt = dto.PayAt,
+                PayAt = dto.PayAt?? DateTime.UtcNow,
                 PaymentMethodId = dto.PaymentMethodId,
                 InvoiceId = id,
             };

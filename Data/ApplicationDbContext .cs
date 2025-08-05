@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using invoice.Models;
+using invoice.Models.Interfaces;
+using System.Linq.Expressions;
 
 namespace invoice.Data
 {
@@ -36,6 +38,9 @@ namespace invoice.Data
             builder.Entity<Invoice>()
                 .Property(i => i.InvoiceType)
                 .HasConversion<string>();
+            builder.Entity<Invoice>()
+                .Property(I=>I.DiscountType)
+                .HasConversion<string>();
 
             builder.Entity<Invoice>()
                 .HasOne(i => i.Payment)
@@ -66,6 +71,59 @@ namespace invoice.Data
                 .HasOne(i => i.Language)
                 .WithMany(l => l.Invoices)
                 .HasForeignKey(i => i.LanguageId);
+
+            //add languages
+           builder.Entity<Language>().HasData(
+               new Language
+               {
+                   Id = "ar", 
+                   Name = "Arabic"
+               },
+               new Language
+               {
+                   Id = "en",
+                   Name = "English"
+               }
+           );
+
+            //add payment methods
+            builder.Entity<PaymentMethod>().HasData(
+                new PaymentMethod
+                {
+                    Id = "ca",
+                    Name = "cash"
+                },
+                new PaymentMethod
+                {
+                    Id= "bt",
+                    Name= "Bank Transfer"
+
+                }
+                );
+
+
+
+
+            //Filter IsDeleted
+            foreach (var entityType in builder.Model.GetEntityTypes())
+            {
+                if (typeof(ISoftDeleteable).IsAssignableFrom(entityType.ClrType))
+                {
+                    var parameter = Expression.Parameter(entityType.ClrType, "e");
+                    var propertyMethod = typeof(EF).GetMethod("Property")!
+                        .MakeGenericMethod(typeof(bool));
+                    var isDeletedProperty = Expression.Call(
+                        propertyMethod,
+                        parameter,
+                        Expression.Constant("IsDeleted")
+                    );
+                    var compareExpression = Expression.Equal(isDeletedProperty, Expression.Constant(false));
+                    var lambda = Expression.Lambda(compareExpression, parameter);
+
+                    builder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+                }
+            }
+
         }
     }
 }

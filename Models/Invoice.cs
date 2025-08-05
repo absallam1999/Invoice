@@ -10,7 +10,6 @@ namespace invoice.Models
         public string Code { get; set; }
         public DateTime CreateAt { get; set; } = DateTime.UtcNow;
         public string TaxNumber { get; set; }
-
         public decimal Value { get; set; }
         public DiscountType? DiscountType { get; set; }
         public decimal? DiscountValue { get; set; }

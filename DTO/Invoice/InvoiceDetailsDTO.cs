@@ -12,6 +12,9 @@ namespace invoice.DTO.Invoice
         public DateTime? PayAt { get; set; }
         public string TaxNumber { get; set; }
         public decimal Value { get; set; }
+        public DiscountType? DiscountType { get; set; }
+        public decimal? DiscountValue { get; set; }
+        public decimal FinalValue { get; set; }
         public string? TermsConditions { get; set; }
         public InvoiceStatus InvoiceStatus { get; set; }
         public InvoiceType InvoiceType { get; set; }

@@ -18,11 +18,12 @@ public class Repository<T> : IRepository<T> where T : class
     public async Task<IEnumerable<T>> GetAll(string userId ,params Expression<Func<T, object>>[] includes)
     {
         IQueryable<T> query = dbSet;
-        if (typeof(ISoftDeleteable).IsAssignableFrom(typeof(T)))
-            query = query.Where(e => !EF.Property<bool>(e, "IsDeleted"));
+        //if (typeof(ISoftDeleteable).IsAssignableFrom(typeof(T)))
+        //    query = query.Where(e => !EF.Property<bool>(e, "IsDeleted"));
 
         if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
             query = query.Where(e => EF.Property<string>(e, "UserId") == userId);
+
 
         if (includes != null)
         {
@@ -35,8 +36,8 @@ public class Repository<T> : IRepository<T> where T : class
     public async Task<T> GetById(string id, string userId, params Expression<Func<T, object>>[] includes)
     {
         IQueryable<T> query = dbSet;
-        if (typeof(ISoftDeleteable).IsAssignableFrom(typeof(T)))
-            query = query.Where(e => !EF.Property<bool>(e, "IsDeleted"));
+        //if (typeof(ISoftDeleteable).IsAssignableFrom(typeof(T)))
+        //    query = query.Where(e => !EF.Property<bool>(e, "IsDeleted"));
 
 
         if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)

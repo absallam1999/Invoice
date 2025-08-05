@@ -14,6 +14,7 @@ namespace invoice.DTO.Invoice
         public string? LanguageId { get; set; }
         public string? TermsConditions { get; set; }
         public DiscountType? DiscountType { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "Discount value must be a positive number.")]
         public decimal? DiscountValue { get; set; }
         public List<InvoiceItemDTO> Items { get; set; }
 
