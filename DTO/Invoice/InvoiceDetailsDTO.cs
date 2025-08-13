@@ -18,11 +18,13 @@ namespace invoice.DTO.Invoice
         public string? TermsConditions { get; set; }
         public InvoiceStatus InvoiceStatus { get; set; }
         public InvoiceType InvoiceType { get; set; }
+        public string ClintId { get; set; }
         public string ClientName { get; set; }
         public string? ClientEmail { get; set; }
         public string? ClientPhone { get; set; }
-        public string Language { get; set; }
+        public string? PaymentMethod { get; set; }
 
+        public string Language { get; set; }
         public List<InvoiceItemDetailsDTO> Items { get; set; }
 
     }

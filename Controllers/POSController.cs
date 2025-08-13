@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using invoice.Data;
-using invoice;
+
 
 namespace invoice.Controllers
 {
@@ -47,15 +47,13 @@ namespace invoice.Controllers
             {
                 Code = await _invoiceRepository.GenerateInvoiceCode(userId),
                 CreateAt = DateTime.UtcNow,
-                // TaxNumber = dto.TaxNumber,
+                TaxNumber = "tt",
                 InvoiceStatus = InvoiceStatus.Active,
                 InvoiceType = InvoiceType.Cashier,
                 UserId = userId,
                 ClientId = dto.ClientId, //null
-                LanguageId = dto.LanguageId, //null
-                
+                LanguageId = "ar", //null
                 Value = 0,
-
 
             };
             invoice.InvoiceItems = new List<InvoiceItem>();
@@ -92,16 +90,21 @@ namespace invoice.Controllers
             }
                 invoice.FinalValue = invoice.Value;
 
-                if (dto.DiscountType == DiscountType.Amount)
-                {
-                    invoice.FinalValue -= dto.DiscountValue ?? 0;
-                }
-                else if (dto.DiscountType == DiscountType.Percentage)
-                {
-                    invoice.FinalValue -= (invoice.Value * (dto.DiscountValue ?? 0) / 100);
-                }
 
-            
+            if (dto.DiscountType == DiscountType.Amount)
+            {
+                invoice.FinalValue -= dto.DiscountValue ?? 0;
+                invoice.DiscountType = DiscountType.Amount;
+                invoice.DiscountValue = dto.DiscountValue;
+            }
+            else if (dto.DiscountType == DiscountType.Percentage)
+            {
+                invoice.FinalValue -= (invoice.Value * (dto.DiscountValue ?? 0) / 100);
+                invoice.DiscountType = DiscountType.Percentage;
+                invoice.DiscountValue = dto.DiscountValue;
+            }
+            if (invoice.FinalValue < 0)
+                invoice.FinalValue = 0;
 
             var result = await _invoiceRepository.Add(invoice);
             if (!result.Success)

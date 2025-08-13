@@ -6,6 +6,10 @@ using invoice.DTO;
 using invoice.DTO.Product;
 using System.Security.Claims;
 using invoice.Models.Interfaces;
+using invoice.DTO.Client;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace invoice.Controllers
@@ -32,13 +36,12 @@ namespace invoice.Controllers
             var product = await _productrepository.GetAll(userId);
             var result = product.Select(p => new GetAllProductDTO
             {
-                    ProductId=p.Id,
-                    Name= p.Name,
-                    Image=p.Image,
-                    Price=p.Price,
-                    Quantity=p.Quantity,
-                    Category=p.Category.Name,
-                    
+                ProductId = p.Id,
+                Name = p.Name,
+                Image = p.Image,
+                Price = p.Price,
+                Quantity = p.Quantity,
+                Category = p.Category?.Name  ?? null
             });
             //if (result == null)
             //    return NotFound(new GeneralResponse<object>
@@ -63,7 +66,9 @@ namespace invoice.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var product = await _productrepository.GetById(id, userId, c => c.InvoiceItems);
+            ///var product = await _productrepository.GetById(id, userId, c => c.InvoiceItems);
+            var product = await _productrepository.GetById(id, userId, q=> q 
+            .Include(p=>p. InvoiceItems));
                
             if (product == null)
                 return NotFound(new GeneralResponse<object>
@@ -80,7 +85,7 @@ namespace invoice.Controllers
                 Image = product.Image,
                 Price = product.Price,
                 Quantity = product.Quantity,
-               // NumberOfSales= product.InvoiceItems?.Count ?? 0,
+                NumberOfSales= product.InvoiceItems?.Count ?? 0,
                 //CategoryId = product.CategoryId,
                 //CategoryName = product.Category?.Name,
                 //StoreId = product.StoreId,
@@ -96,12 +101,12 @@ namespace invoice.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ProductInfoDTO dto)
+        public async Task<IActionResult> Create([FromForm] ProductInfoDTO dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
-
+            
             if (!ModelState.IsValid)
             {
                 return BadRequest(new GeneralResponse<object>
@@ -122,7 +127,7 @@ namespace invoice.Controllers
                 Quantity = dto.Quantity,
                 CategoryId = dto.CategoryId,
                 InPOS = dto.InPOS,
-                InStoe = dto.InStoe,
+                InStore = dto.InStore,
                 UserId = userId,
             };
 
@@ -138,17 +143,29 @@ namespace invoice.Controllers
                 });
             }
 
-            return Ok(new GeneralResponse<Product>
+            var productDTO = new ProductDetailsDTO
+            {
+                ProductId = product.Id,
+                Name = product.Name,
+                Image = product.Image,
+                Price = product.Price,
+                Quantity = product.Quantity,
+                NumberOfSales= product.InvoiceItems?.Count ?? 0,
+               // CategoryId = product.CategoryId,
+                //CategoryName = product.Category?.Name,
+                //StoreId = product.StoreId,
+                //StoreName = product.Store?.Name
+            };
+            return Ok(new GeneralResponse<ProductDetailsDTO>
             {
                 Success = true,
                 Message = "Product created successfully.",
-                Data = product
+                Data = productDTO
             });
         }
-       
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] ProductInfoDTO dto)
+        public async Task<IActionResult> Update(string id, [FromForm] ProductInfoDTO dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -172,26 +189,55 @@ namespace invoice.Controllers
                 });
             string? imageFromReq = await GetImageNameFn(dto.Image);
 
-             product.Name = dto.Name;
-            product.Image = imageFromReq;
-            product.Price = dto.Price;
-            product.Quantity = dto.Quantity;
-            product.CategoryId = dto.CategoryId;
-            product.InPOS = dto.InPOS;
-            product.InStoe = dto.InStoe;
-            product.UserId = userId;
+            if (!string.IsNullOrEmpty(dto.Name))
+                product.Name = dto.Name;
 
+            if (!string.IsNullOrEmpty(imageFromReq))
+                product.Image = imageFromReq;
+  
+                product.Price = dto.Price;
+            if (dto.Quantity.HasValue)
+                product.Quantity = dto.Quantity.Value;
+            if (!string.IsNullOrEmpty(dto.CategoryId))
+                product.CategoryId = dto.CategoryId;
+
+            if (dto.InPOS!=null)
+                product.InPOS = dto.InPOS;
+
+            if (dto.InStore!=null)
+                product.InStore = dto.InStore;
 
             var result = await _productrepository.Update(product);
 
             if (!result.Success)
-                return BadRequest(result.Message);
-
-            return Ok(new
             {
-                result.Success,
-                result.Message,
-                result.Data
+                return StatusCode(500, new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = result.Message,
+                    Data = null
+                });
+            }
+
+            var updated = new ProductDetailsDTO
+            {
+
+                ProductId = product.Id,
+                Name = product.Name,
+                Image = product.Image,
+                Price = product.Price,
+                Quantity = product.Quantity,
+                NumberOfSales = product.InvoiceItems?.Count ?? 0,
+                // CategoryId = product.CategoryId,
+                //CategoryName = product.Category?.Name,
+                //StoreId = product.StoreId,
+                //StoreName = product.Store?.Name
+            };
+            return Ok(new GeneralResponse<ProductDetailsDTO>
+            {
+                Success = true,
+                Message = " Product updated successfully.",
+                Data = updated
             });
 
         }
@@ -199,8 +245,6 @@ namespace invoice.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-
-
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
@@ -245,7 +289,7 @@ namespace invoice.Controllers
                 Image = p.Image,
                 Price = p.Price,
                 Quantity = p.Quantity,
-                Category=p.Category.Name,
+                Category = p.Category?.Name ?? null
             });
             return Ok(new GeneralResponse<IEnumerable<GetAllProductDTO>>
             {
@@ -253,17 +297,20 @@ namespace invoice.Controllers
                 Message = "Available products retrieved successfully.",
                 Data = result
             });
-        }
-        [HttpGet("ProductsList")]
-        public async Task<IActionResult> ProductsList()
+        } 
+
+        [HttpGet("ProductsInStor")]
+        public async Task<IActionResult> ProductsInStor()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
             var products = await _productrepository.Query(
-                p => (p.Quantity == null || p.Quantity > 0 )&& p.UserId == userId
-               // ,p => p.Category 
+                p => (p.Quantity == null || p.Quantity > 0) && p.InStore == true
+                                && p.UserId == userId
+
+            // ,p => p.Category 
             );
 
             var result = products.Select(p => new GetAllProductDTO
@@ -273,7 +320,34 @@ namespace invoice.Controllers
                 Image = p.Image,
                 Price = p.Price,
                 Quantity = p.Quantity,
-                Category=p.Category.Name,
+                Category = p.Category?.Name ?? null
+            });
+            return Ok(new GeneralResponse<IEnumerable<GetAllProductDTO>>
+            {
+                Success = true,
+                Message = "Available products retrieved successfully.",
+                Data = result
+            });
+        }
+        [HttpGet("Productsavailable")]
+        public async Task<IActionResult> Productsavailable()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var products = await _productrepository.Query(
+                p => (p.Quantity == null || p.Quantity > 0 )&& p.UserId == userId
+               // ,p => p.Category 
+            );
+          var result = products.Select(p => new GetAllProductDTO
+            {
+                ProductId = p.Id,
+                Name = p.Name,
+                Image = p.Image,
+                Price = p.Price,
+                Quantity = p.Quantity,
+                Category = p.Category?.Name ?? null
             });
             return Ok(new GeneralResponse<IEnumerable<GetAllProductDTO>>
             {
@@ -284,7 +358,7 @@ namespace invoice.Controllers
         }
 
         [HttpPost("AddProduct")]
-        public async Task<IActionResult> AddProduct([FromBody] AddProductDTO dto)
+        public async Task<IActionResult> AddProduct([FromForm] AddProductDTO dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -304,7 +378,7 @@ namespace invoice.Controllers
             {
                 Name = dto.Name,
                 Price = dto.Price,
-                InProductList = dto.InProductList ?? true,
+                //InProductList = dto.InProductList ?? true,
                 UserId = userId,
             };
 

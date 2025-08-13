@@ -12,7 +12,7 @@ namespace invoice.DTO.Client
         public string? Notes { get; set; }
         public string? TextNumber { get; set; }
 
-        public DateTime  cteateAt { get; set; }
+        public DateTime CreateAt { get; set; }
        
         public int InvoiceCount { get; set; }
 

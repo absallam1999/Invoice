@@ -4,8 +4,10 @@ using invoice.DTO.Invoice;
 using invoice.DTO.InvoiceItem;
 using invoice.Models;
 using invoice.Models.Enums;
+using invoice.Models.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace invoice.Controllers
@@ -37,8 +39,6 @@ namespace invoice.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-
-          
             var invoices = (await _invoiceRepository.GetAll(userId, i => i.Client))
                 .OrderByDescending(i => i.CreateAt);
 
@@ -68,10 +68,21 @@ namespace invoice.Controllers
         public async Task<IActionResult> GetById(string id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var invoice = await _invoiceRepository.GetById(userId, id);
+            //var invoice = await _invoiceRepository.GetById(id, userId, i => i.Client,i=>i.Language,i=>i.InvoiceItems)
+            //.ThenInclude(ii => ii.Product);
+
+            var invoice = await _invoiceRepository.GetById(id,userId, q => q
+                 .Include(i => i.Client)
+                .Include(i => i.Language) 
+                .Include(i => i.PayInvoice)
+                .Include(i => i.InvoiceItems)
+                    .ThenInclude(ii => ii.Product)
+                    );
+
             if (invoice == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -84,25 +95,27 @@ namespace invoice.Controllers
 
             var dto = new InvoiceDetailsDTO
             {
-                //url,
+                //url,TaxNumber
                 Code = invoice.Code,
                 CreateAt = invoice.CreateAt,
                 TaxNumber = invoice.TaxNumber,
-                Value = invoice.FinalValue,
+                Value = invoice.Value,
                 FinalValue= invoice.FinalValue,
                 DiscountValue = invoice.DiscountValue,
                 DiscountType = invoice.DiscountType,
                 InvoiceStatus = invoice.InvoiceStatus,
                 InvoiceType = invoice.InvoiceType,
                 PayAt = invoice.PayInvoice?.PayAt,
-                ClientName = invoice.Client.Name,
-                ClientEmail=invoice.Client.Email,
-                ClientPhone=invoice.Client.PhoneNumber,
+                ClintId=invoice.ClientId ?? string.Empty,
+                ClientName = invoice.Client?.Name ?? string.Empty,
+                ClientEmail=invoice.Client?.Email ?? string.Empty,
+                ClientPhone=invoice.Client?.PhoneNumber ?? string.Empty,
+                PaymentMethod=invoice.PayInvoice?.PaymentMethod?.Name ?? string.Empty,
                 Language = invoice.Language.Name,
                 TermsConditions=invoice.TermsConditions,
                 Items=invoice.InvoiceItems.Select(i=>new InvoiceItemDetailsDTO
                 {
-                   
+                    ProductId= i.ProductId,
                     ProductName = i.Product.Name,
                     ProductImge=i.Product.Image,
                     UnitPrice = i.UnitPrice,
@@ -142,7 +155,7 @@ namespace invoice.Controllers
             {
                 Code = await _invoiceRepository.GenerateInvoiceCode(userId),
                 CreateAt = dto.CreateAt ?? DateTime.UtcNow,
-                // TaxNumber = dto.TaxNumber,
+                TaxNumber = "jjj",
                 InvoiceStatus=InvoiceStatus.Active,
                 InvoiceType = InvoiceType.Detailed,
                 UserId = userId,
@@ -225,7 +238,14 @@ namespace invoice.Controllers
                     Data = ModelState
                 });
             }
-            var invoice = await _invoiceRepository.GetById(userId, id);
+            //var invoice = await _invoiceRepository.GetById(id,userId);
+            var invoice = await _invoiceRepository.GetById(id, userId, q => q
+                .Include(i => i.Client)
+               .Include(i => i.Language)
+               .Include(i => i.PayInvoice)
+               .Include(i => i.InvoiceItems)
+                   .ThenInclude(ii => ii.Product)
+                   );
             if (invoice == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -236,7 +256,7 @@ namespace invoice.Controllers
                 });
             }
             invoice.CreateAt = dto.CreateAt ?? invoice.CreateAt;
-            invoice.InvoiceType = InvoiceType.Detailed;
+           // invoice.InvoiceType = InvoiceType.Detailed;
             invoice.ClientId = dto.ClientId;
             invoice.LanguageId = dto.LanguageId;
             invoice.TermsConditions = dto.TermsConditions;
@@ -326,7 +346,7 @@ namespace invoice.Controllers
                 });
             }
 
-            var invoice = await _invoiceRepository.GetById(userId, id);
+            var invoice = await _invoiceRepository.GetById( id, userId);
             if (invoice == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -369,7 +389,7 @@ namespace invoice.Controllers
             {
                 Success = true,
                 Message = "Invoice paid successfully.",
-                Data =null
+                Data =invoice.Id
             });
         }
         [HttpPut("RefundInvoice/{id}")]
@@ -380,7 +400,7 @@ namespace invoice.Controllers
                 return Unauthorized();
 
             
-            var invoice = await _invoiceRepository.GetById(userId, id);
+            var invoice = await _invoiceRepository.GetById(id, userId);
             if (invoice == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -413,7 +433,6 @@ namespace invoice.Controllers
             });
         }
            
-
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {

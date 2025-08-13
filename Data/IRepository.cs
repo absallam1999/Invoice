@@ -7,7 +7,8 @@ namespace invoice.Data
      public interface IRepository<T> where T : class
      {
         Task<IEnumerable<T>> GetAll(string userId=null ,params Expression<Func<T, object>>[] includes);
-        Task<T> GetById( string id, string userId = null, params Expression<Func<T, object>>[] includes);
+        Task<T> GetById(string id, string userId = null, Func<IQueryable<T>, IQueryable<T>> include = null);
+       // Task<T> GetById( string id, string userId = null, params Expression<Func<T, object>>[] includes);
         Task<IEnumerable<T>> Query(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
        
         Task<OperationResult> Add(T entity);

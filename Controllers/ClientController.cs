@@ -6,6 +6,8 @@ using invoice.DTO;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using invoice.DTO.Invoice;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 
 namespace invoice.Controllers
 {
@@ -27,7 +29,6 @@ namespace invoice.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
-
 
             var clients = await _repository.GetAll(userId,c => c.Invoices);
             var result = clients.Select(c => new GetAllClientsDTO
@@ -51,10 +52,13 @@ namespace invoice.Controllers
         public async Task<IActionResult> GetById(string id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var client = await _repository.GetById(id, userId, c => c.Invoices);
+           // var client = await _repository.GetById(id, userId, c => c.Invoices);
+            var client = await _repository.GetById(id, userId, q=>q 
+            .Include(c => c.Invoices));
             if (client == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -74,6 +78,7 @@ namespace invoice.Controllers
                 Address = client.Address,
                 Notes = client.Notes,
                 TextNumber = client.TextNumber,
+                CreateAt = client.CreateAt,
                 InvoiceCount = client.Invoices?.Count ?? 0,
                 Invoices = client.Invoices?.Select(i=>new GetAllInvoiceDTO
                 {
@@ -95,13 +100,13 @@ namespace invoice.Controllers
             });
         }
 
-        [HttpPost]
+        [HttpPatch]
         public async Task<IActionResult> Create([FromBody] ClientInfoDTO dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
-
+            Console.WriteLine( userId);
             if (!ModelState.IsValid)
             {
                 return BadRequest(new GeneralResponse<object>
@@ -165,6 +170,7 @@ namespace invoice.Controllers
                 Address = clientWithInvoices.Address,
                 Notes = clientWithInvoices.Notes,
                 TextNumber = clientWithInvoices.TextNumber,
+                CreateAt = client.CreateAt,
                 InvoiceCount = clientWithInvoices.Invoices?.Count ?? 0,
                 Invoices = clientWithInvoices.Invoices?.Select(i => new GetAllInvoiceDTO
                 {
@@ -191,7 +197,7 @@ namespace invoice.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
-            
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(new GeneralResponse<object>
@@ -201,21 +207,24 @@ namespace invoice.Controllers
                     Data = ModelState
                 });
             }
-
-            var filterEmailOrPhone = await _repository.Query(c =>
-            c.Id != id && c.UserId == userId && (
-            c.Email == dto.Email || c.PhoneNumber == dto.PhoneNumber
-                    )
-                  );
+        
+                    var filterEmailOrPhone = await _repository.Query(c =>
+                  c.Id != id && c.UserId == userId && (
+                  (dto.Email != null && c.Email == dto.Email) ||
+                  (dto.PhoneNumber != null && c.PhoneNumber == dto.PhoneNumber)
+                ));
+            string errorMessage="";
 
             var existingClient = filterEmailOrPhone.FirstOrDefault();
-                    string errorMessage = existingClient.Email == dto.Email && existingClient.PhoneNumber == dto.PhoneNumber
-                   ? "Email and phone number already exist for this user."
-                   : existingClient.Email == dto.Email
-                   ? "Email already exists for this user."
-                   : "Phone number already exists for this user.";
+            if (existingClient != null)
+            {
+                 errorMessage = existingClient.Email == dto.Email && existingClient.PhoneNumber == dto.PhoneNumber
+               ? "Email and phone number already exist for this user."
+               : existingClient.Email == dto.Email
+               ? "Email already exists for this user."
+               : "Phone number already exists for this user.";
 
-
+            }
 
             if (filterEmailOrPhone.Any())
             {
@@ -238,45 +247,24 @@ namespace invoice.Controllers
                     Data = null
                 });
             }
+            if (!string.IsNullOrWhiteSpace(dto.Name))
+                client.Name = dto.Name;
 
-            client.Name = dto.Name;
-            client.Email = dto.Email;
-            client.PhoneNumber = dto.PhoneNumber;
-            client.Address = dto.Address;
-            client.Notes = dto.Notes;
-            client.TextNumber = dto.TextNumber;
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+                client.Email = dto.Email;
 
-            
-            //await _repository.Update(client);
-            ////front ?
-            //var updated =
-            //      new ClientDetailsDTO
-            //      {
-            //          ClientId = client.Id,
-            //          Name = client.Name,
-            //          Email = client.Email,
-            //          PhoneNumber = client.PhoneNumber,
-            //          Address = client.Address,
-            //          Notes = client.Notes,
-            //          TextNumber = client.TextNumber,
-            //          InvoiceCount = client.Invoices?.Count ?? 0,
-            //          Invoices = client.Invoices?.Select(i => new GetAllInvoiceDTO
-            //          {
-            //              InvoiceId = i.Id,
-            //              InvoiceCreateAt = i.CreateAt,
-            //              InvoiceValue = i.Value,
-            //              InvoiceNumber = i.Number,
-            //              InvoiceStatus = i.InvoiceStatus,
-            //              InvoiceType = i.InvoiceType,
-            //          }).ToList()
-            //      };
+            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+                client.PhoneNumber = dto.PhoneNumber;
 
-            //return Ok(new GeneralResponse<ClientDetailsDTO>
-            //{
-            //    Success = true,
-            //    Message = "Client updated successfully.",
-            //    Data = updated
-            //});
+            if (!string.IsNullOrWhiteSpace(dto.Address))
+                client.Address = dto.Address;
+
+            if (!string.IsNullOrWhiteSpace(dto.Notes))
+                client.Notes = dto.Notes;
+
+            if (!string.IsNullOrWhiteSpace(dto.TextNumber))
+                client.TextNumber = dto.TextNumber;
+
 
             var result = await _repository.Update(client);
 
@@ -298,6 +286,7 @@ namespace invoice.Controllers
                 Address = client.Address,
                 Notes = client.Notes,
                 TextNumber = client.TextNumber,
+                CreateAt=client.CreateAt,
                 InvoiceCount = client.Invoices?.Count ?? 0,
                 Invoices = client.Invoices?.Select(i => new GetAllInvoiceDTO
                 {
@@ -324,7 +313,6 @@ namespace invoice.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
-
 
             var client = await _repository.GetById(id, userId);
             if (client == null)

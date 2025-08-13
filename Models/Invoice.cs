@@ -26,8 +26,7 @@ namespace invoice.Models
 
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
-
-        public string StoreId { get; set; }
+        public string? StoreId { get; set; }
         public Store Store { get; set; }
 
         public string? ClientId { get; set; }

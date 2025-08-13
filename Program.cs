@@ -5,6 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using invoice.Models;
 using System.Text;
 using invoice.Data;
+using System.IdentityModel.Tokens.Jwt;
+
 
 namespace invoice
 {
@@ -44,6 +46,7 @@ namespace invoice
                     }
                 });
             });
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("Connection")));
@@ -104,6 +107,11 @@ namespace invoice
             app.UseAuthorization();
 
             app.MapControllers();
+
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
 
             app.Run();
         }

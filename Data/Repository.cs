@@ -33,24 +33,44 @@ public class Repository<T> : IRepository<T> where T : class
         return await query.ToListAsync();
     }
 
-    public async Task<T> GetById(string id, string userId, params Expression<Func<T, object>>[] includes)
+    //public async Task<T> GetById(string id, string userId, params Expression<Func<T, object>>[] includes)
+    //{
+    //    IQueryable<T> query = dbSet;
+    //    //if (typeof(ISoftDeleteable).IsAssignableFrom(typeof(T)))
+    //    //    query = query.Where(e => !EF.Property<bool>(e, "IsDeleted"));
+
+
+    //    if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
+    //        query = query.Where(e => EF.Property<string>(e, "UserId") == userId);
+
+
+    //    if (includes != null)
+    //    {
+    //        foreach (var include in includes)
+    //            query = query.Include(include);
+    //    }
+    //    return await query.FirstOrDefaultAsync(e => EF.Property<string>(e, "Id") == id);
+    //}
+    public async Task<T> GetById(string id, string userId = null, Func<IQueryable<T>, IQueryable<T>> include = null)
     {
         IQueryable<T> query = dbSet;
-        //if (typeof(ISoftDeleteable).IsAssignableFrom(typeof(T)))
-        //    query = query.Where(e => !EF.Property<bool>(e, "IsDeleted"));
 
-
+        // فلترة على UserId لو الخاصية موجودة
         if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
-            query = query.Where(e => EF.Property<string>(e, "UserId") == userId);
-
-
-        if (includes != null)
         {
-            foreach (var include in includes)
-                query = query.Include(include);
+            query = query.Where(e => EF.Property<string>(e, "UserId") == userId);
         }
+
+        // إضافة الـ Includes (و ThenInclude لو فيه)
+        if (include != null)
+        {
+            query = include(query);
+        }
+
+        // البحث عن العنصر بالـ Id
         return await query.FirstOrDefaultAsync(e => EF.Property<string>(e, "Id") == id);
     }
+
 
     public async Task<OperationResult> Add(T entity)
     {
@@ -63,9 +83,18 @@ public class Repository<T> : IRepository<T> where T : class
         }
         catch (Exception ex)
         {
-            return new OperationResult { Success = false, Message = ex.Message };
+            var innerMessage = ex.InnerException?.Message ?? ex.Message;
+
+            var fullError = $"{innerMessage} | StackTrace: {ex.StackTrace}";
+
+            return new OperationResult
+            {
+                Success = false,
+                Message = fullError,
+            };
         }
     }
+
 
 
     public async Task<OperationResult<T>> Update(T entity)

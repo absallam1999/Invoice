@@ -6,12 +6,11 @@ namespace invoice.DTO.Client
 {
     public class ClientInfoDTO
     {
-
-        [MaxLength(100,ErrorMessage = "name is required.")]
+        [Required(ErrorMessage = "Name is required.")]
+        [MaxLength(100,ErrorMessage = "Name cannot be longer than 100 characters.")]
+        [RegularExpression(@"^(?!\s*$).+", ErrorMessage = "Name cannot be empty or whitespace.")]
         public string Name { get; set; }
-
         [EmailAddress(ErrorMessage = "Invalid email address.")]
-       
         public string? Email { get; set; }
         [Phone(ErrorMessage = "Invalid phone number.")]
         public string? PhoneNumber { get; set; }
