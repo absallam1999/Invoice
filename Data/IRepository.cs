@@ -8,6 +8,7 @@ namespace invoice.Data
      {
         Task<IEnumerable<T>> GetAll(string userId=null ,params Expression<Func<T, object>>[] includes);
         Task<T> GetById(string id, string userId = null, Func<IQueryable<T>, IQueryable<T>> include = null);
+        Task<T> GetByUserId( string userId , Func<IQueryable<T>, IQueryable<T>> include = null);
        // Task<T> GetById( string id, string userId = null, params Expression<Func<T, object>>[] includes);
         Task<IEnumerable<T>> Query(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
        

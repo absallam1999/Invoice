@@ -55,20 +55,37 @@ public class Repository<T> : IRepository<T> where T : class
     {
         IQueryable<T> query = dbSet;
 
-        // فلترة على UserId لو الخاصية موجودة
+      
         if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
         {
             query = query.Where(e => EF.Property<string>(e, "UserId") == userId);
         }
 
-        // إضافة الـ Includes (و ThenInclude لو فيه)
+     
         if (include != null)
         {
             query = include(query);
         }
 
-        // البحث عن العنصر بالـ Id
         return await query.FirstOrDefaultAsync(e => EF.Property<string>(e, "Id") == id);
+    }
+
+    public async Task<T> GetByUserId( string UserId, Func<IQueryable<T>, IQueryable<T>> include = null)
+    {
+        IQueryable<T> query = dbSet;
+
+      
+        if (!string.IsNullOrEmpty(UserId) && typeof(T).GetProperty("UserId") != null)
+        {
+            query = query.Where(e => EF.Property<string>(e, "UserId") == UserId);
+        }
+
+        if (include != null)
+        {
+            query = include(query);
+        }
+
+        return await query.FirstOrDefaultAsync();
     }
 
 

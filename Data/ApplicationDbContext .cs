@@ -20,7 +20,7 @@ namespace invoice.Data
         public DbSet<Payment> Payments { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
         public DbSet<PaymentLink> PaymentLinks { get; set; }
-        public DbSet<ContactInformation> ContactInformations { get; set; }
+        public DbSet<ContactInfo> ContactInformations { get; set; }
         public DbSet<Page> Pages { get; set; }
         public DbSet<Language> Languages { get; set; }
         public DbSet<Notification> Notifications { get; set; }

@@ -11,9 +11,9 @@ namespace invoice.Controllers
     [Authorize]
     public class ContactInformationController : ControllerBase
     {
-        private readonly IRepository<ContactInformation> _repository;
+        private readonly IRepository<ContactInfo> _repository;
 
-        public ContactInformationController(IRepository<ContactInformation> repository)
+        public ContactInformationController(IRepository<ContactInfo> repository)
         {
             _repository = repository;
         }
@@ -24,7 +24,7 @@ namespace invoice.Controllers
             var items = await _repository.GetAll();
             var dtoList = items.Select(c => new ContactInformationDetailsDTO
             {
-                Id = c.Id,
+               // Id = c.Id,
                 Location = c.location,
                 Facebook = c.Facebook,
                 WhatsApp = c.WhatsApp,
@@ -56,7 +56,7 @@ namespace invoice.Controllers
 
             var dto = new ContactInformationDetailsDTO
             {
-                Id = item.Id,
+               // Id = item.Id,
                 Location = item.location,
                 Facebook = item.Facebook,
                 WhatsApp = item.WhatsApp,
@@ -85,7 +85,7 @@ namespace invoice.Controllers
                 });
             }
 
-            var contact = new ContactInformation
+            var contact = new ContactInfo
             {
                 location = dto.Location,
                 Facebook = dto.Facebook,
@@ -98,7 +98,7 @@ namespace invoice.Controllers
 
             var result = new ContactInformationDetailsDTO
             {
-                Id = contact.Id,
+                //Id = contact.Id,
                 Location = contact.location,
                 Facebook = contact.Facebook,
                 WhatsApp = contact.WhatsApp,
@@ -158,7 +158,7 @@ namespace invoice.Controllers
 
             var updated = new ContactInformationDetailsDTO
             {
-                Id = existing.Id,
+               // Id = existing.Id,
                 Location = existing.location,
                 Facebook = existing.Facebook,
                 WhatsApp = existing.WhatsApp,
