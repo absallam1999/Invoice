@@ -2,8 +2,6 @@
 {
     public class PayInvoice
     {
-
-
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public DateTime PayAt { get; set; }= DateTime.UtcNow;
         public string PaymentMethodId { get; set; }

@@ -77,7 +77,7 @@ namespace invoice.Controllers
                 Tax = store.Tax,
                 FromStore = store.Shipping.FromStore,
                 Delivery = store.Shipping.Delivery,
-                //cost
+
                 ClientName = store.PurchaseCompletionOptions.Name,
                 ClientEmail = store.PurchaseCompletionOptions.Email,
                 Clientphone = store.PurchaseCompletionOptions.phone,
@@ -88,7 +88,6 @@ namespace invoice.Controllers
                     ProductName = p.Name,
                     ProductImage = p.Image
                 } ).ToList(),
-                //category
 
             };
 

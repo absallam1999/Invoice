@@ -99,10 +99,7 @@ namespace invoice.Data
                     Name= "Bank Transfer"
 
                 }
-                );
-
-
-
+            );
 
             //Filter IsDeleted
             foreach (var entityType in builder.Model.GetEntityTypes())

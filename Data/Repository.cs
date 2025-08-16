@@ -18,8 +18,6 @@ public class Repository<T> : IRepository<T> where T : class
     public async Task<IEnumerable<T>> GetAll(string userId ,params Expression<Func<T, object>>[] includes)
     {
         IQueryable<T> query = dbSet;
-        //if (typeof(ISoftDeleteable).IsAssignableFrom(typeof(T)))
-        //    query = query.Where(e => !EF.Property<bool>(e, "IsDeleted"));
 
         if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
             query = query.Where(e => EF.Property<string>(e, "UserId") == userId);
@@ -32,25 +30,6 @@ public class Repository<T> : IRepository<T> where T : class
         }
         return await query.ToListAsync();
     }
-
-    //public async Task<T> GetById(string id, string userId, params Expression<Func<T, object>>[] includes)
-    //{
-    //    IQueryable<T> query = dbSet;
-    //    //if (typeof(ISoftDeleteable).IsAssignableFrom(typeof(T)))
-    //    //    query = query.Where(e => !EF.Property<bool>(e, "IsDeleted"));
-
-
-    //    if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
-    //        query = query.Where(e => EF.Property<string>(e, "UserId") == userId);
-
-
-    //    if (includes != null)
-    //    {
-    //        foreach (var include in includes)
-    //            query = query.Include(include);
-    //    }
-    //    return await query.FirstOrDefaultAsync(e => EF.Property<string>(e, "Id") == id);
-    //}
     public async Task<T> GetById(string id, string userId = null, Func<IQueryable<T>, IQueryable<T>> include = null)
     {
         IQueryable<T> query = dbSet;
@@ -88,7 +67,6 @@ public class Repository<T> : IRepository<T> where T : class
         return await query.FirstOrDefaultAsync();
     }
 
-
     public async Task<OperationResult> Add(T entity)
     {
         try
@@ -111,8 +89,6 @@ public class Repository<T> : IRepository<T> where T : class
             };
         }
     }
-
-
 
     public async Task<OperationResult<T>> Update(T entity)
     {
@@ -189,7 +165,7 @@ public class Repository<T> : IRepository<T> where T : class
                 Message = $"Delete failed: {ex.Message}"
             };
         }
-        }
+    }
 
     public async Task<IEnumerable<T>> Query(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
     {
@@ -201,7 +177,4 @@ public class Repository<T> : IRepository<T> where T : class
         }
         return await query.Where(predicate).ToListAsync();
     }
-
-
-
 }

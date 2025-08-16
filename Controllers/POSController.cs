@@ -51,8 +51,8 @@ namespace invoice.Controllers
                 InvoiceStatus = InvoiceStatus.Active,
                 InvoiceType = InvoiceType.Cashier,
                 UserId = userId,
-                ClientId = dto.ClientId, //null
-                LanguageId = "ar", //null
+                ClientId = dto.ClientId,
+                LanguageId = "ar",
                 Value = 0,
 
             };
@@ -116,8 +116,6 @@ namespace invoice.Controllers
                     Data = null
                 });
             }
-
-
 
             return Ok(new GeneralResponse<string>
             {

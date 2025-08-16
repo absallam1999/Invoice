@@ -9,7 +9,7 @@ namespace invoice.Models
         public string Name { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string? Description { get; set; }
-        public string Url { get; set; }    //Slug 
+        public string Url { get; set; }
         public string? Logo { get; set; }
         public string? CoverImage { get; set; }
         public string Color { get; set; }
@@ -24,23 +24,14 @@ namespace invoice.Models
 
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
+        public PurchaseCompletionOptions PurchaseCompletionOptions { get; set; }
+     
+        public Shipping Shipping { get; set; }
+        public ContactInfo ContactInfo { get; set; }
 
-<<<<<<< HEAD
         public List<Page> Pages { get; set; } = new List<Page>();
         public List<Product> Products { get; set; } = new List<Product>();
         public List<Invoice> Invoices { get; set; } = new List<Invoice>();
-        public List<ContactInformation> ContactInformations { get; set; } = new List<ContactInformation>();
-        public PurchaseCompletionOptions PurchaseCompletionOptions { get; set; }
-=======
-     
-        public PurchaseCompletionOptions PurchaseCompletionOptions { get; set; } 
-        public Shipping Shipping { get; set; }
-        public ContactInfo ContactInfo { get; set; }
-        
-        public ICollection<Product> Products { get; set; }
-        public ICollection<Invoice> Invoices { get; set; }
-        public ICollection<Page> Pages { get; set; }
-
->>>>>>> aaee6c2c23865a8eab5cc4ecec885f7b2c3a347c
+        public List<ContactInfo> ContactInformations { get; set; } = new List<ContactInfo>();
     }
 }

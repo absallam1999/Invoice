@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using invoice.Models;
 using System.Text;
 using invoice.Data;
+using Stripe;
 using System.IdentityModel.Tokens.Jwt;
 
 
@@ -28,7 +29,6 @@ namespace invoice
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                    // ADD new Token AFTER: "Bearer 'New Token Here'":
                     Description = "Bearer "
                 });
 
@@ -90,7 +90,10 @@ namespace invoice
             });
 
             var app = builder.Build();
+            
             app.UseStaticFiles();
+
+            StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:Secret_key").Get<string>();
 
             app.UseCors("AllowAll");
 

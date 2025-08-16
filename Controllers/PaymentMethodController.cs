@@ -38,115 +38,115 @@ namespace invoice.Controllers
             });
         }
 
-        //[HttpGet("{id}")]
-        //public async Task<IActionResult> GetById(string id)
-        //{
-        //    var method = await _repository.GetById(id);
-        //    if (method == null)
-        //    {
-        //        return NotFound(new GeneralResponse<object>
-        //        {
-        //            Success = false,
-        //            Message = $"Payment method with ID {id} not found.",
-        //            Data = null
-        //        });
-        //    }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var method = await _repository.GetById(id);
+            if (method == null)
+            {
+                return NotFound(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = $"Payment method with ID {id} not found.",
+                    Data = null
+                });
+            }
 
-        //    var dto = new PaymentMethodDTO
-        //    {
-        //        Id = method.Id,
-        //        Name = method.Name
-        //    };
+            var dto = new PaymentMethodDTO
+            {
+                Id = method.Id,
+                Name = method.Name
+            };
 
-        //    return Ok(new GeneralResponse<PaymentMethodDTO>
-        //    {
-        //        Success = true,
-        //        Message = "Payment method retrieved successfully.",
-        //        Data = dto
-        //    });
-        //}
+            return Ok(new GeneralResponse<PaymentMethodDTO>
+            {
+                Success = true,
+                Message = "Payment method retrieved successfully.",
+                Data = dto
+            });
+        }
 
-        //[HttpPost]
-        //public async Task<IActionResult> Create([FromBody] CreatePaymentMethodDTO dto)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(new GeneralResponse<object>
-        //        {
-        //            Success = false,
-        //            Message = "Validation failed.",
-        //            Data = ModelState
-        //        });
-        //    }
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreatePaymentMethodDTO dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed.",
+                    Data = ModelState
+                });
+            }
 
-        //    var method = new PaymentMethod { Name = dto.Name };
-        //    await _repository.Add(method);
+            var method = new PaymentMethod { Name = dto.Name };
+            await _repository.Add(method);
 
-        //    return Ok(new GeneralResponse<PaymentMethod>
-        //    {
-        //        Success = true,
-        //        Message = "Payment method created successfully.",
-        //        Data = method
-        //    });
-        //}
+            return Ok(new GeneralResponse<PaymentMethod>
+            {
+                Success = true,
+                Message = "Payment method created successfully.",
+                Data = method
+            });
+        }
 
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> Update(string id, [FromBody] UpdatePaymentMethodDTO dto)
-        //{
-        //    if (id != dto.Id)
-        //    {
-        //        return BadRequest(new GeneralResponse<object>
-        //        {
-        //            Success = false,
-        //            Message = "ID mismatch.",
-        //            Data = null
-        //        });
-        //    }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] UpdatePaymentMethodDTO dto)
+        {
+            if (id != dto.Id)
+            {
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "ID mismatch.",
+                    Data = null
+                });
+            }
 
-        //    var existing = await _repository.GetById(id);
-        //    if (existing == null)
-        //    {
-        //        return NotFound(new GeneralResponse<object>
-        //        {
-        //            Success = false,
-        //            Message = $"Payment method with ID {id} not found.",
-        //            Data = null
-        //        });
-        //    }
+            var existing = await _repository.GetById(id);
+            if (existing == null)
+            {
+                return NotFound(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = $"Payment method with ID {id} not found.",
+                    Data = null
+                });
+            }
 
-        //    existing.Name = dto.Name;
-        //    await _repository.Update(existing);
+            existing.Name = dto.Name;
+            await _repository.Update(existing);
 
-        //    return Ok(new GeneralResponse<PaymentMethod>
-        //    {
-        //        Success = true,
-        //        Message = "Payment method updated successfully.",
-        //        Data = existing
-        //    });
-        //}
+            return Ok(new GeneralResponse<PaymentMethod>
+            {
+                Success = true,
+                Message = "Payment method updated successfully.",
+                Data = existing
+            });
+        }
 
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> Delete(string id)
-        //{
-        //    var method = await _repository.GetById(id);
-        //    if (method == null)
-        //    {
-        //        return NotFound(new GeneralResponse<object>
-        //        {
-        //            Success = false,
-        //            Message = $"Payment method with ID {id} not found.",
-        //            Data = null
-        //        });
-        //    }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var method = await _repository.GetById(id);
+            if (method == null)
+            {
+                return NotFound(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = $"Payment method with ID {id} not found.",
+                    Data = null
+                });
+            }
 
-        //    await _repository.Delete(id);
+            await _repository.Delete(id);
 
-        //    return Ok(new GeneralResponse<object>
-        //    {
-        //        Success = true,
-        //        Message = "Payment method deleted successfully.",
-        //        Data = null
-        //    });
-        //}
+            return Ok(new GeneralResponse<object>
+            {
+                Success = true,
+                Message = "Payment method deleted successfully.",
+                Data = null
+            });
+        }
     }
 }

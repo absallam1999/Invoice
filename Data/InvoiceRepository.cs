@@ -5,15 +5,12 @@ using Microsoft.EntityFrameworkCore;
 namespace invoice.Data
 {
     public class InvoiceRepository:Repository<Invoice>, IInvoiceRepository
-
     {
-
 
         public InvoiceRepository(ApplicationDbContext _context):base(_context)
         {
            
         }
-
 
         public async Task<string> GenerateInvoiceCode(string userId)
         {

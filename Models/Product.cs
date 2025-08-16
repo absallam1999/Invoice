@@ -12,14 +12,12 @@ namespace invoice.Models
         public decimal Price { get; set; }
         public int? Quantity { get; set; } = null;
         public bool IsDeleted { get; set; } = false;
-        //x
         public bool InProductList { get; set; } = true;
         public bool InPOS { get; set; } = true;
         public bool InStore { get; set; } = true;
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
        
-
         public string? CategoryId { get; set; }
         public Category Category { get; set; }
 
