@@ -7,21 +7,40 @@ namespace invoice.Models
         [Key]
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; }
-        public string Description { get; set; }
-        public string Url { get; set; }
-        public string Logo { get; set; }
-        public string CoverImage { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string? Description { get; set; }
+        public string Url { get; set; }    //Slug 
+        public string? Logo { get; set; }
+        public string? CoverImage { get; set; }
         public string Color { get; set; }
         public string Currency { get; set; }
-        public bool IsActivated { get; set; }
+        public bool Cash { get; set; } = true;
+        public bool BankTransfer { get; set; } = false;
+        public bool PayPal { get; set; } = false;
+        public bool Tax { get; set; } = false;
+        public bool Arabic { get; set; } = true;
+        public bool English { get; set; } = false;
+        public bool IsActivated { get; set; } = true;
 
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
 
+<<<<<<< HEAD
         public List<Page> Pages { get; set; } = new List<Page>();
         public List<Product> Products { get; set; } = new List<Product>();
         public List<Invoice> Invoices { get; set; } = new List<Invoice>();
         public List<ContactInformation> ContactInformations { get; set; } = new List<ContactInformation>();
         public PurchaseCompletionOptions PurchaseCompletionOptions { get; set; }
+=======
+     
+        public PurchaseCompletionOptions PurchaseCompletionOptions { get; set; } 
+        public Shipping Shipping { get; set; }
+        public ContactInfo ContactInfo { get; set; }
+        
+        public ICollection<Product> Products { get; set; }
+        public ICollection<Invoice> Invoices { get; set; }
+        public ICollection<Page> Pages { get; set; }
+
+>>>>>>> aaee6c2c23865a8eab5cc4ecec885f7b2c3a347c
     }
 }

@@ -1,9 +1,14 @@
-﻿namespace invoice.Models.Enums
+﻿using System.Text.Json.Serialization;
+
+namespace invoice.Models.Enums
 {
-    [Flags]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum InvoiceType
     {
         Online,
-        InStore
+        PaymentLink,
+        Detailed,
+        Cashier
+        
     }
 }

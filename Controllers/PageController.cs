@@ -4,6 +4,7 @@ using invoice.Data;
 using invoice.DTO.Page;
 using Microsoft.AspNetCore.Authorization;
 using invoice.DTO;
+using System.Security.Claims;
 
 namespace invoice.Controllers
 {
@@ -22,64 +23,71 @@ namespace invoice.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var pages = await _repository.GetAll(p => p.Store, p => p.Language);
-            var result = pages.Select(p => new PageDetailsDTO
-            {
-                Id = p.Id,
-                Title = p.Title,
-                Content = p.Content,
-                Image = p.Image,
-                Infooter = p.Infooter,
-                Inheader = p.Inheader,
-                StoreId = p.StoreId,
-                StoreName = p.Store.Name,
-                LanguageId = p.LanguageId,
-                LanguageName = p.Language.Name
-            });
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var invoices = await _repository.GetAll(userId);
+            
+
+            //var result = pages.Select(p => new PageDetailsDTO
+            //{
+            //    Id = p.Id,
+            //    Title = p.Title,
+            //    Content = p.Content,
+            //    Image = p.Image,
+            //    Infooter = p.Infooter,
+            //    Inheader = p.Inheader,
+            //    StoreId = p.StoreId,
+            //    StoreName = p.Store.Name,
+            //    LanguageId = p.LanguageId,
+            //    LanguageName = p.Language.Name
+            //});
 
             return Ok(new GeneralResponse<IEnumerable<PageDetailsDTO>>
             {
                 Success = true,
                 Message = "Pages retrieved successfully.",
-                Data = result
+                //    Data = result
             });
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(string id)
-        {
-            var page = await _repository.GetById(id, p => p.Store, p => p.Language);
-            if (page == null)
-            {
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = $"Page with ID {id} not found.",
-                    Data = null
-                });
-            }
+        //[HttpGet("{id}")]
+        //public async Task<IActionResult> GetById(string id)
+        //{
+        //    var page = await _repository.GetById(id, p => p.Store, p => p.Language);
+        //    if (page == null)
+        //    {
+        //        return NotFound(new GeneralResponse<object>
+        //        {
+        //            Success = false,
+        //            Message = $"Page with ID {id} not found.",
+        //            Data = null
+        //        });
+        //    }
 
-            var dto = new PageDetailsDTO
-            {
-                Id = page.Id,
-                Title = page.Title,
-                Content = page.Content,
-                Image = page.Image,
-                Infooter = page.Infooter,
-                Inheader = page.Inheader,
-                StoreId = page.StoreId,
-                StoreName = page.Store?.Name,
-                LanguageId = page.LanguageId,
-                LanguageName = page.Language?.Name
-            };
+        //    var dto = new PageDetailsDTO
+        //    {
+        //        Id = page.Id,
+        //        Title = page.Title,
+        //        Content = page.Content,
+        //        Image = page.Image,
+        //        Infooter = page.Infooter,
+        //        Inheader = page.Inheader,
+        //        StoreId = page.StoreId,
+        //        StoreName = page.Store?.Name,
+        //        LanguageId = page.LanguageId,
+        //        LanguageName = page.Language?.Name
+        //    };
 
-            return Ok(new GeneralResponse<PageDetailsDTO>
-            {
-                Success = true,
-                Message = "Page retrieved successfully.",
-                Data = dto
-            });
-        }
+        //    return Ok(new GeneralResponse<PageDetailsDTO>
+        //    {
+        //        Success = true,
+        //        Message = "Page retrieved successfully.",
+        //        Data = dto
+        //    });
+        //}
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreatePageDTO dto)
@@ -99,8 +107,8 @@ namespace invoice.Controllers
                 Title = dto.Title,
                 Content = dto.Content,
                 Image = dto.Image,
-                Infooter = dto.Infooter,
-                Inheader = dto.Inheader,
+                //Infooter = dto.Infooter,
+                //Inheader = dto.Inheader,
                 StoreId = dto.StoreId,
                 LanguageId = dto.LanguageId
             };
@@ -142,8 +150,8 @@ namespace invoice.Controllers
             page.Title = dto.Title;
             page.Content = dto.Content;
             page.Image = dto.Image;
-            page.Infooter = dto.Infooter;
-            page.Inheader = dto.Inheader;
+            //page.Infooter = dto.Infooter;
+            //page.Inheader = dto.Inheader;
             page.StoreId = dto.StoreId;
             page.LanguageId = dto.LanguageId;
 

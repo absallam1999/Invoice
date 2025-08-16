@@ -9,8 +9,9 @@ namespace invoice.Models
         public string Title { get; set; }
         public string Content { get; set; }
         public string Image { get; set; }
-        public string Infooter { get; set; }
-        public string Inheader { get; set; }
+        public bool Infooter { get; set; }=false;
+        public bool Inheader { get; set; }=false;
+        
         
         public string StoreId { get; set; }
         public Store Store { get; set; }

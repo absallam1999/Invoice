@@ -2,9 +2,9 @@
 
 namespace invoice.DTO.InvoiceItem
 {
-    public class CreateInvoiceItemDTO
+    public class InvoiceItemDTO
     {
-        [Required(ErrorMessage = "Id is required.")]
+        [Required(ErrorMessage = "ProductId is required.")]
         public string ProductId { get; set; }
 
         [Required]
@@ -13,7 +13,5 @@ namespace invoice.DTO.InvoiceItem
         [Required]
         public decimal UnitPrice { get; set; }
 
-        [Required]
-        public string InvoiceId { get; set; }
     }
 }

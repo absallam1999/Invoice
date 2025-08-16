@@ -4,9 +4,10 @@ using invoice.Data;
 using invoice.DTO.Store;
 using invoice.DTO;
 using Microsoft.AspNetCore.Authorization;
-using invoice.DTO.Invoice;
+using Microsoft.EntityFrameworkCore;
 using invoice.DTO.Product;
-using invoice.DTO.PurchaseCompletionOptions;
+using System.Security.Claims;
+using System.Data;
 
 namespace invoice.Controllers
 {
@@ -15,160 +16,110 @@ namespace invoice.Controllers
     [Authorize]
     public class StoreController : ControllerBase
     {
-        private readonly IRepository<Store> _repository;
+        private readonly IRepository<Store> _storerepository;
+        private readonly IRepository<Product> _productrepository;
 
-        public StoreController(IRepository<Store> repository)
+        public StoreController(IRepository<Store> storerepository , IRepository<Product> productrepository)
         {
-            _repository = repository;
+            _storerepository = storerepository;
+            _productrepository= productrepository;
         }
-
+       
         [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var stores = await _repository.GetAll(
-                s => s.Products,
-                s => s.Invoices,
-                s => s.PurchaseCompletionOptions,
-                s => s.ContactInformations
-            );
+        public async Task<IActionResult> Get()
+        {  
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+            
+            var store = await _storerepository.GetByUserId( userId, q => q
+          .Include(p => p.ContactInfo)
+          .Include(p => p.PurchaseCompletionOptions)
+          .Include(p => p.Shipping)
+          .Include(p => p.Pages)
+          
+          );
 
-            var result = stores.Select(store => new
+            if (store == null)
+                return NotFound(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "You don't have a store yet",
+                    Data = null
+                });
+            var products = await _productrepository.Query(
+                p => (p.Quantity == null || p.Quantity > 0) && p.InStore == true
+                                && p.UserId == userId);
+
+
+            var StoreDTO = new StoreDetailsDTO
             {
-                Id = store.Id,
-                Name = store.Name,
+                StoreName = store.Name,
+                StoreId = store.Id,
                 Description = store.Description,
                 Url = store.Url,
                 Logo = store.Logo,
-                UserId = store.UserId,
+                CoverImage = store.CoverImage,
+                Color = store.Color,
                 IsActivated = store.IsActivated,
-
-                ContactInformations = store.ContactInformations?.Select(ci => new ContactInformationDetailsDTO
+                StoreEmail = store.ContactInfo.Email,
+                StorePhone = store.ContactInfo.Phone,
+                Storelocation = store.ContactInfo.location,
+                StoreFacebook = store.ContactInfo.Facebook,
+                StoreInstagram = store.ContactInfo.Instagram,
+                StoreWhatsApp = store.ContactInfo.WhatsApp,
+                Currency = store.Currency,
+                Arabic = store.Arabic,
+                English = store.English,
+                Cash = store.Cash,
+                BankTransfer = store.BankTransfer,
+                PayPal = store.PayPal,
+                Tax = store.Tax,
+                FromStore = store.Shipping.FromStore,
+                Delivery = store.Shipping.Delivery,
+                //cost
+                ClientName = store.PurchaseCompletionOptions.Name,
+                ClientEmail = store.PurchaseCompletionOptions.Email,
+                Clientphone = store.PurchaseCompletionOptions.phone,
+                TermsAndConditions = store.PurchaseCompletionOptions.TermsAndConditions,
+                Products = products.Select(p => new ProductStore
                 {
-                    Id = ci.Id,
-                    Location = ci.location,
-                    Facebook = ci.Facebook,
-                    WhatsApp = ci.WhatsApp,
-                    Instagram = ci.Instagram,
-                    StoreId = ci.StoreId
-                }).ToList() ?? new List<ContactInformationDetailsDTO>(),
+                    ProductId = p.Id,
+                    ProductName = p.Name,
+                    ProductImage = p.Image
+                } ).ToList(),
+                //category
 
-                PurchaseCompletionOption = store.PurchaseCompletionOptions == null
-                    ? null
-                    : new PurchaseCompletionOptionsDTO
-                    {
-                        Id = store.PurchaseCompletionOptions.Id,
-                        SendEmail = store.PurchaseCompletionOptions.SendEmail,
-                        StoreId = store.PurchaseCompletionOptions.StoreId
-                    }
-            });
+            };
 
-            return Ok(new GeneralResponse<object>
+            return Ok(new GeneralResponse<StoreDetailsDTO>
             {
                 Success = true,
-                Message = "Stores retrieved successfully.",
-                Data = result
+                Message = "Store retrieved successfully.",
+                Data = StoreDTO
+
             });
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(string id)
-        {
-            try
-            {
-                var store = await _repository.GetById(id,
-                    s => s.Products,
-                    s => s.Invoices,
-                    s => s.User,
-                    s => s.ContactInformations,
-                    s => s.PurchaseCompletionOptions
-                );
-
-                if (store == null)
-                {
-                    return NotFound(new GeneralResponse<object>
-                    {
-                        Success = false,
-                        Message = $"Store with ID {id} not found.",
-                        Data = null
-                    });
-                }
-
-                var result = new
-                {
-                    Id = store.Id,
-                    Name = store.Name,
-                    UserId = store.UserId,
-
-                    ContactInformations = store.ContactInformations?.Select(ci => new ContactInformationDetailsDTO
-                    {
-                        Id = ci.Id,
-                        Location = ci.location,
-                        Facebook = ci.Facebook,
-                        WhatsApp = ci.WhatsApp,
-                        Instagram = ci.Instagram,
-                        StoreId = ci.StoreId
-                    }).ToList() ?? new List<ContactInformationDetailsDTO>(),
-
-                    Products = store.Products?.Select(p => new ProductDetailsDTO
-                    {
-                        Id = p.Id,
-                        Name = p.Name,
-                        Image = p.Image,
-                        Price = p.Price,
-                        Quantity = p.Quantity,
-                        CategoryId = p.CategoryId,
-                        CategoryName = p.Category?.Name,
-                        StoreId = p.StoreId,
-                        StoreName = p.Store?.Name
-                    }).ToList() ?? new List<ProductDetailsDTO>(),
-
-                    Invoices = store.Invoices?.Select(i => new InvoiceDetailsDTO
-                    {
-                        Id = i.Id,
-                        Number = i.Number,
-                        CreateAt = i.CreateAt,
-                        TaxNumber = i.TaxNumber,
-                        Value = i.Value,
-                        Description = i.Description,
-                        InvoiceStatus = i.InvoiceStatus,
-                        InvoiceType = i.InvoiceType,
-                        UserId = i.UserId,
-                        StoreId = i.StoreId,
-                        ClientId = i.ClientId,
-                        LanguageId = i.LanguageId
-                    }).ToList() ?? new List<InvoiceDetailsDTO>(),
-
-                    PurchaseCompletionOption = store.PurchaseCompletionOptions == null
-                    ? null
-                    : new PurchaseCompletionOptionsDTO
-                    {
-                        Id = store.PurchaseCompletionOptions.Id,
-                        SendEmail = store.PurchaseCompletionOptions.SendEmail,
-                        StoreId = store.PurchaseCompletionOptions.StoreId
-                    }
-                };
-
-                return Ok(new GeneralResponse<object>
-                {
-                    Success = true,
-                    Message = "Store retrieved successfully.",
-                    Data = result
-                });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = $"Internal server error: {ex.Message}",
-                    Data = null
-                });
-            }
-        }
 
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] CreateStoreDTO dto)
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var storeDB = await _storerepository.GetByUserId(userId);
+
+            if (storeDB != null)
+                return NotFound(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "You have store already.",
+                    Data = storeDB.Id
+                });
+
+
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(new GeneralResponse<object>
@@ -192,7 +143,7 @@ namespace invoice.Controllers
                 UserId = dto.UserId
             };
 
-            await _repository.Add(store);
+            await _storerepository.Add(store);
             return Ok(new GeneralResponse<Store>
             {
                 Success = true,
@@ -224,7 +175,7 @@ namespace invoice.Controllers
                 });
             }
 
-            var existingStore = await _repository.GetById(id);
+            var existingStore = await _storerepository.GetById(id);
             if (existingStore == null)
             {
                 return NotFound(new GeneralResponse<object>
@@ -245,7 +196,7 @@ namespace invoice.Controllers
             existingStore.IsActivated = dto.IsActivated;
             existingStore.UserId = dto.UserId;
 
-            await _repository.Update(existingStore);
+            await _storerepository.Update(existingStore);
 
             return Ok(new GeneralResponse<Store>
             {
@@ -254,28 +205,48 @@ namespace invoice.Controllers
                 Data = existingStore
             });
         }
+        
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
+        [HttpPut("activation")]
+        public async Task<IActionResult> Activation()
         {
-            var store = await _repository.GetById(id);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var store = await _storerepository.GetByUserId(userId);
+             
             if (store == null)
-            {
                 return NotFound(new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = $"Store with ID {id} not found.",
+                    Message = "Store not found.",
+                    Data = null
+                });
+
+            store.IsActivated = !store.IsActivated;
+
+            var result = await _storerepository.Update(store);
+
+            if (!result.Success)
+            {
+                return StatusCode(500, new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = result.Message,
                     Data = null
                 });
             }
 
-            await _repository.Delete(id);
+            var updated = store.IsActivated ? "active" : "unactive";
+           
             return Ok(new GeneralResponse<object>
             {
                 Success = true,
-                Message = "Store deleted successfully.",
-                Data = null
+                Message = $"Store is now {updated}.",
+                Data = new { store.Id, store.IsActivated }
             });
+
         }
     }
 }
