@@ -7,6 +7,6 @@ namespace invoice.Models
         [Key]
         public string Id { get; set; } = Guid.NewGuid().ToString(); 
         public string Name { get; set; }
-        public ICollection<Product> Products { get; set; }
+        public List<Product> Products { get; set; } = new List<Product>();
     }
 }

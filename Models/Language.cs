@@ -12,7 +12,7 @@ namespace invoice.Models
 
         public LanguageTarget Target { get; set; }
 
-        public ICollection<Page> Pages { get; set; }
-        public ICollection<Invoice> Invoices { get; set; }
+        public List<Page> Pages { get; set; } = new List<Page>();
+        public List<Invoice> Invoices { get; set; } = new List<Invoice>();
     }
 }

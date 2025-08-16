@@ -17,6 +17,6 @@ namespace invoice.Models
         public string StoreId { get; set; }
         public Store Store { get; set; }
 
-        public ICollection<InvoiceItem> InvoiceItems { get; set; }
+        public List<InvoiceItem> InvoiceItems { get; set; } = new List<InvoiceItem>();
     }
 }

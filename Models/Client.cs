@@ -17,6 +17,6 @@ namespace invoice.Models
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
 
-        public ICollection<Invoice> Invoices { get; set; }
+        public List<Invoice> Invoices { get; set; } = new List<Invoice>();
     }
 }

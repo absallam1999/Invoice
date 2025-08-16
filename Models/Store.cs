@@ -18,10 +18,10 @@ namespace invoice.Models
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
 
-        public ICollection<Product> Products { get; set; }
-        public ICollection<Invoice> Invoices { get; set; }
-        public ICollection<Page> Pages { get; set; }
-        public ICollection<ContactInformation> ContactInformations { get; set; }
+        public List<Page> Pages { get; set; } = new List<Page>();
+        public List<Product> Products { get; set; } = new List<Product>();
+        public List<Invoice> Invoices { get; set; } = new List<Invoice>();
+        public List<ContactInformation> ContactInformations { get; set; } = new List<ContactInformation>();
         public PurchaseCompletionOptions PurchaseCompletionOptions { get; set; }
     }
 }

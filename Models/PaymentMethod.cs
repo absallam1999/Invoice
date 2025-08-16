@@ -8,6 +8,6 @@ namespace invoice.Models
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; }
 
-        public ICollection<Payment> Payments { get; set; }
+        public List<Payment> Payments { get; set; } = new List<Payment>();
     }
 }

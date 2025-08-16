@@ -32,6 +32,6 @@ namespace invoice.Models
         public Language Language { get; set; }
 
         public Payment Payment { get; set; }
-        public ICollection<InvoiceItem> InvoiceItems { get; set; }
+        public List<InvoiceItem> InvoiceItems { get; set; } = new List<InvoiceItem>();
     }
 }
