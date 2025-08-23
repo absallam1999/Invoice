@@ -1,426 +1,155 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Core.Interfaces.Services;
+using invoice.Core.DTO.Product;
 using Microsoft.AspNetCore.Authorization;
-using invoice.Data;
-using invoice.Models;
-using invoice.DTO;
-using invoice.DTO.Product;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using invoice.Models.Interfaces;
-using invoice.DTO.Client;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.EntityFrameworkCore;
-
 
 namespace invoice.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
     [Authorize]
-    public class ProductController : ControllerBase
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ProductsController : ControllerBase
     {
-        private readonly IRepository<Product> _productrepository;
+        private readonly IProductService _productService;
 
-        public ProductController(IRepository<Product> productrepository)
+        public ProductsController(IProductService productService)
         {
-            _productrepository = productrepository;
+            _productService = productService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+        private string GetUserId() =>
+        User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
-            var product = await _productrepository.GetAll(userId);
-            var result = product.Select(p => new GetAllProductDTO
-            {
-                ProductId = p.Id,
-                Name = p.Name,
-                Image = p.Image,
-                Price = p.Price,
-                Quantity = p.Quantity,
-                Category = p.Category?.Name  ?? null
-            });
-            //if (result == null)
-            //    return NotFound(new GeneralResponse<object>
-            //    {
-            //        Success = false,
-            //        Message = "Product not found.",
-            //        Data = null
-            //    });
-            return Ok(new GeneralResponse<IEnumerable<GetAllProductDTO>>
-            {
-                Success = true,
-                Message = "Products retrieved successfully.",
-                Data = result
-            });
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(string id)
-        {
-
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            ///var product = await _productrepository.GetById(id, userId, c => c.InvoiceItems);
-            var product = await _productrepository.GetById(id, userId, q=> q 
-            .Include(p=>p. InvoiceItems));
-               
-            if (product == null)
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "Product not found.",
-                    Data = null
-                });
-
-            var productDTO = new ProductDetailsDTO
-            {
-                ProductId = product.Id,
-                Name = product.Name,
-                Image = product.Image,
-                Price = product.Price,
-                Quantity = product.Quantity,
-                NumberOfSales= product.InvoiceItems?.Count ?? 0,
-                //CategoryId = product.CategoryId,
-                //CategoryName = product.Category?.Name,
-                //StoreId = product.StoreId,
-                //StoreName = product.Store?.Name
-            };
-
-            return Ok(new GeneralResponse<ProductDetailsDTO>
-            {
-                Success = true,
-                Message = "Product retrieved successfully.",
-                Data = productDTO
-            });
-        }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] ProductInfoDTO dto)
+        public async Task<IActionResult> Create([FromBody] ProductCreateDTO dto)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-            
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "Validation failed.",
-                    Data = ModelState
-                });
-            }
-
-            string? imageFromReq = await GetImageNameFn(dto.Image);
-
-            var product = new Product
-            {
-                Name = dto.Name,
-                Image = imageFromReq,
-                Price = dto.Price,
-                Quantity = dto.Quantity,
-                CategoryId = dto.CategoryId,
-                InPOS = dto.InPOS,
-                InStore = dto.InStore,
-                UserId = userId,
-            };
-
-            var result = await _productrepository.Add(product);
-
-            if (!result.Success)
-            {
-                return StatusCode(500, new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = result.Message ?? "Failed to create product.",
-                    Data = null
-                });
-            }
-
-            var productDTO = new ProductDetailsDTO
-            {
-                ProductId = product.Id,
-                Name = product.Name,
-                Image = product.Image,
-                Price = product.Price,
-                Quantity = product.Quantity,
-                NumberOfSales= product.InvoiceItems?.Count ?? 0,
-               // CategoryId = product.CategoryId,
-                //CategoryName = product.Category?.Name,
-                //StoreId = product.StoreId,
-                //StoreName = product.Store?.Name
-            };
-            return Ok(new GeneralResponse<ProductDetailsDTO>
-            {
-                Success = true,
-                Message = "Product created successfully.",
-                Data = productDTO
-            });
+            var response = await _productService.CreateAsync(dto, GetUserId());
+            return Ok(response);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromForm] ProductInfoDTO dto)
+        public async Task<IActionResult> Update(string id, [FromBody] ProductUpdateDTO dto)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var product = await _productrepository.GetById(id, userId);
-            if (product == null)
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "Product not found.",
-                    Data = null
-                });
-
-            if (!ModelState.IsValid)
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "Validation failed.",
-                    Data = ModelState
-                });
-            string? imageFromReq = await GetImageNameFn(dto.Image);
-
-            if (!string.IsNullOrEmpty(dto.Name))
-                product.Name = dto.Name;
-
-            if (!string.IsNullOrEmpty(imageFromReq))
-                product.Image = imageFromReq;
-  
-                product.Price = dto.Price;
-            if (dto.Quantity.HasValue)
-                product.Quantity = dto.Quantity.Value;
-            if (!string.IsNullOrEmpty(dto.CategoryId))
-                product.CategoryId = dto.CategoryId;
-
-            if (dto.InPOS!=null)
-                product.InPOS = dto.InPOS;
-
-            if (dto.InStore!=null)
-                product.InStore = dto.InStore;
-
-            var result = await _productrepository.Update(product);
-
-            if (!result.Success)
-            {
-                return StatusCode(500, new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = result.Message,
-                    Data = null
-                });
-            }
-
-            var updated = new ProductDetailsDTO
-            {
-
-                ProductId = product.Id,
-                Name = product.Name,
-                Image = product.Image,
-                Price = product.Price,
-                Quantity = product.Quantity,
-                NumberOfSales = product.InvoiceItems?.Count ?? 0,
-                // CategoryId = product.CategoryId,
-                //CategoryName = product.Category?.Name,
-                //StoreId = product.StoreId,
-                //StoreName = product.Store?.Name
-            };
-            return Ok(new GeneralResponse<ProductDetailsDTO>
-            {
-                Success = true,
-                Message = " Product updated successfully.",
-                Data = updated
-            });
-
+            var response = await _productService.UpdateAsync(id, dto, GetUserId());
+            return Ok(response);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var product = await _productrepository.GetById(id, userId);
-            if (product == null)
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "Product not found.",
-                    Data = null
-                });
-
-            var result = await _productrepository.Delete(id);
-
-
-            if (!result.Success)
-                return NotFound(new { result.Message });
-
-            return Ok(new { result.Message });
-           
+            var response = await _productService.DeleteAsync(id, GetUserId());
+            return Ok(response);
         }
 
-        [HttpGet("ProductsInPOS")]
-        public async Task<IActionResult> ProductsInPOS()
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var products = await _productrepository.Query(
-                p => (p.Quantity == null || p.Quantity > 0) && p.InPOS == true
-                                && p.UserId== userId
-
-               // ,p => p.Category 
-            );
-
-            var result = products.Select(p => new GetAllProductDTO
-            {
-                ProductId = p.Id,
-                Name = p.Name,
-                Image = p.Image,
-                Price = p.Price,
-                Quantity = p.Quantity,
-                Category = p.Category?.Name ?? null
-            });
-            return Ok(new GeneralResponse<IEnumerable<GetAllProductDTO>>
-            {
-                Success = true,
-                Message = "Available products retrieved successfully.",
-                Data = result
-            });
-        } 
-
-        [HttpGet("ProductsInStor")]
-        public async Task<IActionResult> ProductsInStor()
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var products = await _productrepository.Query(
-                p => (p.Quantity == null || p.Quantity > 0) && p.InStore == true
-                                && p.UserId == userId
-
-            // ,p => p.Category 
-            );
-
-            var result = products.Select(p => new GetAllProductDTO
-            {
-                ProductId = p.Id,
-                Name = p.Name,
-                Image = p.Image,
-                Price = p.Price,
-                Quantity = p.Quantity,
-                Category = p.Category?.Name ?? null
-            });
-            return Ok(new GeneralResponse<IEnumerable<GetAllProductDTO>>
-            {
-                Success = true,
-                Message = "Available products retrieved successfully.",
-                Data = result
-            });
-        }
-        [HttpGet("Productsavailable")]
-        public async Task<IActionResult> Productsavailable()
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var products = await _productrepository.Query(
-                p => (p.Quantity == null || p.Quantity > 0 )&& p.UserId == userId
-               // ,p => p.Category 
-            );
-          var result = products.Select(p => new GetAllProductDTO
-            {
-                ProductId = p.Id,
-                Name = p.Name,
-                Image = p.Image,
-                Price = p.Price,
-                Quantity = p.Quantity,
-                Category = p.Category?.Name ?? null
-            });
-            return Ok(new GeneralResponse<IEnumerable<GetAllProductDTO>>
-            {
-                Success = true,
-                Message = "Available products retrieved successfully.",
-                Data = result
-            });
+            var response = await _productService.GetByIdAsync(id, GetUserId());
+            return Ok(response);
         }
 
-        [HttpPost("AddProduct")]
-        public async Task<IActionResult> AddProduct([FromForm] AddProductDTO dto)
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "Validation failed.",
-                    Data = ModelState
-                });
-            }
-
-            var product = new Product
-            {
-                Name = dto.Name,
-                Price = dto.Price,
-                //InProductList = dto.InProductList ?? true,
-                UserId = userId,
-            };
-
-            var result = await _productrepository.Add(product);
-
-            if (!result.Success)
-            {
-                return StatusCode(500, new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = result.Message ?? "Failed to add product.",
-                    Data = null
-                });
-            }
-
-            return Ok(new GeneralResponse<Product>
-            {
-                Success = true,
-                Message = "Product added successfully.",
-                Data = product
-            });
+            var response = await _productService.GetAllAsync(GetUserId());
+            return Ok(response);
         }
 
-        #region imageFunc
-        [NonAction]
-        public  async Task<string> GetImageNameFn(IFormFile image)
 
+        [HttpGet("category/{categoryId}")]
+        public async Task<IActionResult> GetByCategory(string categoryId)
         {
-            if (image != null && image.Length > 0)
-            {
-                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Images", fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await image.CopyToAsync(stream);
-                }
-                return fileName;
-
-            }
-            return null;
+            var response = await _productService.GetByCategoryAsync(categoryId, GetUserId());
+            return Ok(response);
         }
-        #endregion
+
+        [HttpGet("store/{storeId}")]
+        public async Task<IActionResult> GetByStore(string storeId)
+        {
+            var response = await _productService.GetByStoreAsync(storeId, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpGet("available/pos")]
+        public async Task<IActionResult> GetAvailableForPOS()
+        {
+            var response = await _productService.GetAvailableForPOSAsync(GetUserId());
+            return Ok(response);
+        }
+
+        [HttpGet("available/store/{storeId}")]
+        public async Task<IActionResult> GetAvailableForStore(string storeId)
+        {
+            var response = await _productService.GetAvailableForStoreAsync(storeId, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpGet("list")]
+        public async Task<IActionResult> GetProductList()
+        {
+            var response = await _productService.GetProductListAsync(GetUserId());
+            return Ok(response);
+        }
+
+
+        [HttpPut("{id}/quantity/{quantity}")]
+        public async Task<IActionResult> UpdateQuantity(string id, int quantity)
+        {
+            var response = await _productService.UpdateQuantityAsync(id, quantity, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpPut("{id}/increment/{amount}")]
+        public async Task<IActionResult> IncrementQuantity(string id, int amount)
+        {
+            var response = await _productService.IncrementQuantityAsync(id, amount, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpPut("{id}/decrement/{amount}")]
+        public async Task<IActionResult> DecrementQuantity(string id, int amount)
+        {
+            var response = await _productService.DecrementQuantityAsync(id, amount, GetUserId());
+            return Ok(response);
+        }
+
+
+        [HttpPost("range")]
+        public async Task<IActionResult> AddRange([FromBody] IEnumerable<ProductCreateDTO> dtos)
+        {
+            var response = await _productService.AddRangeAsync(dtos, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpPut("range")]
+        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<ProductUpdateDTO> dtos)
+        {
+            var response = await _productService.UpdateRangeAsync(dtos, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpDelete("range")]
+        public async Task<IActionResult> DeleteRange([FromBody] IEnumerable<string> ids)
+        {
+            var response = await _productService.DeleteRangeAsync(ids, GetUserId());
+            return Ok(response);
+        }
+
+
+        [HttpGet("exists")]
+        public async Task<IActionResult> Exists([FromQuery] string name)
+        {
+            var response = await _productService.ExistsAsync(p => p.Name == name, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpGet("count")]
+        public async Task<IActionResult> Count([FromQuery] string categoryId)
+        {
+            var response = await _productService.CountAsync(p => p.CategoryId == categoryId, GetUserId());
+            return Ok(response);
+        }
     }
 }

@@ -1,190 +1,79 @@
-﻿using invoice.Data;
-using invoice.DTO.PaymentLink;
-using invoice.Models;
+﻿using invoice.Core.DTO.PaymentLink;
+using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using invoice.DTO;
+using System.Security.Claims;
 
 namespace invoice.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Route("api/[controller]")]
     public class PaymentLinkController : ControllerBase
     {
-        private readonly IRepository<PaymentLink> _repository;
+        private readonly IPaymentLinkService _paymentLinkService;
 
-        public PaymentLinkController(IRepository<PaymentLink> repository)
+        public PaymentLinkController(IPaymentLinkService paymentLinkService)
         {
-            _repository = repository;
+            _paymentLinkService = paymentLinkService;
         }
 
-        //[HttpGet]
-        //public async Task<IActionResult> GetAll()
-        //{
-        //    var links = await _repository.GetAll(l => l.Payment);
-        //    var result = links.Select(l => new PaymentLinkDetailsDTO
-        //    {
-        //        Id = l.Id,
-        //        Link = l.Link,
-        //        Value = l.Value,
-        //        PaymentsNumber = l.PaymentsNumber,
-        //        Description = l.Description,
-        //        Message = l.Message,
-        //        Image = l.Image,
-        //        Terms = l.Terms,
-        //        IsDeleted = l.IsDeleted,
-        //        PaymentId = l.PaymentId,
-        //        PaymentName = l.Payment?.Name
-        //    });
+        private string GetUserId() =>
+        User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
-        //    return Ok(new GeneralResponse<IEnumerable<PaymentLinkDetailsDTO>>
-        //    {
-        //        Success = true,
-        //        Message = "Payment links retrieved successfully.",
-        //        Data = result
-        //    });
-        //}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var result = await _paymentLinkService.GetByIdAsync(id, GetUserId());
+            return result.Success ? Ok(result) : NotFound(result);
+        }
 
-        //[HttpGet("{id}")]
-        //public async Task<IActionResult> GetById(string id)
-        //{
-        //    var link = await _repository.GetById(id, l => l.Payment);
-        //    if (link == null)
-        //    {
-        //        return NotFound(new GeneralResponse<object>
-        //        {
-        //            Success = false,
-        //            Message = $"No payment link found with ID {id}.",
-        //            Data = null
-        //        });
-        //    }
-
-        //    var dto = new PaymentLinkDetailsDTO
-        //    {
-        //        Id = link.Id,
-        //        Link = link.Link,
-        //        Value = link.Value,
-        //        PaymentsNumber = link.PaymentsNumber,
-        //        Description = link.Description,
-        //        Message = link.Message,
-        //        Image = link.Image,
-        //        Terms = link.Terms,
-        //        IsDeleted = link.IsDeleted,
-        //        PaymentId = link.PaymentId,
-        //        PaymentName = link.Payment?.Name
-        //    };
-
-        //    return Ok(new GeneralResponse<PaymentLinkDetailsDTO>
-        //    {
-        //        Success = true,
-        //        Message = "Payment link retrieved successfully.",
-        //        Data = dto
-        //    });
-        //}
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _paymentLinkService.GetAllAsync(GetUserId());
+            return Ok(result);
+        }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreatePaymentLinkDTO dto)
+        public async Task<IActionResult> Create(PaymentLinkCreateDTO dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "Validation failed.",
-                    Data = ModelState
-                });
-            }
-
-            var link = new PaymentLink
-            {
-                Link = dto.Link,
-                Value = dto.Value,
-                PaymentsNumber = dto.PaymentsNumber,
-                Description = dto.Description,
-                Message = dto.Message,
-                Image = dto.Image,
-                Terms = dto.Terms,
-                IsDeleted = dto.IsDeleted,
-                PaymentId = dto.PaymentId
-            };
-
-            await _repository.Add(link);
-
-            return Ok(new GeneralResponse<PaymentLink>
-            {
-                Success = true,
-                Message = "Payment link created successfully.",
-                Data = link
-            });
+            var result = await _paymentLinkService.CreateAsync(dto, GetUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] UpdatePaymentLinkDTO dto)
+        public async Task<IActionResult> Update(string id, PaymentLinkUpdateDTO dto)
         {
-            if (id != dto.Id)
-            {
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "ID mismatch.",
-                    Data = null
-                });
-            }
-
-            var existing = await _repository.GetById(id);
-            if (existing == null)
-            {
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = $"No payment link found with ID {id}.",
-                    Data = null
-                });
-            }
-
-            existing.Link = dto.Link;
-            existing.Value = dto.Value;
-            existing.PaymentsNumber = dto.PaymentsNumber;
-            existing.Description = dto.Description;
-            existing.Message = dto.Message;
-            existing.Image = dto.Image;
-            existing.Terms = dto.Terms;
-            existing.IsDeleted = dto.IsDeleted;
-            existing.PaymentId = dto.PaymentId;
-
-            await _repository.Update(existing);
-
-            return Ok(new GeneralResponse<PaymentLink>
-            {
-                Success = true,
-                Message = "Payment link updated successfully.",
-                Data = existing
-            });
+            var result = await _paymentLinkService.UpdateAsync(id, dto, GetUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var link = await _repository.GetById(id);
-            if (link == null)
-            {
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = $"No payment link found with ID {id}.",
-                    Data = null
-                });
-            }
+            var result = await _paymentLinkService.DeleteAsync(id, GetUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
 
-            await _repository.Delete(id);
+        [HttpPost("{invoiceId}/generate")]
+        public async Task<IActionResult> GenerateLink(string invoiceId, [FromQuery] decimal value)
+        {
+            var result = await _paymentLinkService.GenerateLinkAsync(invoiceId, value, GetUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
 
-            return Ok(new GeneralResponse<object>
-            {
-                Success = true,
-                Message = "Payment link deleted successfully.",
-                Data = null
-            });
+        [HttpPost("{invoiceId}/recalculate")]
+        public async Task<IActionResult> RecalculateInvoiceTotals(string invoiceId)
+        {
+            var result = await _paymentLinkService.RecalculateInvoiceTotalsAsync(invoiceId, GetUserId());
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("count")]
+        public async Task<IActionResult> Count()
+        {
+            var count = await _paymentLinkService.CountAsync(GetUserId());
+            return Ok(new { Count = count });
         }
     }
 }

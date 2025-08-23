@@ -1,209 +1,112 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using invoice.Core.DTO.Category;
+using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
-using invoice.Data;
-using invoice.Models;
-using invoice.DTO.Product;
-using invoice.DTO;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
-//namespace invoice.Controllers
-//{
-//    [Route("api/[controller]")]
-//    [ApiController]
-//    [Authorize]
-//    public class CategoryController : ControllerBase
-//    {
-//        private readonly IRepository<Category> _repository;
+namespace invoice.Controllers
+{
+    //[Authorize]
+    [ApiController]
+    [Route("api/[controller]")]
+    public class CategoriesController : ControllerBase
+    {
+        private readonly ICategoryService _categoryService;
 
-//        public CategoryController(IRepository<Category> repository)
-//        {
-//            _repository = repository;
-//        }
+        public CategoriesController(ICategoryService categoryService)
+        {
+            _categoryService = categoryService;
+        }
 
-//        [HttpGet]
-//        public async Task<IActionResult> GetAll()
-//        {
-//            var categories = await _repository.GetAll(c => c.Products);
+        private string GetUserId() =>
+     User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
-//            var result = categories.Select(c => new CategoryDetailsDTO
-//            {
-//                Id = c.Id,
-//                Name = c.Name,
-//                Products = c.Products.Select(p => new ProductDetailsDTO
-//                {
-//                    Id = p.Id,
-//                    Name = p.Name,
-//                    Image = p.Image,
-//                    Price = p.Price,
-//                    Quantity = p.Quantity,
-//                    StoreId = p.StoreId,
-//                    CategoryId = p.CategoryId
-//                }).ToList() ?? new List<ProductDetailsDTO>()
-//            });
 
-//            return Ok(new GeneralResponse<IEnumerable<CategoryDetailsDTO>>
-//            {
-//                Success = true,
-//                Message = "Categories retrieved successfully.",
-//                Data = result
-//            });
-//        }
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var response = await _categoryService.GetAllAsync(GetUserId());
 
-//        [HttpGet("{id}")]
-//        public async Task<IActionResult> GetById(string id)
-//        {
-//            var category = await _repository.GetById(id, c => c.Products);
-//            if (category == null)
-//            {
-//                return NotFound(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = $"Category with ID {id} not found.",
-//                    Data = null
-//                });
-//            }
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
 
-//            var result = new CategoryDetailsDTO
-//            {
-//                Id = category.Id,
-//                Name = category.Name,
-//                Products = category.Products.Select(p => new ProductDetailsDTO
-//                {
-//                    Id = p.Id,
-//                    Name = p.Name,
-//                    Image = p.Image,
-//                    Price = p.Price,
-//                    Quantity = p.Quantity,
-//                    StoreId = p.StoreId,
-//                    CategoryId = p.CategoryId
-//                }).ToList() ?? new List<ProductDetailsDTO>()
-//            };
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var response = await _categoryService.GetByIdAsync(id, GetUserId());
 
-//            return Ok(new GeneralResponse<CategoryDetailsDTO>
-//            {
-//                Success = true,
-//                Message = "Category retrieved successfully.",
-//                Data = result
-//            });
-//        }
+            return response.Success ? Ok(response) : NotFound(response);
+        }
 
-//        [HttpPost]
-//        public async Task<IActionResult> Create([FromBody] CreateCategoryDTO dto)
-//        {
-//            if (!ModelState.IsValid)
-//            {
-//                return BadRequest(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = "Validation failed.",
-//                    Data = ModelState
-//                });
-//            }
+        [HttpGet("by-user")]
+        public async Task<IActionResult> GetByUserId()
+        {
+            var response = await _categoryService.GetByUserIdAsync(GetUserId());
 
-//            var category = new Category
-//            {
-//                Name = dto.Name
-//            };
+            return response.Success ? Ok(response) : NotFound(response);
+        }
 
-//            await _repository.Add(category);
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string keyword)
+        {
+            var response = await _categoryService.QueryAsync(GetUserId(), keyword);
 
-//            var result = new CategoryDetailsDTO
-//            {
-//                Id = category.Id,
-//                Name = category.Name,
-//                Products = new List<ProductDetailsDTO>()
-//            };
+            return response.Success ? Ok(response) : NotFound(response);
+        }
 
-//            return Ok(new GeneralResponse<CategoryDetailsDTO>
-//            {
-//                Success = true,
-//                Message = "Category created successfully.",
-//                Data = result
-//            });
-//        }
+        [HttpGet("count")]
+        public async Task<IActionResult> Count()
+        {
+            var count = await _categoryService.CountAsync(GetUserId());
 
-//        [HttpPut("{id}")]
-//        public async Task<IActionResult> Update(string id, [FromBody] UpdateCategoryDTO dto)
-//        {
-//            if (id != dto.Id)
-//            {
-//                return BadRequest(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = "ID mismatch.",
-//                    Data = null
-//                });
-//            }
+            return Ok(new { Count = count });
+        }
 
-//            if (!ModelState.IsValid)
-//            {
-//                return BadRequest(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = "Validation failed.",
-//                    Data = ModelState
-//                });
-//            }
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CategoryCreateDTO dto)
+        {
+            var response = await _categoryService.CreateAsync(dto, GetUserId());
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
 
-//            var existing = await _repository.GetById(id, c => c.Products);
-//            if (existing == null)
-//            {
-//                return NotFound(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = $"Category with ID {id} not found.",
-//                    Data = null
-//                });
-//            }
+        [HttpPost("range")]
+        public async Task<IActionResult> CreateRange([FromBody] IEnumerable<CategoryCreateDTO> dtos)
+        {
+            var response = await _categoryService.CreateRangeAsync(dtos, GetUserId());
 
-//            existing.Name = dto.Name;
-//            await _repository.Update(existing);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
 
-//            var result = new CategoryDetailsDTO
-//            {
-//                Id = existing.Id,
-//                Name = existing.Name,
-//                Products = existing.Products.Select(p => new ProductDetailsDTO
-//                {
-//                    Id = p.Id,
-//                    Name = p.Name,
-//                    Image = p.Image,
-//                    Price = p.Price,
-//                    Quantity = p.Quantity,
-//                    StoreId = p.StoreId,
-//                    CategoryId = p.CategoryId
-//                }).ToList() ?? new List<ProductDetailsDTO>()
-//            };
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] CategoryUpdateDTO dto)
+        {
+            var response = await _categoryService.UpdateAsync(id, dto, GetUserId());
 
-//            return Ok(new GeneralResponse<CategoryDetailsDTO>
-//            {
-//                Success = true,
-//                Message = "Category updated successfully.",
-//                Data = result
-//            });
-//        }
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
 
-//        [HttpDelete("{id}")]
-//        public async Task<IActionResult> Delete(string id)
-//        {
-//            var category = await _repository.GetById(id);
-//            if (category == null)
-//            {
-//                return NotFound(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = $"Category with ID {id} not found.",
-//                    Data = null
-//                });
-//            }
+        [HttpPut("range")]
+        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<CategoryUpdateDTO> dtos)
+        {
+            var response = await _categoryService.UpdateRangeAsync(dtos, GetUserId());
 
-//            await _repository.Delete(id);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
 
-//            return Ok(new GeneralResponse<object>
-//            {
-//                Success = true,
-//                Message = "Category deleted successfully.",
-//                Data = null
-//            });
-//        }
-//    }
-//}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var response = await _categoryService.DeleteAsync(id, GetUserId());
+
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpDelete("range")]
+        public async Task<IActionResult> DeleteRange([FromBody] IEnumerable<string> ids)
+        {
+            var response = await _categoryService.DeleteRangeAsync(ids, GetUserId());
+
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+    }
+}

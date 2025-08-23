@@ -1,0 +1,193 @@
+﻿using invoice.Core.DTO;
+using invoice.Repo;
+using invoice.Repo.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+
+namespace Repo
+{
+    public class Repository<T> : IRepository<T> where T : class
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly DbSet<T> _dbSet;
+
+        public Repository(ApplicationDbContext context)
+        {
+            _context = context;
+            _dbSet = context.Set<T>();
+        }
+
+        // ---------- Retrieval ----------
+
+        public async Task<IEnumerable<T>> GetAllAsync(string userId = null, params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _dbSet;
+
+            if (includes != null && includes.Any())
+                query = includes.Aggregate(query, (current, include) => current.Include(include));
+
+            if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
+                query = query.Where(e => EF.Property<string>(e, "UserId") == userId);
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<T> GetByIdAsync(string id, string userId = null, Func<IQueryable<T>, IQueryable<T>> include = null)
+        {
+            IQueryable<T> query = _dbSet;
+
+            if (include != null)
+                query = include(query);
+
+            if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
+                query = query.Where(e => EF.Property<string>(e, "UserId") == userId);
+
+            return await query.FirstOrDefaultAsync(e => EF.Property<string>(e, "Id") == id);
+        }
+
+        public async Task<T> GetByUserIdAsync(string userId, Func<IQueryable<T>, IQueryable<T>> include = null)
+        {
+            IQueryable<T> query = _dbSet;
+
+            if (include != null)
+                query = include(query);
+
+            return await query.FirstOrDefaultAsync(e => EF.Property<string>(e, "UserId") == userId);
+        }
+
+        public async Task<IEnumerable<T>> QueryAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _dbSet.Where(predicate);
+
+            if (includes != null && includes.Any())
+                query = includes.Aggregate(query, (current, include) => current.Include(include));
+
+            return await query.ToListAsync();
+        }
+
+        // ---------- Existence & Count ----------
+
+        public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.AnyAsync(predicate);
+        }
+
+        public async Task<int> CountAsync(Expression<Func<T, bool>> predicate = null)
+        {
+            return predicate == null ? await _dbSet.CountAsync() : await _dbSet.CountAsync(predicate);
+        }
+
+        // ---------- Add / Update / Delete ----------
+
+        public async Task<GeneralResponse<T>> AddAsync(T entity)
+        {
+            await _dbSet.AddAsync(entity);
+            await _context.SaveChangesAsync();
+
+            return new GeneralResponse<T>
+            {
+                Success = true,
+                Message = "Entity added successfully.",
+                Data = entity
+            };
+        }
+
+        public async Task<GeneralResponse<IEnumerable<T>>> AddRangeAsync(IEnumerable<T> entities)
+        {
+            await _dbSet.AddRangeAsync(entities);
+            await _context.SaveChangesAsync();
+
+            return new GeneralResponse<IEnumerable<T>>
+            {
+                Success = true,
+                Message = "Entities added successfully.",
+                Data = entities
+            };
+        }
+
+        public async Task<GeneralResponse<T>> UpdateAsync(T entity)
+        {
+            _dbSet.Update(entity);
+            await _context.SaveChangesAsync();
+
+            return new GeneralResponse<T>
+            {
+                Success = true,
+                Message = "Entity updated successfully.",
+                Data = entity
+            };
+        }
+
+        public async Task<GeneralResponse<IEnumerable<T>>> UpdateRangeAsync(IEnumerable<T> entities)
+        {
+            _dbSet.UpdateRange(entities);
+            await _context.SaveChangesAsync();
+
+            return new GeneralResponse<IEnumerable<T>>
+            {
+                Success = true,
+                Message = "Entities updated successfully.",
+                Data = entities
+            };
+        }
+
+        public async Task<GeneralResponse<T>> DeleteAsync(string id)
+        {
+            var entity = await _dbSet.FirstOrDefaultAsync(e => EF.Property<string>(e, "Id") == id);
+            if (entity == null)
+            {
+                return new GeneralResponse<T>
+                {
+                    Success = false,
+                    Message = "Entity not found."
+                };
+            }
+
+            _dbSet.Remove(entity);
+            await _context.SaveChangesAsync();
+
+            return new GeneralResponse<T>
+            {
+                Success = true,
+                Message = "Entity deleted successfully.",
+                Data = entity
+            };
+        }
+
+        public async Task<GeneralResponse<IEnumerable<T>>> DeleteRangeAsync(IEnumerable<string> ids)
+        {
+            var entities = await _dbSet.Where(e => ids.Contains(EF.Property<string>(e, "Id"))).ToListAsync();
+
+            if (!entities.Any())
+            {
+                return new GeneralResponse<IEnumerable<T>>
+                {
+                    Success = false,
+                    Message = "No entities found for deletion."
+                };
+            }
+
+            _dbSet.RemoveRange(entities);
+            await _context.SaveChangesAsync();
+
+            return new GeneralResponse<IEnumerable<T>>
+            {
+                Success = true,
+                Message = "Entities deleted successfully.",
+                Data = entities
+            };
+        }
+
+        // ---------- Utility ----------
+
+        public IQueryable<T> GetQueryable()
+        {
+            return _dbSet.AsQueryable();
+        }
+
+        public async Task<int> SaveChangesAsync()
+        {
+            return await _context.SaveChangesAsync();
+        }
+    }
+}

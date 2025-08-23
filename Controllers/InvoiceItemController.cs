@@ -1,202 +1,73 @@
-﻿//using invoice.Data;
-//using invoice.DTO;
-//using invoice.DTO.InvoiceItem;
-//using invoice.Models;
-//using Microsoft.AspNetCore.Authorization;
-//using Microsoft.AspNetCore.Mvc;
+﻿using invoice.Core.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using invoice.Core.Entites;
+using invoice.Core.DTO;
 
-//namespace invoice.Controllers
-//{
-//    [Route("api/[controller]")]
-//    [ApiController]
-//    [Authorize]
-//    public class InvoiceItemController : ControllerBase
-//    {
-//        private readonly IRepository<InvoiceItem> _repository;
+namespace invoice.Controllers
+{
+    //[Authorize]
+    [ApiController]
+    [Route("api/[controller]")]
+    public class InvoiceItemController : ControllerBase
+    {
+        private readonly IInvoiceItemsService _invoiceItemService;
 
-//        public InvoiceItemController(IRepository<InvoiceItem> repository)
-//        {
-//            _repository = repository;
-//        }
+        public InvoiceItemController(IInvoiceItemsService invoiceItemService)
+        {
+            _invoiceItemService = invoiceItemService;
+        }
 
-//        [HttpGet]
-//        public async Task<IActionResult> GetAll()
-//        {
-//            var items = await _repository.GetAll();
-//            var dtoList = items.Select(i => new InvoiceItemDetailsDTO
-//            {
-//                Id = i.Id,
-//                InvoiceId = i.InvoiceId,
-//                ProductId = i.ProductId,
-//                Quantity = i.Quantity,
-//                UnitPrice = i.UnitPrice,
-//                Subtotal = i.Subtotal
-//            });
+        [HttpGet("invoice/{invoiceId}")]
+        public async Task<IActionResult> GetByInvoiceId(string invoiceId)
+        {
+            var response = await _invoiceItemService.GetByInvoiceIdAsync(invoiceId);
+            return StatusCode(response.Success ? 200 : 404, response);
+        }
 
-//            return Ok(new GeneralResponse<IEnumerable<InvoiceItemDetailsDTO>>
-//            {
-//                Success = true,
-//                Message = "Invoice items retrieved successfully.",
-//                Data = dtoList
-//            });
-//        }
+        [HttpGet("product/{productId}")]
+        public async Task<IActionResult> GetByProductId(string productId)
+        {
+            var response = await _invoiceItemService.GetByProductIdAsync(productId);
+            return StatusCode(response.Success ? 200 : 404, response);
+        }
 
-//        [HttpGet("{id}")]
-//        public async Task<IActionResult> GetById(string id)
-//        {
-//            var item = await _repository.GetById(id);
-//            if (item == null)
-//            {
-//                return NotFound(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = $"Invoice item with ID {id} not found.",
-//                    Data = null
-//                });
-//            }
+        [HttpGet("invoice/{invoiceId}/total")]
+        public async Task<IActionResult> GetInvoiceTotal(string invoiceId)
+        {
+            var response = await _invoiceItemService.GetInvoiceTotalAsync(invoiceId);
+            return StatusCode(response.Success ? 200 : 404, response);
+        }
 
-//            var dto = new InvoiceItemDetailsDTO
-//            {
-//                Id = item.Id,
-//                InvoiceId = item.InvoiceId,
-//                ProductId = item.ProductId,
-//                Quantity = item.Quantity,
-//                UnitPrice = item.UnitPrice,
-//                Subtotal = item.Subtotal
-//            };
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] InvoiceItem item)
+        {
+            var response = await _invoiceItemService.CreateAsync(item);
+            return StatusCode(response.Success ? 201 : 400, response);
+        }
 
-//            return Ok(new GeneralResponse<InvoiceItemDetailsDTO>
-//            {
-//                Success = true,
-//                Message = "Invoice item retrieved successfully.",
-//                Data = dto
-//            });
-//        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] InvoiceItem item)
+        {
+            if (id != item.Id)
+                return BadRequest(new GeneralResponse<bool> { Success = false, Message = "ID mismatch" });
 
-//        [HttpPost]
-//        public async Task<IActionResult> Create([FromBody] InvoiceItemDTO dto)
-//        {
-//            if (!ModelState.IsValid)
-//            {
-//                return BadRequest(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = "Validation failed.",
-//                    Data = ModelState
-//                });
-//            }
+            var response = await _invoiceItemService.UpdateAsync(item);
+            return StatusCode(response.Success ? 200 : 400, response);
+        }
 
-//            var item = new InvoiceItem
-//            {
-//                InvoiceId = dto.InvoiceId,
-//                ProductId = dto.ProductId,
-//                Quantity = dto.Quantity,
-//                UnitPrice = dto.UnitPrice,
-//                Subtotal = dto.Quantity * dto.UnitPrice
-//            };
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var response = await _invoiceItemService.DeleteAsync(id);
+            return StatusCode(response.Success ? 200 : 404, response);
+        }
 
-//            await _repository.Add(item);
-
-//            var result = new InvoiceItemDetailsDTO
-//            {
-//                Id = item.Id,
-//                InvoiceId = item.InvoiceId,
-//                ProductId = item.ProductId,
-//                Quantity = item.Quantity,
-//                UnitPrice = item.UnitPrice,
-//                Subtotal = item.Subtotal
-//            };
-
-//            return Ok(new GeneralResponse<InvoiceItemDetailsDTO>
-//            {
-//                Success = true,
-//                Message = "Invoice item created successfully.",
-//                Data = result
-//            });
-//        }
-
-//        [HttpPut("{id}")]
-//        public async Task<IActionResult> Update(string id, [FromBody] UpdateInvoiceItemDTO dto)
-//        {
-//            if (id != dto.Id)
-//            {
-//                return BadRequest(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = "ID mismatch.",
-//                    Data = null
-//                });
-//            }
-
-//            if (!ModelState.IsValid)
-//            {
-//                return BadRequest(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = "Validation failed.",
-//                    Data = ModelState
-//                });
-//            }
-
-//            var existing = await _repository.GetById(id);
-//            if (existing == null)
-//            {
-//                return NotFound(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = $"Invoice item with ID {id} not found.",
-//                    Data = null
-//                });
-//            }
-
-//            existing.InvoiceId = dto.InvoiceId;
-//            existing.ProductId = dto.ProductId;
-//            existing.Quantity = dto.Quantity;
-//            existing.UnitPrice = dto.UnitPrice;
-//            existing.Subtotal = dto.Quantity * dto.UnitPrice;
-
-//            await _repository.Update(existing);
-
-//            var result = new InvoiceItemDetailsDTO
-//            {
-//                Id = existing.Id,
-//                InvoiceId = existing.InvoiceId,
-//                ProductId = existing.ProductId,
-//                Quantity = existing.Quantity,
-//                UnitPrice = existing.UnitPrice,
-//                Subtotal = existing.Subtotal
-//            };
-
-//            return Ok(new GeneralResponse<InvoiceItemDetailsDTO>
-//            {
-//                Success = true,
-//                Message = "Invoice item updated successfully.",
-//                Data = result
-//            });
-//        }
-
-//        [HttpDelete("{id}")]
-//        public async Task<IActionResult> Delete(string id)
-//        {
-//            var item = await _repository.GetById(id);
-//            if (item == null)
-//            {
-//                return NotFound(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = $"Invoice item with ID {id} not found.",
-//                    Data = null
-//                });
-//            }
-
-//            await _repository.Delete(id);
-
-//            return Ok(new GeneralResponse<object>
-//            {
-//                Success = true,
-//                Message = "Invoice item deleted successfully.",
-//                Data = null
-//            });
-//        }
-//    }
-//}
+        [HttpDelete("invoice/{invoiceId}")]
+        public async Task<IActionResult> DeleteByInvoiceId(string invoiceId)
+        {
+            var response = await _invoiceItemService.DeleteByInvoiceIdAsync(invoiceId);
+            return StatusCode(response.Success ? 200 : 404, response);
+        }
+    }
+}

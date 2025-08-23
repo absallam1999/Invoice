@@ -1,198 +1,88 @@
-﻿//using Microsoft.AspNetCore.Authorization;
-//using Microsoft.AspNetCore.Mvc;
-//using System.Security.Claims;
-//using invoice.Data;
-//using invoice.Models;
-//using invoice.DTO;
+﻿using invoice.Core.DTO.Notification;
+using invoice.Core.Interfaces.Services;
+using invoice.Core.Entites;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-//namespace invoice.Controllers
-//{
-//    [Route("api/[controller]")]
-//    [ApiController]
-//    [Authorize]
-//    public class NotificationController : ControllerBase
-//    {
-//        private readonly IRepository<Notification> _repository;
+namespace invoice.Controllers
+{
+    //[Authorize]
+    [ApiController]
+    [Route("api/[controller]")]
+    public class NotificationController : ControllerBase
+    {
+        private readonly INotificationService _notificationService;
 
-//        public NotificationController(IRepository<Notification> repository)
-//        {
-//            _repository = repository;
-//        }
+        public NotificationController(INotificationService notificationService)
+        {
+            _notificationService = notificationService;
+        }
 
-//        [HttpGet]
-//        public async Task<IActionResult> GetAll()
-//        {
-//            var notifications = await _repository.GetAll(n => n.User);
-//            var dtoList = notifications.Select(n => new NotificationDetailsDTO
-//            {
-//                Id = n.Id,
-//                Title = n.Title,
-//                Message = n.Message,
-//                UserId = n.UserId,
-//                UserName = n.User?.UserName
-//            });
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _notificationService.GetAllAsync();
+            return Ok(result);
+        }
 
-//            return Ok(new GeneralResponse<IEnumerable<NotificationDetailsDTO>>
-//            {
-//                Success = true,
-//                Message = "All notifications retrieved.",
-//                Data = dtoList
-//            });
-//        }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var result = await _notificationService.GetByIdAsync(id);
+            if (!result.Success) return NotFound(result);
+            return Ok(result);
+        }
 
-//        [HttpGet("{id}")]
-//        public async Task<IActionResult> GetById(string id)
-//        {
-//            var notification = await _repository.GetById(id, n => n.User);
-//            if (notification == null)
-//            {
-//                return NotFound(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = $"Notification with ID {id} not found.",
-//                    Data = null
-//                });
-//            }
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetByUser(string userId)
+        {
+            var result = await _notificationService.GetByUserAsync(userId);
+            return Ok(result);
+        }
 
-//            var dto = new NotificationDetailsDTO
-//            {
-//                Id = notification.Id,
-//                Title = notification.Title,
-//                Message = notification.Message,
-//                UserId = notification.UserId,
-//                UserName = notification.User?.UserName
-//            };
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] NotificationCreateDTO dto)
+        {
+            var notification = await _notificationService.CreateAsync(
+                new Notification
+                {
+                    Title = dto.Title,
+                    Message = dto.Message,
+                    Type = dto.Type,
+                    UserId = dto.UserId
+                });
+            return Ok(notification);
+        }
 
-//            return Ok(new GeneralResponse<NotificationDetailsDTO>
-//            {
-//                Success = true,
-//                Message = "Notification found.",
-//                Data = dto
-//            });
-//        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] NotificationUpdateDTO dto)
+        {
+            var notification = await _notificationService.UpdateAsync(id,
+                new Notification
+                {
+                    Id = dto.Id,
+                    Title = dto.Title,
+                    Type = dto.Type,
+                    Message = dto.Message
+                });
 
-//        [HttpPost]
-//        public async Task<IActionResult> Create([FromBody] CreateNotificationDTO dto)
-//        {
-//            if (!ModelState.IsValid)
-//            {
-//                return BadRequest(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = "Validation failed.",
-//                    Data = ModelState
-//                });
-//            }
+            if (!notification.Success) return NotFound(notification);
+            return Ok(notification);
+        }
 
-//            var notification = new Notification
-//            {
-//                Title = dto.Title,
-//                Message = dto.Message,
-//                UserId = dto.UserId
-//            };
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var result = await _notificationService.DeleteAsync(id);
+            if (!result.Success) return NotFound(result);
+            return Ok(result);
+        }
 
-//            await _repository.Add(notification);
-
-//            return Ok(new GeneralResponse<Notification>
-//            {
-//                Success = true,
-//                Message = "Notification created successfully.",
-//                Data = notification
-//            });
-//        }
-
-//        [HttpPut("{id}")]
-//        public async Task<IActionResult> Update(string id, [FromBody] UpdateNotificationDTO dto)
-//        {
-//            if (id != dto.Id)
-//            {
-//                return BadRequest(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = "ID mismatch.",
-//                    Data = null
-//                });
-//            }
-
-//            var existing = await _repository.GetById(id);
-//            if (existing == null)
-//            {
-//                return NotFound(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = $"Notification with ID {id} not found.",
-//                    Data = null
-//                });
-//            }
-
-//            existing.Title = dto.Title;
-//            existing.Message = dto.Message;
-//            existing.UserId = dto.UserId;
-
-//            await _repository.Update(existing);
-
-//            return Ok(new GeneralResponse<Notification>
-//            {
-//                Success = true,
-//                Message = "Notification updated successfully.",
-//                Data = existing
-//            });
-//        }
-
-//        [HttpDelete("{id}")]
-//        public async Task<IActionResult> Delete(string id)
-//        {
-//            var notification = await _repository.GetById(id);
-//            if (notification == null)
-//            {
-//                return NotFound(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = $"Notification with ID {id} not found.",
-//                    Data = null
-//                });
-//            }
-
-//            await _repository.Delete(id);
-
-//            return Ok(new GeneralResponse<object>
-//            {
-//                Success = true,
-//                Message = "Notification deleted successfully.",
-//                Data = null
-//            });
-//        }
-
-//        [HttpGet("user/{userId}")]
-//        public async Task<IActionResult> GetUserNotifications(string userId)
-//        {
-//            if (string.IsNullOrEmpty(userId))
-//            {
-//                return BadRequest(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = "User ID is required.",
-//                    Data = null
-//                });
-//            }
-
-//            var notifications = await _repository.Query(n => n.UserId == userId, n => n.User);
-
-//            var result = notifications.Select(n => new NotificationDetailsDTO
-//            {
-//                Id = n.Id,
-//                Title = n.Title,
-//                Message = n.Message,
-//                UserId = n.UserId,
-//                UserName = n.User?.UserName
-//            });
-
-//            return Ok(new GeneralResponse<IEnumerable<NotificationDetailsDTO>>
-//            {
-//                Success = true,
-//                Message = "User notifications retrieved successfully.",
-//                Data = result
-//            });
-//        }
-//    }
-//}
+        [HttpDelete]
+        public async Task<IActionResult> DeleteRange([FromBody] IEnumerable<string> ids)
+        {
+            var result = await _notificationService.DeleteRangeAsync(ids);
+            return Ok(result);
+        }
+    }
+}

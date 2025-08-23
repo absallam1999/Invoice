@@ -1,213 +1,120 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using invoice.Models;
-using invoice.Data;
-using invoice.DTO;
-using invoice.DTO.Language;
-using Microsoft.AspNetCore.Authorization;
-using invoice.Models.Enums;
+﻿using invoice.Core.Interfaces.Services;
+using invoice.Core.Entites;
+using invoice.Core.Enums;
+using Microsoft.AspNetCore.Mvc;
+using invoice.Core.DTO.Language;
 
 namespace invoice.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Route("api/[controller]")]
     public class LanguageController : ControllerBase
     {
-        private readonly IRepository<Language> _repository;
+        private readonly ILanguageService _languageService;
 
-        public LanguageController(IRepository<Language> repository)
+        public LanguageController(ILanguageService languageService)
         {
-            _repository = repository;
+            _languageService = languageService;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var languages = await _repository.GetAll();
-            var dtoList = languages.Select(l => new LanguageDetailsDTO
-            {
-                Id = l.Id,
-                Name = l.Name,
-                //Target = l.Target
-            });
-
-            return Ok(new GeneralResponse<IEnumerable<LanguageDetailsDTO>>
-            {
-                Success = true,
-                Message = "Languages retrieved successfully.",
-                Data = dtoList
-            });
+            var result = await _languageService.GetAllAsync();
+            return Ok(result);
         }
 
-        //        [HttpGet("{id}")]
-        //        public async Task<IActionResult> GetById(string id)
-        //        {
-        //            var language = await _repository.GetById(id);
-        //            if (language == null)
-        //            {
-        //                return NotFound(new GeneralResponse<object>
-        //                {
-        //                    Success = false,
-        //                    Message = $"Language with ID {id} not found.",
-        //                    Data = null
-        //                });
-        //            }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var result = await _languageService.GetByIdAsync(id);
+            if (!result.Success) return NotFound(result);
+            return Ok(result);
+        }
 
-        //            var dto = new LanguageDetailsDTO
-        //            {
-        //                Id = language.Id,
-        //                Name = language.Name,
-        //                Target = language.Target
-        //            };
+        [HttpGet("name/{name}")]
+        public async Task<IActionResult> GetByName(LanguageName name)
+        {
+            var result = await _languageService.GetByNameAsync(name);
+            if (!result.Success) return NotFound(result);
+            return Ok(result);
+        }
 
-        //            return Ok(new GeneralResponse<LanguageDetailsDTO>
-        //            {
-        //                Success = true,
-        //                Message = "Language retrieved successfully.",
-        //                Data = dto
-        //            });
-        //        }
+        [HttpGet("target/{target}")]
+        public async Task<IActionResult> GetByTarget(LanguageTarget target)
+        {
+            var result = await _languageService.GetByTargetAsync(target);
+            if (!result.Success) return NotFound(result);
+            return Ok(result);
+        }
 
-        //        [HttpPost]
-        //        public async Task<IActionResult> Create([FromBody] CreateLanguageDTO dto)
-        //        {
-        //            if (!ModelState.IsValid)
-        //            {
-        //                return BadRequest(new GeneralResponse<object>
-        //                {
-        //                    Success = false,
-        //                    Message = "Validation failed.",
-        //                    Data = ModelState
-        //                });
-        //            }
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string keyword)
+        {
+            var result = await _languageService.SearchAsync(keyword);
+            return Ok(result);
+        }
 
-        //            var language = new Language
-        //            {
-        //                Name = dto.Name,
-        //                Target = dto.Target
-        //            };
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateLanguageDTO language)
+        {
+            var result = await _languageService.CreateAsync(language);
+            if (!result.Success) return BadRequest(result);
+            return Ok(result);
+        }
 
-        //            await _repository.Add(language);
+        [HttpPost("range")]
+        public async Task<IActionResult> CreateRange([FromBody] IEnumerable<CreateLanguageDTO> languages)
+        {
+            var result = await _languageService.CreateRangeAsync(languages);
+            if (!result.Success) return BadRequest(result);
+            return Ok(result);
+        }
 
-        //            return Ok(new GeneralResponse<LanguageDetailsDTO>
-        //            {
-        //                Success = true,
-        //                Message = "Language created successfully.",
-        //                Data = new LanguageDetailsDTO
-        //                {
-        //                    Id = language.Id,
-        //                    Name = language.Name,
-        //                    Target = language.Target
-        //                }
-        //            });
-        //        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] UpdateLanguageDTO language)
+        {
+            var result = await _languageService.UpdateAsync(id, language);
+            if (!result.Success) return BadRequest(result);
+            return Ok(result);
+        }
 
-        //        [HttpPut("{id}")]
-        //        public async Task<IActionResult> Update(string id, [FromBody] UpdateLanguageDTO dto)
-        //        {
-        //            if (id != dto.Id)
-        //            {
-        //                return BadRequest(new GeneralResponse<object>
-        //                {
-        //                    Success = false,
-        //                    Message = "ID mismatch.",
-        //                    Data = null
-        //                });
-        //            }
+        [HttpPut("range")]
+        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<UpdateLanguageDTO> languages)
+        {
+            var result = await _languageService.UpdateRangeAsync(languages);
+            if (!result.Success) return BadRequest(result);
+            return Ok(result);
+        }
 
-        //            var existing = await _repository.GetById(id);
-        //            if (existing == null)
-        //            {
-        //                return NotFound(new GeneralResponse<object>
-        //                {
-        //                    Success = false,
-        //                    Message = $"Language with ID {id} not found.",
-        //                    Data = null
-        //                });
-        //            }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var result = await _languageService.DeleteAsync(id);
+            if (!result.Success) return NotFound(result);
+            return Ok(result);
+        }
 
-        //            existing.Name = dto.Name;
-        //            existing.Target = dto.Target;
+        [HttpDelete("range")]
+        public async Task<IActionResult> DeleteRange([FromBody] IEnumerable<string> ids)
+        {
+            var result = await _languageService.DeleteRangeAsync(ids);
+            if (!result.Success) return NotFound(result);
+            return Ok(result);
+        }
 
-        //            await _repository.Update(existing);
+        [HttpGet("exists/{id}")]
+        public async Task<IActionResult> Exists(string id)
+        {
+            var exists = await _languageService.ExistsAsync(id);
+            return Ok(new { Exists = exists });
+        }
 
-        //            return Ok(new GeneralResponse<LanguageDetailsDTO>
-        //            {
-        //                Success = true,
-        //                Message = "Language updated successfully.",
-        //                Data = new LanguageDetailsDTO
-        //                {
-        //                    Id = existing.Id,
-        //                    Name = existing.Name,
-        //                    Target = existing.Target
-        //                }
-        //            });
-        //        }
-
-        //        [HttpDelete("{id}")]
-        //        public async Task<IActionResult> Delete(string id)
-        //        {
-        //            var language = await _repository.GetById(id);
-        //            if (language == null)
-        //            {
-        //                return NotFound(new GeneralResponse<object>
-        //                {
-        //                    Success = false,
-        //                    Message = $"Language with ID {id} not found.",
-        //                    Data = null
-        //                });
-        //            }
-
-        //            await _repository.Delete(id);
-
-        //            return Ok(new GeneralResponse<object>
-        //            {
-        //                Success = true,
-        //                Message = "Language deleted successfully.",
-        //                Data = null
-        //            });
-        //        }
-
-        //        [HttpGet("target-page")]
-        //        public async Task<IActionResult> GetLanguagesForPages()
-        //        {
-        //            var languages = await _repository.GetAll();
-        //            var filtered = languages
-        //                .Where(l => l.Target == LanguageTarget.Page)
-        //                .Select(l => new LanguageDetailsDTO
-        //                {
-        //                    Id = l.Id,
-        //                    Name = l.Name,
-        //                    Target = l.Target
-        //                });
-
-        //            return Ok(new GeneralResponse<IEnumerable<LanguageDetailsDTO>>
-        //            {
-        //                Success = true,
-        //                Message = "Page languages retrieved successfully.",
-        //                Data = filtered
-        //            });
-        //        }
-
-        //        [HttpGet("target-invoice")]
-        //        public async Task<IActionResult> GetLanguagesForInvoices()
-        //        {
-        //            var languages = await _repository.GetAll();
-        //            var filtered = languages
-        //                .Where(l => l.Target == LanguageTarget.Invoice)
-        //                .Select(l => new LanguageDetailsDTO
-        //                {
-        //                    Id = l.Id,
-        //                    Name = l.Name,
-        //                    Target = l.Target
-        //                });
-
-        //            return Ok(new GeneralResponse<IEnumerable<LanguageDetailsDTO>>
-        //            {
-        //                Success = true,
-        //                Message = "Invoice languages retrieved successfully.",
-        //                Data = filtered
-        //            });
-        //        }
+        [HttpGet("count")]
+        public async Task<IActionResult> Count()
+        {
+            var count = await _languageService.CountAsync();
+            return Ok(new { Count = count });
+        }
     }
 }

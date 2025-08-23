@@ -1,201 +1,115 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using invoice.Core.DTO.ContactInformation;
+using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
-using invoice.Data;
-using invoice.Models;
-using invoice.DTO;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace invoice.Controllers
 {
-    [Route("api/[controller]")]
+    //[Authorize]
     [ApiController]
-    [Authorize]
-    public class ContactInformationController : ControllerBase
+    [Route("api/[controller]")]
+    public class ContactInfoController : ControllerBase
     {
-        private readonly IRepository<ContactInfo> _repository;
+        private readonly IContactInfoService _contactInfoService;
 
-        public ContactInformationController(IRepository<ContactInfo> repository)
+        public ContactInfoController(IContactInfoService contactInfoService)
         {
-            _repository = repository;
+            _contactInfoService = contactInfoService;
         }
+
+        private string GetUserId() =>
+        User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var items = await _repository.GetAll();
-            var dtoList = items.Select(c => new ContactInformationDetailsDTO
-            {
-               // Id = c.Id,
-                Location = c.location,
-                Facebook = c.Facebook,
-                WhatsApp = c.WhatsApp,
-                Instagram = c.Instagram,
-                StoreId = c.StoreId
-            });
-
-            return Ok(new GeneralResponse<IEnumerable<ContactInformationDetailsDTO>>
-            {
-                Success = true,
-                Message = "Contact information retrieved successfully.",
-                Data = dtoList
-            });
+            var response = await _contactInfoService.GetAllAsync(GetUserId());
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var item = await _repository.GetById(id);
-            if (item == null)
-            {
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = $"Contact information with ID {id} not found.",
-                    Data = null
-                });
-            }
+            var response = await _contactInfoService.GetByIdAsync(id, GetUserId());
+            return response.Success ? Ok(response) : NotFound(response);
+        }
 
-            var dto = new ContactInformationDetailsDTO
-            {
-               // Id = item.Id,
-                Location = item.location,
-                Facebook = item.Facebook,
-                WhatsApp = item.WhatsApp,
-                Instagram = item.Instagram,
-                StoreId = item.StoreId
-            };
+        [HttpGet("store/{storeId}")]
+        public async Task<IActionResult> GetByStoreId(string storeId)
+        {
+            var response = await _contactInfoService.GetByStoreIdAsync(storeId, GetUserId());
+            return Ok(response);
+        }
 
-            return Ok(new GeneralResponse<ContactInformationDetailsDTO>
-            {
-                Success = true,
-                Message = "Contact information retrieved successfully.",
-                Data = dto
-            });
+        [HttpGet("email/{email}")]
+        public async Task<IActionResult> GetByEmail(string email)
+        {
+            var response = await _contactInfoService.GetByEmailAsync(email, GetUserId());
+            return response.Success ? Ok(response) : NotFound(response);
+        }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string keyword)
+        {
+            var response = await _contactInfoService.SearchAsync(keyword, GetUserId());
+            return Ok(response);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateContactInformationDTO dto)
+        public async Task<IActionResult> Create([FromBody] ContactInfoCreateDTO dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "Validation failed.",
-                    Data = ModelState
-                });
-            }
+            var response = await _contactInfoService.CreateAsync(dto, GetUserId());
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
 
-            var contact = new ContactInfo
-            {
-                location = dto.Location,
-                Facebook = dto.Facebook,
-                WhatsApp = dto.WhatsApp,
-                Instagram = dto.Instagram,
-                StoreId = dto.StoreId
-            };
-
-            await _repository.Add(contact);
-
-            var result = new ContactInformationDetailsDTO
-            {
-                //Id = contact.Id,
-                Location = contact.location,
-                Facebook = contact.Facebook,
-                WhatsApp = contact.WhatsApp,
-                Instagram = contact.Instagram,
-                StoreId = contact.StoreId
-            };
-
-            return Ok(new GeneralResponse<ContactInformationDetailsDTO>
-            {
-                Success = true,
-                Message = "Contact information created successfully.",
-                Data = result
-            });
+        [HttpPost("range")]
+        public async Task<IActionResult> CreateRange([FromBody] IEnumerable<ContactInfoCreateDTO> dtos)
+        {
+            var response = await _contactInfoService.CreateRangeAsync(dtos, GetUserId());
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] UpdateContactInformationDTO dto)
+        public async Task<IActionResult> Update(string id, [FromBody] ContactInfoUpdateDTO dto)
         {
-            if (id != dto.Id)
-            {
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "ID mismatch.",
-                    Data = null
-                });
-            }
+            var response = await _contactInfoService.UpdateAsync(id, dto, GetUserId());
+            return response.Success ? Ok(response) : NotFound(response);
+        }
 
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "Validation failed.",
-                    Data = ModelState
-                });
-            }
-
-            var existing = await _repository.GetById(id);
-            if (existing == null)
-            {
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = $"Contact information with ID {id} not found.",
-                    Data = null
-                });
-            }
-
-            existing.location = dto.Location;
-            existing.Facebook = dto.Facebook;
-            existing.WhatsApp = dto.WhatsApp;
-            existing.Instagram = dto.Instagram;
-            existing.StoreId = dto.StoreId;
-
-            await _repository.Update(existing);
-
-            var updated = new ContactInformationDetailsDTO
-            {
-               // Id = existing.Id,
-                Location = existing.location,
-                Facebook = existing.Facebook,
-                WhatsApp = existing.WhatsApp,
-                Instagram = existing.Instagram,
-                StoreId = existing.StoreId
-            };
-
-            return Ok(new GeneralResponse<ContactInformationDetailsDTO>
-            {
-                Success = true,
-                Message = "Contact information updated successfully.",
-                Data = updated
-            });
+        [HttpPut("range")]
+        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<ContactInfoUpdateDTO> dtos)
+        {
+            var response = await _contactInfoService.UpdateRangeAsync(dtos, GetUserId());
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var item = await _repository.GetById(id);
-            if (item == null)
-            {
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = $"Contact information with ID {id} not found.",
-                    Data = null
-                });
-            }
+            var response = await _contactInfoService.DeleteAsync(id, GetUserId());
+            return response.Success ? Ok(response) : NotFound(response);
+        }
 
-            await _repository.Delete(id);
+        [HttpDelete("range")]
+        public async Task<IActionResult> DeleteRange([FromBody] IEnumerable<string> ids)
+        {
+            var response = await _contactInfoService.DeleteRangeAsync(ids, GetUserId());
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
 
-            return Ok(new GeneralResponse<object>
-            {
-                Success = true,
-                Message = "Contact information deleted successfully.",
-                Data = null
-            });
+        [HttpGet("exists/{id}")]
+        public async Task<IActionResult> Exists(string id)
+        {
+            var exists = await _contactInfoService.ExistsAsync(id, GetUserId());
+            return Ok(new { Exists = exists });
+        }
+
+        [HttpGet("count")]
+        public async Task<IActionResult> Count()
+        {
+            var count = await _contactInfoService.CountAsync(GetUserId());
+            return Ok(new { Count = count });
         }
     }
 }

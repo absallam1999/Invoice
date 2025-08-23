@@ -1,251 +1,150 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using invoice.Models;
-using invoice.Data;
-using invoice.DTO.Store;
-using invoice.DTO;
+﻿using invoice.Core.DTO.Store;
+using invoice.Core.DTO.StoreSettings;
+using invoice.Core.Entites;
+using invoice.Core.Enums;
+using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using invoice.DTO.Product;
-using System.Security.Claims;
-using System.Data;
+using Microsoft.AspNetCore.Mvc;
+using System.Linq.Expressions;
 
 namespace invoice.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
     [Authorize]
+    [ApiController]
+    [Route("api/[controller]")]
     public class StoreController : ControllerBase
     {
-        private readonly IRepository<Store> _storerepository;
-        private readonly IRepository<Product> _productrepository;
+        private readonly IStoreService _storeService;
 
-        public StoreController(IRepository<Store> storerepository , IRepository<Product> productrepository)
+        public StoreController(IStoreService storeService)
         {
-            _storerepository = storerepository;
-            _productrepository= productrepository;
+            _storeService = storeService;
         }
-       
+
         [HttpGet]
-        public async Task<IActionResult> Get()
-        {  
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-            
-            var store = await _storerepository.GetByUserId( userId, q => q
-          .Include(p => p.ContactInfo)
-          .Include(p => p.PurchaseCompletionOptions)
-          .Include(p => p.Shipping)
-          .Include(p => p.Pages)
-          
-          );
+        public async Task<IActionResult> GetAll([FromQuery] string userId)
+        {
+            var result = await _storeService.GetAllAsync(userId);
+            return Ok(result);
+        }
 
-            if (store == null)
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "You don't have a store yet",
-                    Data = null
-                });
-            var products = await _productrepository.Query(
-                p => (p.Quantity == null || p.Quantity > 0) && p.InStore == true
-                                && p.UserId == userId);
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id, [FromQuery] string userId)
+        {
+            var result = await _storeService.GetByIdAsync(id, userId);
+            return Ok(result);
+        }
 
+        [HttpGet("by-user")]
+        public async Task<IActionResult> GetByUser([FromQuery] string userId)
+        {
+            var result = await _storeService.GetByUserAsync(userId);
+            return Ok(result);
+        }
 
-            var StoreDTO = new StoreDetailsDTO
-            {
-                StoreName = store.Name,
-                StoreId = store.Id,
-                Description = store.Description,
-                Url = store.Url,
-                Logo = store.Logo,
-                CoverImage = store.CoverImage,
-                Color = store.Color,
-                IsActivated = store.IsActivated,
-                StoreEmail = store.ContactInfo.Email,
-                StorePhone = store.ContactInfo.Phone,
-                Storelocation = store.ContactInfo.location,
-                StoreFacebook = store.ContactInfo.Facebook,
-                StoreInstagram = store.ContactInfo.Instagram,
-                StoreWhatsApp = store.ContactInfo.WhatsApp,
-                Currency = store.Currency,
-                Arabic = store.Arabic,
-                English = store.English,
-                Cash = store.Cash,
-                BankTransfer = store.BankTransfer,
-                PayPal = store.PayPal,
-                Tax = store.Tax,
-                FromStore = store.Shipping.FromStore,
-                Delivery = store.Shipping.Delivery,
+        [HttpGet("by-language/{languageId}")]
+        public async Task<IActionResult> GetByLanguage(string languageId, [FromQuery] string userId)
+        {
+            var result = await _storeService.GetByLanguageAsync(languageId, userId);
+            return Ok(result);
+        }
 
-                ClientName = store.PurchaseCompletionOptions.Name,
-                ClientEmail = store.PurchaseCompletionOptions.Email,
-                Clientphone = store.PurchaseCompletionOptions.phone,
-                TermsAndConditions = store.PurchaseCompletionOptions.TermsAndConditions,
-                Products = products.Select(p => new ProductStore
-                {
-                    ProductId = p.Id,
-                    ProductName = p.Name,
-                    ProductImage = p.Image
-                } ).ToList(),
+        [HttpGet("active")]
+        public async Task<IActionResult> GetActiveStores([FromQuery] string userId)
+        {
+            var result = await _storeService.GetActiveStoresAsync(userId);
+            return Ok(result);
+        }
 
-            };
-
-            return Ok(new GeneralResponse<StoreDetailsDTO>
-            {
-                Success = true,
-                Message = "Store retrieved successfully.",
-                Data = StoreDTO
-
-            });
-            }
+        [HttpGet("inactive")]
+        public async Task<IActionResult> GetInactiveStores([FromQuery] string userId)
+        {
+            var result = await _storeService.GetInactiveStoresAsync(userId);
+            return Ok(result);
+        }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] CreateStoreDTO dto)
+        public async Task<IActionResult> Create([FromBody] StoreCreateDTO dto, [FromQuery] string userId)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+            var result = await _storeService.CreateAsync(dto, userId);
+            return Ok(result);
+        }
 
-            var storeDB = await _storerepository.GetByUserId(userId);
-
-            if (storeDB != null)
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "You have store already.",
-                    Data = storeDB.Id
-                });
-
-
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "Invalid data submitted.",
-                    Data = ModelState
-                });
-            }
-
-            var store = new Store
-            {
-                Name = dto.Name,
-                Description = dto.Description,
-                Url = dto.Url,
-                Logo = dto.Logo,
-                CoverImage = dto.CoverImage,
-                Color = dto.Color,
-                Currency = dto.Currency,
-                IsActivated = dto.IsActivated,
-                UserId = dto.UserId
-            };
-
-            await _storerepository.Add(store);
-            return Ok(new GeneralResponse<Store>
-            {
-                Success = true,
-                Message = "Store created successfully.",
-                Data = store
-            });
+        [HttpPost("range")]
+        public async Task<IActionResult> AddRange([FromBody] IEnumerable<StoreCreateDTO> dtos, [FromQuery] string userId)
+        {
+            var result = await _storeService.AddRangeAsync(dtos, userId);
+            return Ok(result);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] UpdateStoreDTO dto)
+        public async Task<IActionResult> Update(string id, [FromBody] StoreUpdateDTO dto, [FromQuery] string userId)
         {
-            if (id != dto.Id)
-            {
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "ID mismatch.",
-                    Data = null
-                });
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "Invalid data submitted.",
-                    Data = ModelState
-                });
-            }
-
-            var existingStore = await _storerepository.GetById(id);
-            if (existingStore == null)
-            {
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = $"No store found with ID {id}.",
-                    Data = null
-                });
-            }
-
-            existingStore.Name = dto.Name;
-            existingStore.Description = dto.Description;
-            existingStore.Url = dto.Url;
-            existingStore.Logo = dto.Logo;
-            existingStore.CoverImage = dto.CoverImage;
-            existingStore.Color = dto.Color;
-            existingStore.Currency = dto.Currency;
-            existingStore.IsActivated = dto.IsActivated;
-            existingStore.UserId = dto.UserId;
-
-            await _storerepository.Update(existingStore);
-
-            return Ok(new GeneralResponse<Store>
-            {
-                Success = true,
-                Message = "Store updated successfully.",
-                Data = existingStore
-            });
+            var result = await _storeService.UpdateAsync(id, dto, userId);
+            return Ok(result);
         }
-        
 
-        [HttpPut("activation")]
-        public async Task<IActionResult> Activation()
+        [HttpPut("range")]
+        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<StoreUpdateDTO> dtos, [FromQuery] string userId)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+            var result = await _storeService.UpdateRangeAsync(dtos, userId);
+            return Ok(result);
+        }
 
-            var store = await _storerepository.GetByUserId(userId);
-             
-            if (store == null)
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "Store not found.",
-                    Data = null
-                });
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id, [FromQuery] string userId)
+        {
+            var result = await _storeService.DeleteAsync(id, userId);
+            return Ok(result);
+        }
 
-            store.IsActivated = !store.IsActivated;
+        [HttpDelete("range")]
+        public async Task<IActionResult> DeleteRange([FromBody] IEnumerable<string> ids, [FromQuery] string userId)
+        {
+            var result = await _storeService.DeleteRangeAsync(ids, userId);
+            return Ok(result);
+        }
 
-            var result = await _storerepository.Update(store);
+        [HttpPatch("{id}/activate")]
+        public async Task<IActionResult> ActivateStore(string id, [FromQuery] string userId)
+        {
+            var result = await _storeService.ActivateStoreAsync(id, userId);
+            return Ok(result);
+        }
 
-            if (!result.Success)
-            {
-                return StatusCode(500, new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = result.Message,
-                    Data = null
-                });
-            }
+        [HttpPatch("{id}/deactivate")]
+        public async Task<IActionResult> DeactivateStore(string id, [FromQuery] string userId)
+        {
+            var result = await _storeService.DeactivateStoreAsync(id, userId);
+            return Ok(result);
+        }
 
-            var updated = store.IsActivated ? "active" : "unactive";
-           
-            return Ok(new GeneralResponse<object>
-            {
-                Success = true,
-                Message = $"Store is now {updated}.",
-                Data = new { store.Id, store.IsActivated }
-            });
+        [HttpGet("{storeId}/settings")]
+        public async Task<IActionResult> GetSettings(string storeId, [FromQuery] string userId)
+        {
+            var result = await _storeService.GetSettingsAsync(storeId, userId);
+            return Ok(result);
+        }
 
+        [HttpPut("{storeId}/settings")]
+        public async Task<IActionResult> UpdateSettings(string storeId, [FromBody] StoreSettingsReadDTO settingsDto, [FromQuery] string userId)
+        {
+            var result = await _storeService.UpdateSettingsAsync(storeId, settingsDto, userId);
+            return Ok(result);
+        }
+
+        [HttpPatch("{storeId}/payment-method")]
+        public async Task<IActionResult> UpdatePaymentMethods(string storeId, [FromQuery] PaymentType paymentType, [FromQuery] string userId)
+        {
+            var result = await _storeService.UpdatePaymentMethodsAsync(storeId, paymentType, userId);
+            return Ok(result);
+        }
+
+        [HttpPost("query")]
+        public async Task<IActionResult> Query([FromBody] Expression<Func<Store, bool>> predicate, [FromQuery] string userId)
+        {
+            var result = await _storeService.QueryAsync(predicate, userId);
+            return Ok(result);
         }
     }
 }
