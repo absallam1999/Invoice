@@ -70,3 +70,9 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MDMyMzhlOS02OTBiLTRmMDUt
   "languageId": "MEOTU53R",
   "userId": "503238e9-690b-4f05-8e41-fc03c2095157"
 }
+
+// Modify appSettings.json File:
+  "Stripe": {
+    "Secret_key": "sk_test_51RqUuWByun3VvENhtD9lsr4ep5elIoe00beRvbVvFGmcaioKCEXckeVoXiiM3k6U9IB9PQKXyh1tuOOjSU6ciMv800GWkjFoqO",
+    "Publishable_key": "pk_test_51RqUuWByun3VvENhRxap2Se1EaSVovUfKZhg73ev1COZY86QRBu7HQUbO98ubJwI4aeYNI7F5pIjnRIKAUMGEDDA00icnZPzYP"
+  }
