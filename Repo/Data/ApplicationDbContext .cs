@@ -43,6 +43,9 @@ namespace invoice.Repo.Data
                     builder.Entity(entityType.ClrType).HasQueryFilter(lambda);
                 }
             }
+
+
+
         }
     }
 }
