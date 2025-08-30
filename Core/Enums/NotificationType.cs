@@ -1,5 +1,8 @@
-﻿namespace invoice.Core.Enums
+﻿using System.Text.Json.Serialization;
+
+namespace invoice.Core.Enums
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum NotificationType
     {
         General = 0,

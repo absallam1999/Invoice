@@ -5,7 +5,7 @@ namespace invoice.Core.Interfaces.Services
 {
     public interface IClientService
     {
-        Task<GeneralResponse<IEnumerable<ClientReadDTO>>> GetAllAsync(string userId);
+        Task<GeneralResponse<IEnumerable<GetAllClientsDTO>>> GetAllAsync(string userId);
         Task<GeneralResponse<ClientReadDTO>> GetByIdAsync(string id, string userId);
         Task<GeneralResponse<IEnumerable<ClientReadDTO>>> GetByNameAsync(string name, string userId);
         Task<GeneralResponse<IEnumerable<ClientReadDTO>>> SearchAsync(string keyword, string userId);

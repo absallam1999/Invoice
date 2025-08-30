@@ -9,11 +9,11 @@ namespace invoice.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class ProductsController : ControllerBase
+    public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
 
-        public ProductsController(IProductService productService)
+        public ProductController(IProductService productService)
         {
             _productService = productService;
         }
@@ -23,14 +23,14 @@ namespace invoice.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ProductCreateDTO dto)
+        public async Task<IActionResult> Create([FromForm] ProductCreateDTO dto)
         {
             var response = await _productService.CreateAsync(dto, GetUserId());
             return Ok(response);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] ProductUpdateDTO dto)
+        public async Task<IActionResult> Update(string id, [FromForm] ProductUpdateDTO dto)
         {
             var response = await _productService.UpdateAsync(id, dto, GetUserId());
             return Ok(response);
@@ -79,10 +79,10 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpGet("available/store/{storeId}")]
-        public async Task<IActionResult> GetAvailableForStore(string storeId)
+        [HttpGet("available/store")]
+        public async Task<IActionResult> GetAvailableForStore()
         {
-            var response = await _productService.GetAvailableForStoreAsync(storeId, GetUserId());
+            var response = await _productService.GetAvailableForStoreAsync( GetUserId());
             return Ok(response);
         }
 

@@ -1,4 +1,6 @@
-﻿using invoice.Core.DTO.Invoice;
+﻿using invoice.Core.DTO;
+using invoice.Core.DTO.Invoice;
+using invoice.Core.DTO.PayInvoice;
 using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentLink;
 using invoice.Core.Enums;
@@ -9,7 +11,7 @@ using System.Security.Claims;
 
 namespace invoice.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class InvoiceController : ControllerBase
@@ -28,6 +30,13 @@ namespace invoice.Controllers
         public async Task<IActionResult> GetAll()
         {
             var response = await _invoiceService.GetAllAsync(GetUserId());
+            return Ok(response);
+        }
+
+        [HttpGet("POSInvoice")]
+        public async Task<IActionResult> POSInvoice()
+        {
+            var response = await _invoiceService.GetByTypeAsync(InvoiceType.Cashier, GetUserId());
             return Ok(response);
         }
 
@@ -70,6 +79,20 @@ namespace invoice.Controllers
         public async Task<IActionResult> Update(string id, [FromBody] InvoiceUpdateDTO dto)
         {
             var response = await _invoiceService.UpdateAsync(id, dto, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpPut("pay/{id}")]
+        public async Task<IActionResult> Pay(string id, [FromBody] PayInvoiceCreateDTO dto)
+        {
+            var response = await _invoiceService.PayAsync(id, dto, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpPut("Refund/{id}")]
+        public async Task<IActionResult> Refund(string id)
+        {
+            var response = await _invoiceService.RefundAsync(id, GetUserId());
             return Ok(response);
         }
 

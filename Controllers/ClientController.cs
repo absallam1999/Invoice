@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace invoice.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ClientController : ControllerBase
@@ -91,8 +91,6 @@ namespace invoice.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            if (dto.Id != id)
-                return BadRequest("Id in body must match route Id");
 
             var response = await _clientService.UpdateAsync(id, dto, GetUserId());
             if (!response.Success) return BadRequest(response);
@@ -101,14 +99,14 @@ namespace invoice.Controllers
         }
 
         [HttpPut("range")]
-        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<ClientUpdateDTO> dtos)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+        //public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<ClientUpdateDTO> dtos)
+        //{
+        //    if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var response = await _clientService.UpdateRangeAsync(dtos, GetUserId());
-            if (!response.Success) return BadRequest(response);
-            return Ok(response);
-        }
+        //    var response = await _clientService.UpdateRangeAsync(dtos, GetUserId());
+        //    if (!response.Success) return BadRequest(response);
+        //    return Ok(response);
+        //}
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)

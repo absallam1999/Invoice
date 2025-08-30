@@ -19,8 +19,7 @@ namespace invoice.Repo.Data.Configurations
             builder.Property(c => c.Email).HasMaxLength(150);
             builder.Property(c => c.PhoneNumber).HasMaxLength(50);
             builder.Property(c => c.Address).HasMaxLength(250);
-            builder.Property(c => c.Notes).HasMaxLength(500);
-            builder.Property(c => c.TextNumber).HasMaxLength(50);
+          
 
             builder.Property(c => c.UserId).IsRequired();
 

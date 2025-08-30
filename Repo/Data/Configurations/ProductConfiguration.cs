@@ -48,10 +48,10 @@ namespace invoice.Repo.Data.Configurations
                    .HasForeignKey(p => p.CategoryId)
                    .OnDelete(DeleteBehavior.SetNull);
 
-            builder.HasOne(p => p.Store)
-                   .WithMany(s => s.Products)
-                   .HasForeignKey(p => p.StoreId)
-                   .OnDelete(DeleteBehavior.SetNull);
+            //builder.HasOne(p => p.Store)
+            //       .WithMany(s => s.Products)
+            //       .HasForeignKey(p => p.StoreId)
+            //       .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(p => p.InvoiceItems)
                    .WithOne(ii => ii.Product)

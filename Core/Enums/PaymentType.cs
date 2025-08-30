@@ -1,7 +1,11 @@
-﻿namespace invoice.Core.Enums
+﻿using System.Text.Json.Serialization;
+
+namespace invoice.Core.Enums
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum PaymentType
     {
+        None = 0,   
         Cash = 1,
         CreditCard = 2,
         DebitCard = 3,

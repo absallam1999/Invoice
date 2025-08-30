@@ -5,11 +5,12 @@ namespace invoice.Core.Entites
     public class Invoice : BaseEntity
     {
         public string Code { get; set; }
-        public string TaxNumber { get; set; }
+       // public string TaxNumber { get; set; }
         public decimal Value { get; set; }
 
-        public decimal TotalPaid { get; set; }
-        public decimal RemainingAmount { get; set; }
+        public bool Tax { get; set; }=false;
+        //public decimal TotalPaid { get; set; }
+        //public decimal RemainingAmount { get; set; }
 
         public DiscountType? DiscountType { get; set; }
         public decimal? DiscountValue { get; set; }
@@ -32,7 +33,7 @@ namespace invoice.Core.Entites
         public Language Language { get; set; }
 
         public List<Payment> Payments { get; set; } = new();
-        public List<PayInvoice> PayInvoices { get; set; } = new();
+        public PayInvoice? PayInvoice { get; set; }
         public List<InvoiceItem> InvoiceItems { get; set; } = new();
         public List<PaymentLink> PaymentLinks { get; set; } = new();
     }

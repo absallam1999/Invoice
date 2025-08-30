@@ -19,21 +19,23 @@ namespace invoice.Services
             _productRepo = productRepo;
             _mapper = mapper;
         }
-
+        
         public async Task<GeneralResponse<ProductReadDTO>> CreateAsync(ProductCreateDTO dto, string userId)
         {
             var product = _mapper.Map<Product>(dto);
             product.UserId = userId;
 
             await _productRepo.AddAsync(product);
+            
             var readDto = _mapper.Map<ProductReadDTO>(product);
-
             return new GeneralResponse<ProductReadDTO>(true, "Product created successfully", readDto);
         }
 
         public async Task<GeneralResponse<ProductReadDTO>> UpdateAsync(string id, ProductUpdateDTO dto, string userId)
         {
-            var product = await _productRepo.GetByIdAsync(id, userId);
+            var product = await _productRepo.GetByIdAsync(id, userId ,q=>q
+            .Include(p=>p.Category)
+                );
             if (product == null)
                 return new GeneralResponse<ProductReadDTO>(false, "Product not found");
 
@@ -56,7 +58,9 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<ProductReadDTO>> GetByIdAsync(string id, string userId)
         {
-            var product = await _productRepo.GetByIdAsync(id, userId, q => q.Include(p => p.Category).Include(p => p.Store).Include(p => p.InvoiceItems));
+            var product = await _productRepo.GetByIdAsync(id, userId, q => q.Include(p => p.Category)
+            .Include(p => p.InvoiceItems).ThenInclude(i=>i.Invoice).ThenInclude(n=>n.Client)
+           );
             if (product == null)
                 return new GeneralResponse<ProductReadDTO>(false, "Product not found");
 
@@ -64,53 +68,60 @@ namespace invoice.Services
             return new GeneralResponse<ProductReadDTO>(true, "Product retrieved successfully", readDto);
         }
 
-        public async Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetAllAsync(string userId)
+        public async Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetAllAsync(string userId)
         {
-            var products = await _productRepo.GetAllAsync(userId, p => p.Category, p => p.Store, p => p.InvoiceItems);
-            var dtos = _mapper.Map<IEnumerable<ProductReadDTO>>(products);
-            return new GeneralResponse<IEnumerable<ProductReadDTO>>(true, "Products retrieved successfully", dtos);
+            var products = await _productRepo.GetAllAsync(userId, p => p.Category, p => p.InvoiceItems);
+            var dtos = _mapper.Map<IEnumerable<GetAllProductDTO>>(products);
+            return new GeneralResponse<IEnumerable<GetAllProductDTO>>(true, "Products retrieved successfully", dtos);
         }
+        public async Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> Productsavailable(string userId)
+        {
+            var products = await _productRepo.GetAllAsync(userId, p => (p.Quantity == null || p.Quantity > 0), p => p.Category, p => p.InvoiceItems);
+            var dtos = _mapper.Map<IEnumerable<GetAllProductDTO>>(products);
+            return new GeneralResponse<IEnumerable<GetAllProductDTO>>(true, "Products retrieved successfully", dtos);
+        }
+
 
         public async Task<GeneralResponse<IEnumerable<ProductReadDTO>>> QueryAsync(Expression<Func<Product, bool>> predicate, string userId)
         {
-            var products = await _productRepo.QueryAsync(p => p.UserId == userId && predicate.Compile()(p), p => p.Category, p => p.Store, p => p.InvoiceItems);
+            var products = await _productRepo.QueryAsync(p => p.UserId == userId && predicate.Compile()(p), p => p.Category,/* p => p.Store,*/ p => p.InvoiceItems);
             var dtos = _mapper.Map<IEnumerable<ProductReadDTO>>(products);
             return new GeneralResponse<IEnumerable<ProductReadDTO>>(true, "Products retrieved successfully", dtos);
         }
 
         public async Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetByCategoryAsync(string categoryId, string userId)
         {
-            var products = await _productRepo.QueryAsync(p => p.CategoryId == categoryId && p.UserId == userId, p => p.Category, p => p.Store);
+            var products = await _productRepo.QueryAsync(p => p.CategoryId == categoryId && p.UserId == userId, p => p.Category/*, p => p.Store*/);
             var dtos = _mapper.Map<IEnumerable<ProductReadDTO>>(products);
             return new GeneralResponse<IEnumerable<ProductReadDTO>>(true, "Products by category retrieved successfully", dtos);
         }
 
         public async Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetByStoreAsync(string storeId, string userId)
         {
-            var products = await _productRepo.QueryAsync(p => p.StoreId == storeId && p.UserId == userId, p => p.Category, p => p.Store);
+            var products = await _productRepo.QueryAsync(p => p.UserId == userId, p => p.Category);
             var dtos = _mapper.Map<IEnumerable<ProductReadDTO>>(products);
             return new GeneralResponse<IEnumerable<ProductReadDTO>>(true, "Products by store retrieved successfully", dtos);
         }
 
-        public async Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetAvailableForPOSAsync(string userId)
+        public async Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetAvailableForPOSAsync(string userId)
         {
-            var products = await _productRepo.QueryAsync(p => p.InPOS && p.UserId == userId, p => p.Category, p => p.Store);
-            var dtos = _mapper.Map<IEnumerable<ProductReadDTO>>(products);
-            return new GeneralResponse<IEnumerable<ProductReadDTO>>(true, "Products available for POS retrieved successfully", dtos);
+            var products = await _productRepo.QueryAsync(p => p.InPOS && p.UserId == userId &&(p.Quantity == null || p.Quantity > 0), p => p.Category);
+            var dtos = _mapper.Map<IEnumerable<GetAllProductDTO>>(products);
+            return new GeneralResponse<IEnumerable<GetAllProductDTO>>(true, "Products available for POS retrieved successfully", dtos);
         }
 
-        public async Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetAvailableForStoreAsync(string storeId, string userId)
+        public async Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetAvailableForStoreAsync( string userId)
         {
-            var products = await _productRepo.QueryAsync(p => p.InStore && p.StoreId == storeId && p.UserId == userId, p => p.Category, p => p.Store);
-            var dtos = _mapper.Map<IEnumerable<ProductReadDTO>>(products);
-            return new GeneralResponse<IEnumerable<ProductReadDTO>>(true, "Products available for store retrieved successfully", dtos);
+            var products = await _productRepo.QueryAsync(p => p.InStore  && p.UserId == userId, p => p.Category);
+            var dtos = _mapper.Map<IEnumerable<GetAllProductDTO>>(products);
+            return new GeneralResponse<IEnumerable<GetAllProductDTO>>(true, "Products available for store retrieved successfully", dtos);
         }
 
-        public async Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetProductListAsync(string userId)
+        public async Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetProductListAsync(string userId)
         {
-            var products = await _productRepo.QueryAsync(p => p.InProductList && p.UserId == userId, p => p.Category, p => p.Store);
-            var dtos = _mapper.Map<IEnumerable<ProductReadDTO>>(products);
-            return new GeneralResponse<IEnumerable<ProductReadDTO>>(true, "Product list retrieved successfully", dtos);
+            var products = await _productRepo.QueryAsync(p => p.InProductList && p.UserId == userId, p => p.Category);
+            var dtos = _mapper.Map<IEnumerable<GetAllProductDTO>>(products);
+            return new GeneralResponse<IEnumerable<GetAllProductDTO>>(true, "Product list retrieved successfully", dtos);
         }
 
         public async Task<GeneralResponse<bool>> UpdateQuantityAsync(string id, int quantity, string userId)
@@ -168,15 +179,15 @@ namespace invoice.Services
         {
             var updatedProducts = new List<Product>();
 
-            foreach (var dto in dtos)
-            {
-                var product = await _productRepo.GetByIdAsync(dto.Id, userId);
-                if (product != null)
-                {
-                    _mapper.Map(dto, product);
-                    updatedProducts.Add(product);
-                }
-            }
+            //foreach (var dto in dtos)
+            //{
+            //    var product = await _productRepo.GetByIdAsync(dto.Id, userId);
+            //    if (product != null)
+            //    {
+            //        _mapper.Map(dto, product);
+            //        updatedProducts.Add(product);
+            //    }
+            //}
 
             await _productRepo.UpdateRangeAsync(updatedProducts);
             var dtosResult = _mapper.Map<IEnumerable<ProductReadDTO>>(updatedProducts);

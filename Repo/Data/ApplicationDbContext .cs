@@ -1,4 +1,5 @@
 ﻿using invoice.Core.Entites;
+using invoice.Core.Enums;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -24,6 +25,7 @@ namespace invoice.Repo.Data
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Store> Stores { get; set; }
+        public DbSet<Tax> Taxes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -43,6 +45,40 @@ namespace invoice.Repo.Data
                     builder.Entity(entityType.ClrType).HasQueryFilter(lambda);
                 }
             }
+
+            //add languages
+            builder.Entity<Language>().HasData(
+                new Language
+                {
+                    Id = "ar",
+                    Name = LanguageName.Arabic,
+                },
+                new Language
+                {
+                    Id = "en",
+                    Name = LanguageName.English,
+                }
+            );
+
+            //add payment methods
+            builder.Entity<PaymentMethod>().HasData(
+                new PaymentMethod
+                {
+                    Id = "ca",
+                    Name = PaymentType.Cash,
+                },
+                new PaymentMethod
+                {
+                    Id = "bt",
+                    Name = PaymentType.BankTransfer,
+
+                }
+                );
+
+
+
+
+
         }
     }
 }

@@ -11,6 +11,7 @@ namespace invoice.Core.Entites
         public DateTime? DeletedAt { get; set; }
 
         public ICollection<Store> Stores { get;  set; }
+        public Tax Tax { get;  set; }
         public ICollection<Invoice> Invoices { get; set; }
         public ICollection<Client> Clients { get; set; }
         public ICollection<Product> Products { get; set; }

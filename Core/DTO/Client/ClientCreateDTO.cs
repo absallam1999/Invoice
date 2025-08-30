@@ -5,11 +5,11 @@ namespace invoice.Core.DTO.Client
     public class ClientCreateDTO
     {
         [Required]
-        [MaxLength(150)]
+        [MaxLength(100)]
         public string Name { get; set; }
 
         [EmailAddress]
-        [MaxLength(150)]
+        [MaxLength(100)]
         public string? Email { get; set; }
 
         [MaxLength(50)]
@@ -18,10 +18,5 @@ namespace invoice.Core.DTO.Client
         [MaxLength(250)]
         public string? Address { get; set; }
 
-        [MaxLength(500)]
-        public string? Notes { get; set; }
-
-        [MaxLength(50)]
-        public string? TextNumber { get; set; }
     }
 }

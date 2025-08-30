@@ -12,14 +12,14 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<bool>> DeleteAsync(string id, string userId);
         Task<GeneralResponse<ProductReadDTO>> GetByIdAsync(string id, string userId);
 
-        Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetAllAsync(string userId);
+        Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetAllAsync(string userId);
         Task<GeneralResponse<IEnumerable<ProductReadDTO>>> QueryAsync(Expression<Func<Product, bool>> predicate, string userId);
 
         Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetByCategoryAsync(string categoryId, string userId);
         Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetByStoreAsync(string storeId, string userId);
-        Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetAvailableForPOSAsync(string userId);
-        Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetAvailableForStoreAsync(string storeId, string userId);
-        Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetProductListAsync(string userId);
+        Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetAvailableForPOSAsync(string userId);
+        Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetAvailableForStoreAsync(string userId);
+        Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetProductListAsync(string userId);
 
         Task<GeneralResponse<bool>> UpdateQuantityAsync(string id, int quantity, string userId);
         Task<GeneralResponse<bool>> IncrementQuantityAsync(string id, int amount, string userId);
