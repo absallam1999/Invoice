@@ -3,12 +3,13 @@ using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentLink;
 using invoice.Core.DTO;
 using invoice.Core.Enums;
+using invoice.Core.DTO.PayInvoice;
 
 namespace invoice.Core.Interfaces.Services
 {
     public interface IInvoiceService
     {
-        Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetAllAsync(string userId);
+        Task<GeneralResponse<IEnumerable<GetAllInvoiceDTO>>> GetAllAsync(string userId);
         Task<GeneralResponse<InvoiceReadDTO>> GetByIdAsync(string id, string userId);
         Task<GeneralResponse<InvoiceReadDTO>> GetByCodeAsync(string code, string userId);
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> SearchAsync(string keyword, string userId);
@@ -17,6 +18,8 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> CreateRangeAsync(IEnumerable<InvoiceCreateDTO> dtos, string userId);
 
         Task<GeneralResponse<InvoiceReadDTO>> UpdateAsync(string id, InvoiceUpdateDTO dto, string userId);
+        Task<GeneralResponse<bool>>PayAsync(string id, PayInvoiceCreateDTO dto, string userId);
+        Task<GeneralResponse<bool>> RefundAsync(string id, string userId);
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> UpdateRangeAsync(IEnumerable<InvoiceUpdateDTO> dtos, string userId);
 
         Task<GeneralResponse<bool>> DeleteAsync(string id, string userId);

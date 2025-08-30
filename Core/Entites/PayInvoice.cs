@@ -4,7 +4,7 @@
     {
         public DateTime PaidAt { get; set; }
 
-        public string PaymentMethodId { get; set; }
+        public string PaymentMethodId { get; set; } = "ca";
         public PaymentMethod PaymentMethod { get; set; }
    
         public string InvoiceId { get; set; }

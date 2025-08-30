@@ -29,6 +29,7 @@ namespace invoice.Helpers
             services.AddScoped<IPageService, PageService>();
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IContactInfoService, ContactInfoService>();
+            services.AddScoped<ITaxService, TexService>();
 
             return services;
         }

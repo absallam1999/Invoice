@@ -121,22 +121,22 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> UpdateRangeAsync(IEnumerable<CategoryUpdateDTO> dtos, string userId)
         {
-            var ids = dtos.Select(d => d.Id).ToList();
-            var categories = await _categoryRepo.QueryAsync(c => ids.Contains(c.Id) && c.UserId == userId);
+            ////var ids = dtos.Select(d => d.Id).ToList();
+            //var categories = await _categoryRepo.QueryAsync(c => ids.Contains(c.Id) && c.UserId == userId);
 
-            foreach (var dto in dtos)
-            {
-                var category = categories.FirstOrDefault(c => c.Id == dto.Id);
-                if (category != null)
-                    _mapper.Map(dto, category);
-            }
+            ////foreach (var dto in dtos)
+            ////{
+            ////    var category = categories.FirstOrDefault(c => c.Id == dto.Id);
+            ////    if (category != null)
+            ////        _mapper.Map(dto, category);
+            ////}
 
-            var response = await _categoryRepo.UpdateRangeAsync(categories);
-            if (!response.Success)
-                return new GeneralResponse<IEnumerable<CategoryReadDTO>>(false, "Failed to update categories");
+            //var response = await _categoryRepo.UpdateRangeAsync(categories);
+            ////if (!response.Success)
+            return new GeneralResponse<IEnumerable<CategoryReadDTO>>(false, "Failed to update categories");
 
-            var dtoList = _mapper.Map<IEnumerable<CategoryReadDTO>>(response.Data);
-            return new GeneralResponse<IEnumerable<CategoryReadDTO>>(true, "Categories updated successfully", dtoList);
+            //var dtoList = _mapper.Map<IEnumerable<CategoryReadDTO>>(response.Data);
+          //  return new GeneralResponse<IEnumerable<CategoryReadDTO>>(true, "Categories updated successfully", dtoList);
         }
 
         public async Task<GeneralResponse<bool>> DeleteAsync(string id, string userId)

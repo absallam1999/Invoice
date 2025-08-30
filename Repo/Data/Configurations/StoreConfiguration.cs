@@ -39,10 +39,10 @@ namespace invoice.Repo.Data.Configurations
                    .HasForeignKey(s => s.LanguageId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasMany(s => s.Products)
-                   .WithOne(p => p.Store)
-                   .HasForeignKey(p => p.StoreId)
-                   .OnDelete(DeleteBehavior.SetNull);
+            //builder.HasMany(s => s.Products)
+            //       .WithOne(p => p.Store)
+            //       .HasForeignKey(p => p.StoreId)
+            //       .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(s => s.Invoices)
                    .WithOne(i => i.Store)

@@ -6,10 +6,10 @@ namespace invoice.Core.DTO.PaymentMethod
     {
         public string Id { get; set; }
         public PaymentType Name { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        //public DateTime CreatedAt { get; set; }
+        //public DateTime UpdatedAt { get; set; }
 
-        public int PaymentsCount { get; set; }
-        public int PayInvoicesCount { get; set; }
+        //public int PaymentsCount { get; set; }
+        //public int PayInvoicesCount { get; set; }
     }
 }

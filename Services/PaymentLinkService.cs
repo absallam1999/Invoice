@@ -273,9 +273,9 @@ namespace invoice.Services
             }
             finalValue = Math.Max(0, finalValue);
 
-            invoice.TotalPaid = invoice.Payments.Sum(p => p.Cost);
+            //invoice.TotalPaid = invoice.Payments.Sum(p => p.Cost);
             invoice.FinalValue = finalValue;
-            invoice.RemainingAmount = finalValue - invoice.TotalPaid;
+            //invoice.RemainingAmount = finalValue - invoice.TotalPaid;
 
             var result = await _invoiceRepo.UpdateAsync(invoice);
 

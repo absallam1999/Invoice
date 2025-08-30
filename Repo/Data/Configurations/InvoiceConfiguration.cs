@@ -16,12 +16,12 @@ namespace invoice.Repo.Data.Configurations
                 .IsRequired()
                 .HasMaxLength(100);
 
-            builder.Property(i => i.TaxNumber)
-                .HasMaxLength(100);
+            //builder.Property(i => i.TaxNumber)
+            //    .HasMaxLength(100);
 
             builder.Property(i => i.Value).HasColumnType("decimal(18,2)");
-            builder.Property(i => i.TotalPaid).HasColumnType("decimal(18,2)");
-            builder.Property(i => i.RemainingAmount).HasColumnType("decimal(18,2)");
+            //builder.Property(i => i.TotalPaid).HasColumnType("decimal(18,2)");
+            //builder.Property(i => i.RemainingAmount).HasColumnType("decimal(18,2)");
             builder.Property(i => i.DiscountValue).HasColumnType("decimal(18,2)");
             builder.Property(i => i.FinalValue).HasColumnType("decimal(18,2)");
 
@@ -63,10 +63,14 @@ namespace invoice.Repo.Data.Configurations
                 .HasForeignKey(ii => ii.InvoiceId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasMany(i => i.PayInvoices)
-                .WithOne(pi => pi.Invoice)
-                .HasForeignKey(pi => pi.InvoiceId)
-                .OnDelete(DeleteBehavior.Cascade);
+
+                    builder.HasOne(i => i.PayInvoice)   
+               .WithOne(pi => pi.Invoice)    
+               .HasForeignKey<PayInvoice>(pi => pi.InvoiceId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+
+
         }
     }
 }

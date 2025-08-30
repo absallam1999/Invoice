@@ -24,12 +24,24 @@ namespace invoice.Services
         public async Task<GeneralResponse<object>> RegisterAsync(RegisterDTO dto)
         {
             var user = new ApplicationUser { UserName = dto.UserName, Email = dto.Email };
-            var result = await _userManager.CreateAsync(user, dto.Password);
+            var userDB = await _userManager.FindByEmailAsync(dto.Email);
+            if (userDB != null)
+            {
 
-            return result.Succeeded
-                ? new GeneralResponse<object> { Success = true, Message = "User registered successfully.", Data = user.Id }
-                : new GeneralResponse<object> { Success = false, Message = "User registration failed.", Data = result.Errors };
-        }
+                return new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "This email is already registered.",
+                    Data = null
+                };
+            }
+                var result = await _userManager.CreateAsync(user, dto.Password);
+
+                return result.Succeeded
+                    ? new GeneralResponse<object> { Success = true, Message = "User registered successfully.", Data = user.Id }
+                    : new GeneralResponse<object> { Success = false, Message = "User registration failed.", Data = result.Errors };
+            }
+        
 
         public async Task<GeneralResponse<object>> LoginAsync(LoginDTO dto)
         {

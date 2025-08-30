@@ -21,10 +21,13 @@ namespace invoice.Repo.Data.Configurations
                    .HasForeignKey(p => p.PaymentMethodId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(p => p.Invoice)
-                   .WithMany(i => i.PayInvoices)
-                   .HasForeignKey(p => p.InvoiceId)
-                   .OnDelete(DeleteBehavior.Cascade);
+
+                    builder.HasOne(p => p.Invoice)
+            .WithOne(i => i.PayInvoice)
+            .HasForeignKey<PayInvoice>(p => p.InvoiceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+
         }
     }
 }

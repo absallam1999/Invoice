@@ -1,5 +1,8 @@
-﻿using invoice.Core.DTO;
+﻿using AutoMapper;
+using invoice.Core.DTO;
+using invoice.Core.DTO.Category;
 using invoice.Core.DTO.Payment;
+using invoice.Core.DTO.PaymentMethod;
 using invoice.Core.Entites;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
@@ -10,22 +13,26 @@ namespace invoice.Services
     public class PaymentMethodService : IPaymentMethodService
     {
         private readonly IRepository<PaymentMethod> _repo;
+        private readonly IMapper _mapper;
 
-        public PaymentMethodService(IRepository<PaymentMethod> repo)
+
+        public PaymentMethodService(IRepository<PaymentMethod> repo, IMapper mapper)
         {
             _repo = repo;
+            _mapper = mapper;
+
         }
 
-        public async Task<GeneralResponse<IEnumerable<PaymentMethod>>> GetAllAsync()
+        public async Task<GeneralResponse<IEnumerable<PaymentMethodReadDTO>>> GetAllAsync()
         {
             var methods = await _repo.GetAllAsync();
-            return new GeneralResponse<IEnumerable<PaymentMethod>>
-            {
-                Success = true,
-                Message = "Payment methods retrieved",
-                Data = methods
-            };
+
+            var dto = _mapper.Map<IEnumerable<PaymentMethodReadDTO>>(methods);
+
+            return new GeneralResponse<IEnumerable<PaymentMethodReadDTO>>(true, "Payment methods retrieved successfully", dto);
+
         }
+
 
         public async Task<GeneralResponse<PaymentMethod>> GetByIdAsync(string id)
         {
@@ -56,5 +63,7 @@ namespace invoice.Services
             var response = await _repo.DeleteAsync(id);
             return new GeneralResponse<bool> { Success = response.Success, Data = response.Success };
         }
+
+        
     }
 }
