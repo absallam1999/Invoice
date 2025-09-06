@@ -16,8 +16,11 @@ namespace invoice.Repo.Data.Configurations
                    .IsRequired()
                    .HasMaxLength(200);
 
-            builder.Property(p => p.Image)
+            builder.Property(p => p.MainImage)
                    .HasMaxLength(500);
+
+            builder.Property(p => p.Images)
+                    .IsRequired(false);
 
             builder.Property(p => p.Price)
                    .HasColumnType("decimal(18,2)")

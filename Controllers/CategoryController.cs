@@ -86,12 +86,12 @@ namespace invoice.Controllers
         }
 
         [HttpPut("range")]
-        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<CategoryUpdateDTO> dtos)
+        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<CategoryUpdateRangeDTO> dtos)
         {
             var response = await _categoryService.UpdateRangeAsync(dtos, GetUserId());
-
             return response.Success ? Ok(response) : BadRequest(response);
         }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)

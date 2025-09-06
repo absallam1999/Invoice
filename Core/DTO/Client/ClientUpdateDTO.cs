@@ -17,8 +17,26 @@ namespace invoice.Core.DTO.Client
         public string? PhoneNumber { get; set; }
 
         [MaxLength(250)]
-        public string? Address { get; set; }
+        public string? Address { get; set; } 
+    }
 
-      
+    public class ClientUpdateRangeDTO
+    {
+
+        [Required]
+        public string Id { get; set; }
+
+        [MaxLength(100)]
+        public string Name { get; set; }
+
+        [EmailAddress]
+        [MaxLength(100)]
+        public string? Email { get; set; }
+
+        [MaxLength(50)]
+        public string? PhoneNumber { get; set; }
+
+        [MaxLength(250)]
+        public string? Address { get; set; }
     }
 }

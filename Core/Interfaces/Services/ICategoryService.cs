@@ -14,8 +14,7 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> CreateRangeAsync(IEnumerable<CategoryCreateDTO> dtos, string userId);
 
         Task<GeneralResponse<CategoryReadDTO>> UpdateAsync(string id, CategoryUpdateDTO dto, string userId);
-        Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> UpdateRangeAsync(IEnumerable<CategoryUpdateDTO> dtos, string userId);
-
+        Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> UpdateRangeAsync(IEnumerable<CategoryUpdateRangeDTO> dtos, string userId);
         Task<GeneralResponse<bool>> DeleteAsync(string id, string userId);
         Task<GeneralResponse<bool>> DeleteRangeAsync(IEnumerable<string> ids, string userId);
 

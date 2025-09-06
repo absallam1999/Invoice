@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace invoice.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ContactInfoController : ControllerBase

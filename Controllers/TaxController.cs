@@ -7,8 +7,8 @@ using invoice.Core.DTO.Tax;
 namespace invoice.Controllers
 {
     [Authorize]
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class TaxController : ControllerBase
     {
 

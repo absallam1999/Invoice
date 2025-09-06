@@ -18,10 +18,6 @@ namespace invoice.Controllers
             _paymentMethodservice = paymentMethodservice;
         }
 
-        private string GetUserId() =>
-     User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
-
-
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

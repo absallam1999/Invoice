@@ -26,8 +26,7 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<bool>> DeactivateStoreAsync(string id, string userId);
 
         Task<GeneralResponse<StoreSettingsReadDTO>> GetSettingsAsync(string storeId, string userId);
-        Task<GeneralResponse<bool>> UpdateSettingsAsync(string storeId, StoreSettingsReadDTO settingsDto, string userId);
-
+        Task<GeneralResponse<bool>> UpdateSettingsAsync(string storeId, StoreSettingsUpdateDTO request, string userId);
         Task<GeneralResponse<bool>> UpdatePaymentMethodsAsync(string storeId, PaymentType paymentType, string userId);
 
         Task<GeneralResponse<IEnumerable<StoreReadDTO>>> AddRangeAsync(IEnumerable<StoreCreateDTO> dtos, string userId);

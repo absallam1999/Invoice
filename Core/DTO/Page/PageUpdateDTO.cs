@@ -13,7 +13,6 @@ namespace invoice.Core.DTO.Page
         [Required]
         public string Content { get; set; }
 
-        public string Image { get; set; }
         public bool InFooter { get; set; } = false;
         public bool InHeader { get; set; } = false;
 
@@ -22,5 +21,11 @@ namespace invoice.Core.DTO.Page
 
         [Required]
         public string LanguageId { get; set; }
+    }
+
+    public class PageUpdateRangeRequest
+    {
+        public List<PageUpdateDTO> Pages { get; set; } = new();
+        public List<IFormFile> Images { get; set; } = new();
     }
 }

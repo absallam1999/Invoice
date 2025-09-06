@@ -8,8 +8,8 @@ namespace invoice.Core.DTO.StoreSettings
         [Url(ErrorMessage = "Please provide a valid URL")]
         public string? Url { get; set; }
 
-        public string? Logo { get; set; }
-        public string? CoverImage { get; set; }
+        public IFormFile Logo { get; set; }
+        public IFormFile CoverImage { get; set; }
         public string? Color { get; set; }
         public string? Currency { get; set; }
         public PurchaseCompletionOptions? PurchaseOptions { get; set; }

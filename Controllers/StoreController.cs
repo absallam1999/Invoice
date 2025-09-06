@@ -1,11 +1,9 @@
 ﻿using invoice.Core.DTO.Store;
 using invoice.Core.DTO.StoreSettings;
-using invoice.Core.Entites;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq.Expressions;
 
 namespace invoice.Controllers
 {
@@ -127,9 +125,12 @@ namespace invoice.Controllers
         }
 
         [HttpPut("{storeId}/settings")]
-        public async Task<IActionResult> UpdateSettings(string storeId, [FromBody] StoreSettingsReadDTO settingsDto, [FromQuery] string userId)
+        public async Task<IActionResult> UpdateSettings(
+            string storeId,
+            [FromForm] StoreSettingsUpdateDTO request,
+            [FromQuery] string userId)
         {
-            var result = await _storeService.UpdateSettingsAsync(storeId, settingsDto, userId);
+            var result = await _storeService.UpdateSettingsAsync(storeId, request, userId);
             return Ok(result);
         }
 
@@ -137,13 +138,6 @@ namespace invoice.Controllers
         public async Task<IActionResult> UpdatePaymentMethods(string storeId, [FromQuery] PaymentType paymentType, [FromQuery] string userId)
         {
             var result = await _storeService.UpdatePaymentMethodsAsync(storeId, paymentType, userId);
-            return Ok(result);
-        }
-
-        [HttpPost("query")]
-        public async Task<IActionResult> Query([FromBody] Expression<Func<Store, bool>> predicate, [FromQuery] string userId)
-        {
-            var result = await _storeService.QueryAsync(predicate, userId);
             return Ok(result);
         }
     }

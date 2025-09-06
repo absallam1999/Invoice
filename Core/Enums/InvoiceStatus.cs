@@ -9,11 +9,11 @@ namespace invoice.Core.Enums
         Sent,
         Viewed,
         Active,
-        PartiallyPaid,
+        //PartiallyPaid,
         Paid,
         Overdue,
         Refund,
-        PartiallyRefunded,
+        //PartiallyRefunded,
         Cancelled,
         Failed
     }

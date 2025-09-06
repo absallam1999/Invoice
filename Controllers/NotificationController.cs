@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace invoice.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class NotificationController : ControllerBase

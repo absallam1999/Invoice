@@ -23,7 +23,9 @@ namespace invoice.Services.Mappers
             CreateMap<StoreSettings, StoreSettingsReadDTO>();
             CreateMap<Shipping, ShippingReadDTO>();
 
-            CreateMap<StoreSettingsReadDTO, StoreSettings>();
+            CreateMap<StoreSettingsReadDTO, StoreSettings>()
+                .ForMember(dest => dest.purchaseOptions, opt => opt.MapFrom(src => src.PurchaseOptions));
+
             CreateMap<ShippingReadDTO, Shipping>();
         }
     }

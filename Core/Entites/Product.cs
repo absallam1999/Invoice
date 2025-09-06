@@ -3,9 +3,10 @@
     public class Product : BaseEntity
     {
         public string Name { get; set; }
-        public string? Image { get; set; }
+        public string? MainImage { get; set; }
+        public List<string>? Images { get; set; }
         public decimal Price { get; set; }
-        public int? Quantity { get; set; } = null;
+        public int Quantity { get; set; } = 0;
         public bool InProductList { get; set; } = true;
         public bool InPOS { get; set; } = true;
         public bool InStore { get; set; } = true;

@@ -73,12 +73,7 @@ namespace invoice.Repo.Data
                     Name = PaymentType.BankTransfer,
 
                 }
-                );
-
-
-
-
-
+            );
         }
     }
 }

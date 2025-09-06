@@ -28,10 +28,15 @@ namespace invoice.Repo.Data.Configurations
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasMany(c => c.Orders)
+               .WithOne(o => o.Client)
+               .HasForeignKey(o => o.ClientId)
+               .OnDelete(DeleteBehavior.SetNull);
+
             builder.HasMany(c => c.Invoices)
                 .WithOne(i => i.Client)
                 .HasForeignKey(i => i.ClientId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

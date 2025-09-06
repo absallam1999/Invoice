@@ -99,14 +99,14 @@ namespace invoice.Controllers
         }
 
         [HttpPut("range")]
-        //public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<ClientUpdateDTO> dtos)
-        //{
-        //    if (!ModelState.IsValid) return BadRequest(ModelState);
+        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<ClientUpdateRangeDTO> dtos)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        //    var response = await _clientService.UpdateRangeAsync(dtos, GetUserId());
-        //    if (!response.Success) return BadRequest(response);
-        //    return Ok(response);
-        //}
+            var response = await _clientService.UpdateRangeAsync(dtos, GetUserId());
+            if (!response.Success) return BadRequest(response);
+            return Ok(response);
+        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)

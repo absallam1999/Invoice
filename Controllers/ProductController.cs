@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace invoice.Controllers
+namespace invoice.API.Controllers
 {
     [Authorize]
     [ApiController]
@@ -19,20 +19,19 @@ namespace invoice.Controllers
         }
 
         private string GetUserId() =>
-        User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
-
-        [HttpPost]
-        public async Task<IActionResult> Create([FromForm] ProductCreateDTO dto)
+        [HttpPost("create")]
+        public async Task<IActionResult> Create([FromForm] ProductCreateRequest request)
         {
-            var response = await _productService.CreateAsync(dto, GetUserId());
+            var response = await _productService.CreateAsync(request, GetUserId());
             return Ok(response);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromForm] ProductUpdateDTO dto)
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> Update(string id, [FromForm] ProductUpdateRequest request)
         {
-            var response = await _productService.UpdateAsync(id, dto, GetUserId());
+            var response = await _productService.UpdateAsync(id, request, GetUserId());
             return Ok(response);
         }
 
@@ -57,6 +56,19 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
+        [HttpGet("StoreAvailable")]
+        public async Task<IActionResult> StoreAvaliable()
+        {
+            var response = await _productService.GetAvailableForStoreAsync(GetUserId());
+            return Ok(response);
+        }
+
+        [HttpGet("POSAvailable")]
+        public async Task<IActionResult> POSAvaliable()
+        {
+            var response = await _productService.GetAvailableForPOSAsync(GetUserId());
+            return Ok(response);
+        }
 
         [HttpGet("category/{categoryId}")]
         public async Task<IActionResult> GetByCategory(string categoryId)
@@ -72,20 +84,6 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpGet("available/pos")]
-        public async Task<IActionResult> GetAvailableForPOS()
-        {
-            var response = await _productService.GetAvailableForPOSAsync(GetUserId());
-            return Ok(response);
-        }
-
-        [HttpGet("available/store")]
-        public async Task<IActionResult> GetAvailableForStore()
-        {
-            var response = await _productService.GetAvailableForStoreAsync( GetUserId());
-            return Ok(response);
-        }
-
         [HttpGet("list")]
         public async Task<IActionResult> GetProductList()
         {
@@ -93,6 +91,12 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
+        [HttpPut("{id}/images")]
+        public async Task<IActionResult> UpdateImages(string id, [FromForm] ProductImagesDTO request)
+        {
+            var response = await _productService.UpdateImageAsync(id, request, GetUserId());
+            return Ok(response);
+        }
 
         [HttpPut("{id}/quantity/{quantity}")]
         public async Task<IActionResult> UpdateQuantity(string id, int quantity)
@@ -115,18 +119,17 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-
         [HttpPost("range")]
-        public async Task<IActionResult> AddRange([FromBody] IEnumerable<ProductCreateDTO> dtos)
+        public async Task<IActionResult> AddRange([FromForm] ProductCreateRangeDTO request)
         {
-            var response = await _productService.AddRangeAsync(dtos, GetUserId());
+            var response = await _productService.AddRangeAsync(request, GetUserId());
             return Ok(response);
         }
 
         [HttpPut("range")]
-        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<ProductUpdateDTO> dtos)
+        public async Task<IActionResult> UpdateRange([FromForm] ProductUpdateRangeDTO request)
         {
-            var response = await _productService.UpdateRangeAsync(dtos, GetUserId());
+            var response = await _productService.UpdateRangeAsync(request, GetUserId());
             return Ok(response);
         }
 
@@ -136,7 +139,6 @@ namespace invoice.Controllers
             var response = await _productService.DeleteRangeAsync(ids, GetUserId());
             return Ok(response);
         }
-
 
         [HttpGet("exists")]
         public async Task<IActionResult> Exists([FromQuery] string name)

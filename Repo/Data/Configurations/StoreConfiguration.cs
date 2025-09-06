@@ -39,10 +39,10 @@ namespace invoice.Repo.Data.Configurations
                    .HasForeignKey(s => s.LanguageId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            //builder.HasMany(s => s.Products)
-            //       .WithOne(p => p.Store)
-            //       .HasForeignKey(p => p.StoreId)
-            //       .OnDelete(DeleteBehavior.SetNull);
+            builder.HasMany(s => s.Orders)
+               .WithOne(o => o.Store)
+               .HasForeignKey(o => o.StoreId)
+               .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(s => s.Invoices)
                    .WithOne(i => i.Store)
@@ -94,7 +94,7 @@ namespace invoice.Repo.Data.Configurations
                 {
                     options.Property(po => po.Name).HasDefaultValue(true);
                     options.Property(po => po.Email).HasDefaultValue(false);
-                    options.Property(po => po.phone).HasDefaultValue(false);
+                    options.Property(po => po.Phone).HasDefaultValue(false);
 
                     options.Property(po => po.TermsAndConditions)
                            .HasMaxLength(2000);

@@ -14,10 +14,12 @@ namespace invoice.Services
     public class StoreService : IStoreService
     {
         private readonly IRepository<Store> _storeRepo;
+        private readonly IFileService _fileService;
         private readonly IMapper _mapper;
 
-        public StoreService(IRepository<Store> storeRepo, IMapper mapper)
+        public StoreService(IRepository<Store> storeRepo,  IFileService fileService, IMapper mapper)
         {
+            _fileService = fileService;
             _storeRepo = storeRepo;
             _mapper = mapper;
         }
@@ -41,7 +43,7 @@ namespace invoice.Services
                     {
                         Name = true,
                         Email = false,
-                        phone = false,
+                        Phone = false,
                         TermsAndConditions = null
                     }
                 };
@@ -55,7 +57,7 @@ namespace invoice.Services
                 {
                     Name = true,
                     Email = false,
-                    phone = false,
+                    Phone = false,
                     TermsAndConditions = null
                 };
             }
@@ -107,7 +109,7 @@ namespace invoice.Services
                         {
                             Name = true,
                             Email = false,
-                            phone = false,
+                            Phone = false,
                             TermsAndConditions = null
                         }
                     };
@@ -123,7 +125,7 @@ namespace invoice.Services
                     {
                         Name = true,
                         Email = false,
-                        phone = false,
+                        Phone = false,
                         TermsAndConditions = null
                     };
                 }
@@ -165,13 +167,34 @@ namespace invoice.Services
             return new GeneralResponse<IEnumerable<StoreReadDTO>>(true, "Stores updated successfully", _mapper.Map<IEnumerable<StoreReadDTO>>(updatedEntities));
         }
 
-        public async Task<GeneralResponse<bool>> UpdateSettingsAsync(string storeId, StoreSettingsReadDTO settingsDto, string userId)
+        public async Task<GeneralResponse<bool>> UpdateSettingsAsync(
+            string storeId,
+            StoreSettingsUpdateDTO request,
+            string userId)
         {
             var entity = await _storeRepo.GetByIdAsync(storeId, userId);
             if (entity == null)
                 return new GeneralResponse<bool>(false, "Store not found");
 
-            entity.StoreSettings = _mapper.Map<StoreSettings>(settingsDto);
+            if (entity.StoreSettings == null)
+                entity.StoreSettings = new StoreSettings();
+
+            string? logoPath = entity.StoreSettings.Logo;
+            string? coverPath = entity.StoreSettings.CoverImage;
+
+            if (request.Logo != null)
+                logoPath = await _fileService.UploadImageAsync(request.Logo, "stores");
+
+            if (request.CoverImage != null)
+                coverPath = await _fileService.UploadImageAsync(request.CoverImage, "stores");
+
+            entity.StoreSettings.Url = request.Url;
+            entity.StoreSettings.Color = request.Color;
+            entity.StoreSettings.Currency = request.Currency;
+            entity.StoreSettings.purchaseOptions = request.PurchaseOptions;
+            entity.StoreSettings.Logo = logoPath;
+            entity.StoreSettings.CoverImage = coverPath;
+
             await _storeRepo.UpdateAsync(entity);
 
             return new GeneralResponse<bool>(true, "Settings updated successfully", true);

@@ -1,39 +1,70 @@
-// Create New User and Login
+// Create New User
+{
+  "userName": "absallam",
+  "email": "absallam1999@gmail.com",
+  "password": "Mm12345!",
+  "confirmPassword": "Mm12345!"
+}
+
+// Login
 {
   "email": "absallam1999@gmail.com",
-  "password": "Mm1234",
+  "password": "Mm12345!",
   "rememberMe": true
 }
 
-Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MDMyMzhlOS02OTBiLTRmMDUtOGU0MS1mYzAzYzIwOTUxNTciLCJqdGkiOiJmMTMzMDY0OS1kYTVkLTQ5YzYtYWY5MC04MDIzNTJlNzdjNTQiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjUwMzIzOGU5LTY5MGItNGYwNS04ZTQxLWZjMDNjMjA5NTE1NyIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJhYnNhbGxhbTE5OTkiLCJleHAiOjE3NTU5OTE4OTQsImlzcyI6Ikludm9pY2UifQ.F3FiwOhab7N0ywj62c9-knD8955w56elB9av7C4qIFY
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkMjYzNWZiMC1jMzNhLTQxMzgtOWIwZS0yM2I4Yzk3OGNiZTIiLCJqdGkiOiI0N2U3ZDhlYS05MGNiLTRkM2QtYjBjNy01NjQzMjhmODU2YzUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImQyNjM1ZmIwLWMzM2EtNDEzOC05YjBlLTIzYjhjOTc4Y2JlMiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJhYnNhbGxhbSIsImV4cCI6MTc1NzIwMDY4OCwiaXNzIjoiSW52b2ljZSJ9.5xWRgC1yCUPQf738pJe-djArFZVthGcBZ_ZWte6r9MM
 
 // Create New Category
 {
-  "name": "New Category2",
-  "description": "New Category Description2"
+  "name": "New Category",
+  "description": "New Category Description"
 }
 
+// Create New Client
 {
-  "code": "INV-12JU5F23",
-  "taxNumber": "1234",
-  "value": 100,
-  "totalPaid": 20,
-  "remainingAmount": 80,
+  "name": "Client",
+  "email": "client@example.com",
+  "phoneNumber": "123456789",
+  "address": "Cairo, Egypt"
+}
+
+// Update Range Clients
+[
+  {
+      "id": "MF8G3K6Y",
+      "name": "New Client",
+      "email": "new@client.com",
+      "phoneNumber": "12344321",
+      "address": "New Cairo"
+  },
+ {
+       "id": "MF8G4CQX",
+      "name": "New Client2",
+      "email": "new@client2.com",
+      "phoneNumber": "12344321",
+      "address": "New Cairo"
+ }
+]
+
+// Create New Invoice
+{
+  "tax": true,
   "discountType": "Amount",
   "discountValue": 10,
   "finalValue": 90,
   "invoiceStatus": 0,
   "invoiceType": 1,
   "termsConditions": "Terms and Condition.",
-  "clientId": "MEOR90EV",	// Create New Client
-  "storeId": "MEOUJCH6",	// Create New Store
-  "languageId": "MEOTKLJC",	// Create New Language
+  "clientId": "MF8SMRSX",
+  "storeId": "MF8U08MJ",
+  "languageId": "ar",
   "payments": [],
   "invoiceItems": [
-    {
+   {
       "quantity": 2,
-      "unitPrice": 1.00,
-      "productId": "MEOUM00V"	// Create New Product
+      "unitPrice": 100,
+      "productId": "MF8GBLJH"
     }
   ]
 }
@@ -46,29 +77,14 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MDMyMzhlOS02OTBiLTRmMDUt
 }
 
 
-// Create New Product
-{
-  "name": "New Product",
-  "image": "string",
-  "price": 50,
-  "quantity": 10,
-  "inProductList": true,
-  "inPOS": true,
-  "inStore": true,
-  "userId": "503238e9-690b-4f05-8e41-fc03c2095157",
-  "categoryId": "MEOPM65J",
-  "storeId": "string",
-  "url": "newURL-PRO-1943i4"
-}
-
 // Create New Store
 {
   "name": "New Store",
   "description": "New Store Description",
   "tax": true,
   "paymentMethods": 1,
-  "languageId": "MEOTU53R",
-  "userId": "503238e9-690b-4f05-8e41-fc03c2095157"
+  "languageId": "ar",
+  "userId": "d2635fb0-c33a-4138-9b0e-23b8c978cbe2"
 }
 
 // Modify appSettings.json File:

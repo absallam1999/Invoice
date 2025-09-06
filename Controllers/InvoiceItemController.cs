@@ -6,7 +6,7 @@ using invoice.Core.DTO;
 
 namespace invoice.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class InvoiceItemController : ControllerBase

@@ -1,5 +1,4 @@
 ﻿using invoice.Core.DTO.Invoice;
-using invoice.Core.DTO.InvoiceItem;
 
 namespace invoice.Core.DTO.Product
 {
@@ -7,7 +6,8 @@ namespace invoice.Core.DTO.Product
     {
         public string Id { get; set; }
         public string Name { get; set; }
-        public string? Image { get; set; }
+        public string? MainImage { get; set; }
+        public List<string>? Images { get; set; }
         public decimal Price { get; set; }
         public int Quantity { get; set; }
 
@@ -25,8 +25,5 @@ namespace invoice.Core.DTO.Product
         // public string? StoreId { get; set; }
         //  public string? StoreName { get; set; }
         public List<GetAllInvoiceDTO>? Invoices { get; set; }
-
     }
-
-   
 }

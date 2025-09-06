@@ -9,14 +9,16 @@ namespace invoice.Services.Mappers
     {
         public CategoryProfile()
         {
-            CreateMap<Category, CategoryReadDTO>();
-                //.ForMember(dest => dest.ProductCount, opt => opt.MapFrom(src => src.Products.Count))
-                //.ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Products));
+            CreateMap<Category, CategoryReadDTO>()
+                .ForMember(dest => dest.ProductCount, opt => opt.MapFrom(src => src.Products.Count))
+                .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Products));
 
-            //CreateMap<Product, ProductSummaryDTO>();
+            CreateMap<Product, ProductSummaryDTO>();
 
             CreateMap<CategoryCreateDTO, Category>();
             CreateMap<CategoryUpdateDTO, Category>();
+
+            CreateMap<CategoryUpdateRangeDTO, Category>();
         }
     }
 }

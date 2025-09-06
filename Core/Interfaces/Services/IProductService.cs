@@ -7,8 +7,8 @@ namespace Core.Interfaces.Services
 {
     public interface IProductService
     {
-        Task<GeneralResponse<ProductReadDTO>> CreateAsync(ProductCreateDTO dto, string userId);
-        Task<GeneralResponse<ProductReadDTO>> UpdateAsync(string id, ProductUpdateDTO dto, string userId);
+        Task<GeneralResponse<ProductReadDTO>> CreateAsync(ProductCreateRequest request, string userId);
+        Task<GeneralResponse<ProductReadDTO>> UpdateAsync(string id, ProductUpdateRequest request, string userId);
         Task<GeneralResponse<bool>> DeleteAsync(string id, string userId);
         Task<GeneralResponse<ProductReadDTO>> GetByIdAsync(string id, string userId);
 
@@ -21,12 +21,14 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetAvailableForStoreAsync(string userId);
         Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetProductListAsync(string userId);
 
+        Task<GeneralResponse<bool>> UpdateImageAsync(string id, ProductImagesDTO request, string userId);
         Task<GeneralResponse<bool>> UpdateQuantityAsync(string id, int quantity, string userId);
+
         Task<GeneralResponse<bool>> IncrementQuantityAsync(string id, int amount, string userId);
         Task<GeneralResponse<bool>> DecrementQuantityAsync(string id, int amount, string userId);
 
-        Task<GeneralResponse<IEnumerable<ProductReadDTO>>> AddRangeAsync(IEnumerable<ProductCreateDTO> dtos, string userId);
-        Task<GeneralResponse<IEnumerable<ProductReadDTO>>> UpdateRangeAsync(IEnumerable<ProductUpdateDTO> dtos, string userId);
+        Task<GeneralResponse<IEnumerable<ProductReadDTO>>> AddRangeAsync(ProductCreateRangeDTO request, string userId);
+        Task<GeneralResponse<IEnumerable<ProductReadDTO>>> UpdateRangeAsync(ProductUpdateRangeDTO request, string userId);
         Task<GeneralResponse<bool>> DeleteRangeAsync(IEnumerable<string> ids, string userId);
 
         Task<bool> ExistsAsync(Expression<Func<Product, bool>> predicate, string userId);

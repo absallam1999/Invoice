@@ -5,6 +5,7 @@ using invoice.Repo.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Repo;
@@ -64,7 +65,26 @@ namespace invoice
                         Array.Empty<string>()
                     }
                 });
+
+                options.MapType<IFormFile>(() => new OpenApiSchema
+                {
+                    Type = "string",
+                    Format = "binary"
+                });
+
+                options.MapType<List<IFormFile>>(() => new OpenApiSchema
+                {
+                    Type = "array",
+                    Items = new OpenApiSchema
+                    {
+                        Type = "string",
+                        Format = "binary"
+                    }
+                });
+
+                options.OperationFilter<FormFileOperationFilter>();
             });
+
 
             // Prevent default claim mapping
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
@@ -148,11 +168,31 @@ namespace invoice
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
             app.UseCors("AllowAll");
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseStaticFiles();
+
+            var assetsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "assets");
+
+            if (Directory.Exists(assetsPath))
+            {
+                var subFolders = Directory.GetDirectories(assetsPath);
+
+                foreach (var folder in subFolders)
+                {
+                    var folderName = Path.GetFileName(folder);
+                    app.UseStaticFiles(
+                        new StaticFileOptions
+                        {
+                            FileProvider = new PhysicalFileProvider(folder),
+                            RequestPath = "/" + folderName,
+                        }
+                    );
+                }
+            }
 
             app.MapControllers();
 

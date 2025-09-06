@@ -1,12 +1,12 @@
 ﻿using invoice.Core.DTO.Page;
-using invoice.Core.Entites;
 using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace invoice.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class PagesController : ControllerBase
@@ -40,79 +40,36 @@ namespace invoice.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] PageCreateDTO dto)
+        public async Task<IActionResult> Create([FromForm] PageCreateDTO dto, [FromForm] PageImageDTO image)
         {
-            var entity = new Page
-            {
-                Title = dto.Title,
-                Content = dto.Content,
-                Image = dto.Image,
-                InFooter = dto.InFooter,
-                InHeader = dto.InHeader,
-                StoreId = dto.StoreId,
-                LanguageId = dto.LanguageId
-            };
-
-            var response = await _pageService.CreateAsync(entity);
+            var response = await _pageService.CreateAsync(dto, image);
             return Ok(response);
         }
 
         [HttpPost("range")]
-        public async Task<IActionResult> CreateRange([FromBody] IEnumerable<PageCreateDTO> dtos)
+        public async Task<IActionResult> CreateRange([FromForm] PageCreateRangeRequest request)
         {
-            var entities = dtos.Select(dto => new Page
-            {
-                Title = dto.Title,
-                Content = dto.Content,
-                Image = dto.Image,
-                InFooter = dto.InFooter,
-                InHeader = dto.InHeader,
-                StoreId = dto.StoreId,
-                LanguageId = dto.LanguageId
-            });
+            if (request.Pages == null || !request.Pages.Any())
+                return BadRequest(new { Success = false, Message = "No valid DTOs provided." });
 
-            var response = await _pageService.CreateRangeAsync(entities);
+            var response = await _pageService.CreateRangeAsync(request);
             return Ok(response);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] PageUpdateDTO dto)
+        [HttpPut]
+        public async Task<IActionResult> Update([FromForm] PageUpdateDTO dto, [FromForm] PageImageDTO? image)
         {
-            if (id != dto.Id)
-                return BadRequest(new { Success = false, Message = "ID mismatch" });
-
-            var entity = new Page
-            {
-                Id = dto.Id,
-                Title = dto.Title,
-                Content = dto.Content,
-                Image = dto.Image,
-                InFooter = dto.InFooter,
-                InHeader = dto.InHeader,
-                StoreId = dto.StoreId,
-                LanguageId = dto.LanguageId
-            };
-
-            var response = await _pageService.UpdateAsync(id, entity);
+            var response = await _pageService.UpdateAsync(dto, image);
             return Ok(response);
         }
 
         [HttpPut("range")]
-        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<PageUpdateDTO> dtos)
+        public async Task<IActionResult> UpdateRange([FromForm] PageUpdateRangeRequest request)
         {
-            var entities = dtos.Select(dto => new Page
-            {
-                Id = dto.Id,
-                Title = dto.Title,
-                Content = dto.Content,
-                Image = dto.Image,
-                InFooter = dto.InFooter,
-                InHeader = dto.InHeader,
-                StoreId = dto.StoreId,
-                LanguageId = dto.LanguageId
-            });
+            if (request.Pages == null || !request.Pages.Any())
+                return BadRequest(new { Success = false, Message = "No valid DTOs provided." });
 
-            var response = await _pageService.UpdateRangeAsync(entities);
+            var response = await _pageService.UpdateRangeAsync(request);
             return Ok(response);
         }
 

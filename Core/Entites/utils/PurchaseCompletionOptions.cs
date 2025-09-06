@@ -7,7 +7,7 @@ namespace invoice.Models.Entites.utils
     {
         public bool Name { get; set; }=true;
         public bool Email { get; set; }=false;
-        public bool phone { get; set; }= false;
+        public bool Phone { get; set; }= false;
         public string? TermsAndConditions { get; set; }
     }
 }

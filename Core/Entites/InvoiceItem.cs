@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace invoice.Core.Entites
 {
@@ -8,7 +7,6 @@ namespace invoice.Core.Entites
         [Range(1, int.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
-
         public decimal LineTotal { get; private set; }
 
         public string InvoiceId { get; set; }

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Azure.Core.GeoJson;
 using invoice.Core.DTO;
 using invoice.Core.DTO.Client;
 using invoice.Core.Entites;
@@ -117,12 +116,31 @@ namespace invoice.Services
             return new GeneralResponse<ClientReadDTO>(true, "Client updated successfully", dtoResult);
         }
 
-        public async Task<GeneralResponse<IEnumerable<ClientReadDTO>>> UpdateRangeAsync(IEnumerable<ClientUpdateDTO> dtos, string userId)
+        public async Task<GeneralResponse<IEnumerable<ClientReadDTO>>> UpdateRangeAsync(
+            IEnumerable<ClientUpdateRangeDTO> dtos,
+            string userId)
         {
-            var entities = new List<Client>();
+            var ids = dtos.Select(d => d.Id).ToList();
 
-            var result = await _clientRepo.UpdateRangeAsync(entities);
-            if (!result.Success) return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, result.Message);
+            var clients = await _clientRepo.QueryAsync(c => ids.Contains(c.Id) && c.UserId == userId);
+
+            if (clients == null || !clients.Any())
+                return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, "No clients found to update");
+
+            foreach (var dto in dtos)
+            {
+                var client = clients.FirstOrDefault(c => c.Id == dto.Id);
+                if (client == null) continue;
+
+                client.Name = dto.Name ?? client.Name;
+                client.Email = dto.Email ?? client.Email;
+                client.PhoneNumber = dto.PhoneNumber ?? client.PhoneNumber;
+                client.Address = dto.Address ?? client.Address;
+            }
+
+            var result = await _clientRepo.UpdateRangeAsync(clients);
+            if (!result.Success)
+                return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, result.Message);
 
             var dtoList = _mapper.Map<IEnumerable<ClientReadDTO>>(result.Data);
             return new GeneralResponse<IEnumerable<ClientReadDTO>>(true, "Clients updated successfully", dtoList);

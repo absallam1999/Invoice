@@ -1,4 +1,5 @@
 ﻿using invoice.Core.DTO.Invoice;
+using invoice.Core.DTO.Order;
 using invoice.Core.DTO.Store;
 using invoice.Core.Entites;
 
@@ -17,6 +18,7 @@ namespace invoice.Core.DTO.Client
         public int InvoiceCount { get; set; }
         public decimal InvoiceTotal { get; set; }
         
+        public List<OrderReadDTO>? Orders { get; set; }
         public List<GetAllInvoiceDTO>? Invoices { get; set; }
     }
 }

@@ -10,6 +10,7 @@
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
 
+        public List<Order> Orders { get; set; } = new();
         public List<Invoice> Invoices { get; set; } = new();
     }
 }

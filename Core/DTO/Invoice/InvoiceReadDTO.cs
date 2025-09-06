@@ -1,12 +1,9 @@
-﻿using invoice.Core.Enums;
-using invoice.Core.DTO.Client;
+﻿using invoice.Core.DTO.Client;
 using invoice.Core.DTO.InvoiceItem;
 using invoice.Core.DTO.Language;
-using invoice.Core.DTO.Payment;
-using invoice.Core.DTO.PaymentLink;
 using invoice.Core.DTO.Store;
 using invoice.Core.DTO.Tax;
-using invoice.Core.Entites;
+using invoice.Core.Enums;
 
 namespace invoice.Core.DTO.Invoice
 {
@@ -16,8 +13,6 @@ namespace invoice.Core.DTO.Invoice
         public string Code { get; set; }
         public bool Tax { get; set; } 
         public decimal Value { get; set; }
-        //public decimal TotalPaid { get; set; }
-        //public decimal RemainingAmount { get; set; }
 
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
@@ -31,7 +26,7 @@ namespace invoice.Core.DTO.Invoice
         public InvoiceType InvoiceType { get; set; }
         public string? TermsConditions { get; set; }
 
-        //public string UserId { get; set; }
+        //public string? UserId { get; set; }
         //public string? StoreId { get; set; }
         //public StoreReadDTO? Store { get; set; }
 
@@ -39,15 +34,13 @@ namespace invoice.Core.DTO.Invoice
         
         public ClientSummaryDTO? Client { get; set; }
 
-       // public string LanguageId { get; set; }
+        //public string LanguageId { get; set; }
         public LanguageReadDTO Language { get; set; }
         public string? payMethodId { get; set; }
         public PaymentType? payMethod { get; set; }
 
         public TaxReadDTO Taxinfo { get; set; }
 
-       // public IEnumerable<PaymentReadDTO>? Payments { get; set; } = new List<PaymentReadDTO>();
-        public IEnumerable<InvoiceItemReadDTO> InvoiceItems { get; set; } = new List<InvoiceItemReadDTO>();
-        //public IEnumerable<PaymentLinkReadDTO>? PaymentLinks { get; set; } = new List<PaymentLinkReadDTO>();
+        public List<InvoiceItemReadDTO> InvoiceItems { get; set; } = new();
     }
 }

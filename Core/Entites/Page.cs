@@ -4,7 +4,7 @@
     {
         public string Title { get; set; }
         public string Content { get; set; }
-        public string Image { get; set; }
+        public string? Image { get; set; }
         public bool InFooter { get; set; }=false;
         public bool InHeader { get; set; }=false;
         

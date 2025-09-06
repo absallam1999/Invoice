@@ -144,7 +144,7 @@ namespace invoice.Services
             invoice.UserId = userId;
             invoice.Code = $"INV-{DateTime.UtcNow.Ticks}";
             invoice.InvoiceStatus = InvoiceStatus.Active;
-            // invoice.InvoiceType = InvoiceType.Detailed;      
+             invoice.InvoiceType = InvoiceType.Detailed;
             if (string.IsNullOrWhiteSpace(dto.ClientId))
             {
                 invoice.ClientId = null;

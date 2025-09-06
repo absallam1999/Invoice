@@ -22,8 +22,8 @@ namespace invoice.Core.Entites
         public Shipping Shipping { get; set; } = null!;
         public StoreSettings StoreSettings { get; set; } = null!;
 
-
         public List<Page> Pages { get; set; } = new();
+        public List<Order> Orders { get; set; } = new();
         public List<Product> Products { get; set; } = new();
         public List<Invoice> Invoices { get; set; } = new();
         public List<ContactInfo> ContactInformations { get; set; } = new();
