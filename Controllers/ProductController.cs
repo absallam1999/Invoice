@@ -1,5 +1,5 @@
-﻿using Core.Interfaces.Services;
-using invoice.Core.DTO.Product;
+﻿using invoice.Core.DTO.Product;
+using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -70,24 +70,17 @@ namespace invoice.API.Controllers
             return Ok(response);
         }
 
+        [HttpGet("InProductList")]
+        public async Task<IActionResult> GetProductList()
+        {
+            var response = await _productService.GetProductListAsync(GetUserId());
+            return Ok(response);
+        }
+
         [HttpGet("category/{categoryId}")]
         public async Task<IActionResult> GetByCategory(string categoryId)
         {
             var response = await _productService.GetByCategoryAsync(categoryId, GetUserId());
-            return Ok(response);
-        }
-
-        [HttpGet("store/{storeId}")]
-        public async Task<IActionResult> GetByStore(string storeId)
-        {
-            var response = await _productService.GetByStoreAsync(storeId, GetUserId());
-            return Ok(response);
-        }
-
-        [HttpGet("list")]
-        public async Task<IActionResult> GetProductList()
-        {
-            var response = await _productService.GetProductListAsync(GetUserId());
             return Ok(response);
         }
 

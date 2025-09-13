@@ -16,6 +16,9 @@ namespace invoice.Repo.Data.Configurations
                    .IsRequired()
                    .HasMaxLength(200);
 
+            builder.Property(p => p.Description)
+                   .HasMaxLength(500);
+
             builder.Property(p => p.MainImage)
                    .HasMaxLength(500);
 
@@ -50,11 +53,6 @@ namespace invoice.Repo.Data.Configurations
                    .WithMany(c => c.Products)
                    .HasForeignKey(p => p.CategoryId)
                    .OnDelete(DeleteBehavior.SetNull);
-
-            //builder.HasOne(p => p.Store)
-            //       .WithMany(s => s.Products)
-            //       .HasForeignKey(p => p.StoreId)
-            //       .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(p => p.InvoiceItems)
                    .WithOne(ii => ii.Product)

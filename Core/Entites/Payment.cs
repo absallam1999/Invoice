@@ -1,9 +1,12 @@
-﻿namespace invoice.Core.Entites
+﻿using invoice.Core.Enums;
+
+namespace invoice.Core.Entites
 {
     public class Payment : BaseEntity
     {
         public string Name { get; set; }
         public decimal Cost { get; set; }
+        public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
         public DateTime Date { get; set; } = DateTime.UtcNow;
 
         public string UserId { get; set; }

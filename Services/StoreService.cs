@@ -36,7 +36,7 @@ namespace invoice.Services
             {
                 entity.StoreSettings = new StoreSettings
                 {
-                    Url = $"store-{Guid.NewGuid():N}",
+                    Url = $"STO-{DateTime.UtcNow.Ticks}",
                     Color = "#FFFFFF",
                     Currency = "USD",
                     purchaseOptions = new PurchaseCompletionOptions
@@ -50,7 +50,7 @@ namespace invoice.Services
             }
             else
             {
-                entity.StoreSettings.Url ??= $"store-{Guid.NewGuid():N}";
+                entity.StoreSettings.Url ??= $"STO-{DateTime.UtcNow.Ticks}";
                 entity.StoreSettings.Color ??= "#FFFFFF";
                 entity.StoreSettings.Currency ??= "USD";
                 entity.StoreSettings.purchaseOptions ??= new PurchaseCompletionOptions
@@ -93,16 +93,22 @@ namespace invoice.Services
                 return new GeneralResponse<IEnumerable<StoreReadDTO>>(false, "Invalid payload");
 
             var entities = _mapper.Map<List<Store>>(dtos);
-
             foreach (var e in entities)
             {
                 e.UserId = userId;
+
+                e.Shipping ??= new Shipping();
+
+                if (e.Shipping.PaymentType == default)
+                {
+                    e.Shipping.PaymentType = PaymentType.Cash;
+                }
 
                 if (e.StoreSettings == null)
                 {
                     e.StoreSettings = new StoreSettings
                     {
-                        Url = $"store-{Guid.NewGuid():N}",
+                        Url = $"STO-{DateTime.UtcNow.Ticks}",
                         Color = "#FFFFFF",
                         Currency = "USD",
                         purchaseOptions = new PurchaseCompletionOptions
@@ -117,7 +123,7 @@ namespace invoice.Services
                 else
                 {
                     if (string.IsNullOrWhiteSpace(e.StoreSettings.Url))
-                        e.StoreSettings.Url = $"store-{Guid.NewGuid():N}";
+                        e.StoreSettings.Url = $"STO-{DateTime.UtcNow.Ticks}";
 
                     e.StoreSettings.Color ??= "#FFFFFF";
                     e.StoreSettings.Currency ??= "USD";
@@ -187,8 +193,7 @@ namespace invoice.Services
 
             if (request.CoverImage != null)
                 coverPath = await _fileService.UploadImageAsync(request.CoverImage, "stores");
-
-            entity.StoreSettings.Url = request.Url;
+            
             entity.StoreSettings.Color = request.Color;
             entity.StoreSettings.Currency = request.Currency;
             entity.StoreSettings.purchaseOptions = request.PurchaseOptions;

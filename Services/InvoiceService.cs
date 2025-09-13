@@ -1,14 +1,14 @@
 ﻿using AutoMapper;
+using invoice.Core.DTO;
 using invoice.Core.DTO.Invoice;
+using invoice.Core.DTO.PayInvoice;
 using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentLink;
-using invoice.Core.Interfaces.Services;
-using invoice.Core.DTO;
 using invoice.Core.Entites;
 using invoice.Core.Enums;
+using invoice.Core.Interfaces.Services;
 using invoice.Repo;
 using Microsoft.EntityFrameworkCore;
-using invoice.Core.DTO.PayInvoice;
 
 namespace invoice.Services
 {
@@ -20,9 +20,10 @@ namespace invoice.Services
         private readonly IRepository<Store> _storeRepo;
         private readonly IRepository<Payment> _paymentRepo;
         private readonly IRepository<PaymentLink> _paymentLinkRepo;
-        private readonly IRepository<Product> _ProductRepo;
-        private readonly IRepository<PayInvoice> _PayInvoiceRepo;
-        private readonly IRepository<ApplicationUser> _ApplicationUserRepo;
+        private readonly IRepository<Product> _productRepo;
+        private readonly IRepository<PayInvoice> _payInvoiceRepo;
+        private readonly IRepository<ApplicationUser> _applicationUserRepo;
+        private readonly IPaymentLinkService _paymentLinkService;
         private readonly IMapper _mapper;
 
         public InvoiceService(
@@ -32,9 +33,10 @@ namespace invoice.Services
             IRepository<Store> storeRepo,
             IRepository<Payment> paymentRepo,
             IRepository<PaymentLink> paymentLinkRepo,
-            IRepository<Product> productRepo,    
-            IRepository<PayInvoice> PayInvoiceRepo,  
-            IRepository<ApplicationUser> ApplicationUserRepo,  
+            IRepository<Product> productRepo,
+            IRepository<PayInvoice> payInvoiceRepo,
+            IRepository<ApplicationUser> applicationUserRepo,
+            IPaymentLinkService paymentLinkService,
             IMapper mapper)
         {
             _invoiceItemRepo = invoiceItemRepo;
@@ -43,9 +45,10 @@ namespace invoice.Services
             _storeRepo = storeRepo;
             _paymentRepo = paymentRepo;
             _paymentLinkRepo = paymentLinkRepo;
-            _ProductRepo= productRepo;
-            _PayInvoiceRepo = PayInvoiceRepo;
-            _ApplicationUserRepo = ApplicationUserRepo;
+            _productRepo = productRepo;
+            _payInvoiceRepo = payInvoiceRepo;
+            _applicationUserRepo = applicationUserRepo;
+            _paymentLinkService = paymentLinkService;
             _mapper = mapper;
         }
 
@@ -75,13 +78,12 @@ namespace invoice.Services
 
             var invoice = await _invoiceRepo.GetByIdAsync(id, userId, q => q
                 .Include(x => x.Client)
-                .Include(x => x.InvoiceItems).ThenInclude(i=>i.Product).ThenInclude(p=>p.Category)
-                .Include(x => x.PayInvoice).ThenInclude(p=>p.PaymentMethod)
+                .Include(x => x.InvoiceItems).ThenInclude(i => i.Product).ThenInclude(p => p.Category)
+                .Include(x => x.PayInvoice).ThenInclude(p => p.PaymentMethod)
                 .Include(x => x.User).ThenInclude(u => u.Tax)
                 .Include(x => x.PaymentLinks)
                 .Include(x => x.Payments)
                 .Include(x => x.Language)
-                
                 );
 
             if (invoice == null)
@@ -99,7 +101,7 @@ namespace invoice.Services
             if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(userId))
                 return new GeneralResponse<InvoiceReadDTO> { Success = false, Message = "Code and UserId are required." };
 
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.Store, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.Store, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice, x => x.Language, x => x.User);
             var invoice = invoices.FirstOrDefault(i => i.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
 
             if (invoice == null)
@@ -118,7 +120,7 @@ namespace invoice.Services
             if (string.IsNullOrWhiteSpace(userId))
                 return new GeneralResponse<IEnumerable<InvoiceReadDTO>> { Success = false, Message = "UserId is required.", Data = Enumerable.Empty<InvoiceReadDTO>() };
 
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.Store, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.Store, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice, x => x.Language, x => x.User);
 
             var filtered = invoices.Where(i =>
                 (!string.IsNullOrWhiteSpace(i.Code) && i.Code.Contains(keyword ?? "", StringComparison.OrdinalIgnoreCase)) ||
@@ -138,13 +140,13 @@ namespace invoice.Services
         {
             if (dto == null || string.IsNullOrWhiteSpace(userId))
                 return new GeneralResponse<InvoiceReadDTO> { Success = false, Message = "Invoice data and UserId are required." };
-            var user = await _ApplicationUserRepo.GetByIdAsync( userId);
+            var user = await _applicationUserRepo.GetByIdAsync(userId);
 
-            var invoice = _mapper.Map<Invoice>(dto); 
+            var invoice = _mapper.Map<Invoice>(dto);
             invoice.UserId = userId;
             invoice.Code = $"INV-{DateTime.UtcNow.Ticks}";
             invoice.InvoiceStatus = InvoiceStatus.Active;
-             invoice.InvoiceType = InvoiceType.Detailed;
+            invoice.InvoiceType = InvoiceType.Detailed;
             if (string.IsNullOrWhiteSpace(dto.ClientId))
             {
                 invoice.ClientId = null;
@@ -157,7 +159,7 @@ namespace invoice.Services
             {
                 foreach (var item in dto.InvoiceItems)
                 {
-                    var product = await _ProductRepo.GetByIdAsync(item.ProductId, userId);
+                    var product = await _productRepo.GetByIdAsync(item.ProductId, userId);
                     if (product == null) return new GeneralResponse<InvoiceReadDTO> { Success = false, Message = $"Product {item.ProductId} not found" };
 
                     if (product.Quantity != null)
@@ -166,7 +168,7 @@ namespace invoice.Services
                             return new GeneralResponse<InvoiceReadDTO> { Success = false, Message = $"Product Quantity not Enough for {product.Name}" };
 
                         product.Quantity -= item.Quantity;
-                        await _ProductRepo.UpdateAsync(product);
+                        await _productRepo.UpdateAsync(product);
                     }
 
                     invoice.InvoiceItems.Add(new InvoiceItem
@@ -259,17 +261,17 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<InvoiceReadDTO>> UpdateAsync(string id, InvoiceUpdateDTO dto, string userId)
         {
-            var user = await _ApplicationUserRepo.GetByIdAsync(userId);
+            var user = await _applicationUserRepo.GetByIdAsync(userId);
 
             var invoice = await _invoiceRepo.GetByIdAsync(id, userId, q => q
                 .Include(x => x.Client)
                .Include(x => x.InvoiceItems).ThenInclude(i => i.Product).ThenInclude(p => p.Category)
                 //.Include(x => x.Payments)
-                .Include(x=>x.User).ThenInclude(u=>u.Tax)
+                .Include(x => x.User).ThenInclude(u => u.Tax)
                 .Include(x => x.Language)
                 .Include(x => x.PayInvoice).ThenInclude(p => p.PaymentMethod)
-                   ); 
-            
+                   );
+
 
             if (invoice == null)
                 return new GeneralResponse<InvoiceReadDTO>
@@ -286,11 +288,11 @@ namespace invoice.Services
             }
             foreach (var oldItem in invoice.InvoiceItems.ToList())
             {
-                var product = await _ProductRepo.GetByIdAsync(oldItem.ProductId, userId);
+                var product = await _productRepo.GetByIdAsync(oldItem.ProductId, userId);
                 if (product?.Quantity != null)
                 {
                     product.Quantity += oldItem.Quantity;
-                    await _ProductRepo.UpdateAsync(product);
+                    await _productRepo.UpdateAsync(product);
                 }
 
                 await _invoiceItemRepo.DeleteAsync(oldItem.Id);
@@ -302,7 +304,7 @@ namespace invoice.Services
             {
                 foreach (var itemDto in dto.InvoiceItems)
                 {
-                    var product = await _ProductRepo.GetByIdAsync(itemDto.ProductId, userId);
+                    var product = await _productRepo.GetByIdAsync(itemDto.ProductId, userId);
                     if (product == null)
                         return new GeneralResponse<InvoiceReadDTO>
                         {
@@ -320,12 +322,12 @@ namespace invoice.Services
                     if (product.Quantity != null)
                     {
                         product.Quantity -= itemDto.Quantity;
-                        await _ProductRepo.UpdateAsync(product);
+                        await _productRepo.UpdateAsync(product);
                     }
 
                     var newItem = new InvoiceItem
                     {
-                       
+
                         ProductId = product.Id,
                         Quantity = itemDto.Quantity,
                         UnitPrice = product.Price,
@@ -333,7 +335,7 @@ namespace invoice.Services
                     };
 
                     await _invoiceItemRepo.AddAsync(newItem);
-                    
+
 
                     invoice.Value += product.Price * itemDto.Quantity;
                 }
@@ -368,6 +370,70 @@ namespace invoice.Services
                 Message = "Invoice updated successfully",
                 Data = _mapper.Map<InvoiceReadDTO>(invoice)
             };
+        }
+
+        public async Task<GeneralResponse<InvoiceReadDTO>> UpdateStatusAsync(string id, InvoiceStatus status, string userId = null)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(id))
+                {
+                    return new GeneralResponse<InvoiceReadDTO>
+                    {
+                        Success = false,
+                        Message = "Invoice ID is required"
+                    };
+                }
+
+                var invoice = await _invoiceRepo.GetByIdAsync(id);
+                if (invoice == null)
+                {
+                    return new GeneralResponse<InvoiceReadDTO>
+                    {
+                        Success = false,
+                        Message = $"Invoice {id} not found"
+                    };
+                }
+
+                invoice.InvoiceStatus = status;
+                invoice.UpdatedAt = DateTime.UtcNow;
+
+                if (status == InvoiceStatus.Paid)
+                {
+                    invoice.PayInvoice.PaidAt = DateTime.UtcNow;
+                }
+                else if (status == InvoiceStatus.Refunded)
+                {
+                    invoice.UpdatedAt = DateTime.UtcNow;
+                }
+
+                var result = await _invoiceRepo.UpdateAsync(invoice);
+                if (!result.Success)
+                {
+                    return new GeneralResponse<InvoiceReadDTO>
+                    {
+                        Success = false,
+                        Message = result.Message
+                    };
+                }
+
+                var invoiceDto = _mapper.Map<InvoiceReadDTO>(invoice);
+
+                return new GeneralResponse<InvoiceReadDTO>
+                {
+                    Success = true,
+                    Message = $"Invoice status updated to {status}",
+                    Data = invoiceDto
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<InvoiceReadDTO>
+                {
+                    Success = false,
+                    Message = $"Error updating invoice status: {ex.Message}"
+                };
+            }
         }
 
         public async Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> UpdateRangeAsync(IEnumerable<InvoiceUpdateDTO> dtos, string userId)
@@ -510,16 +576,16 @@ namespace invoice.Services
             }
             foreach (var item in invoice.InvoiceItems)
             {
-                var product = await _ProductRepo.GetByIdAsync(item.ProductId, userId);
+                var product = await _productRepo.GetByIdAsync(item.ProductId, userId);
                 if (product != null && product.Quantity != null)
                 {
-                    product.Quantity += item.Quantity; 
-                    await _ProductRepo.UpdateAsync(product);
+                    product.Quantity += item.Quantity;
+                    await _productRepo.UpdateAsync(product);
                 }
             }
 
-          
-            invoice.InvoiceStatus = InvoiceStatus.Refund;
+
+            invoice.InvoiceStatus = InvoiceStatus.Refunded;
             await _invoiceRepo.UpdateAsync(invoice);
 
             return new GeneralResponse<bool>
@@ -533,7 +599,6 @@ namespace invoice.Services
         public async Task<GeneralResponse<bool>> PayAsync(string id, PayInvoiceCreateDTO dto, string userId)
         {
             var invoice = await _invoiceRepo.GetByIdAsync(id, userId);
-
             if (invoice == null)
             {
                 return new GeneralResponse<bool>
@@ -543,18 +608,26 @@ namespace invoice.Services
                     Data = false
                 };
             }
+
             invoice.InvoiceStatus = InvoiceStatus.Paid;
 
-
-            PayInvoice Payinvoice = new PayInvoice
+            var payInvoice = new PayInvoice
             {
                 PaidAt = dto.PayAt ?? DateTime.UtcNow,
-                PaymentMethodId = dto.PaymentMethodId,
+                Amount = dto.Amount ?? invoice.FinalValue,
+                Currency = string.IsNullOrEmpty(dto.Currency) ? "USD" : dto.Currency,
+                Status = PaymentStatus.Completed,
+                PaymentMethodId = dto.PaymentMethodId ?? "cash",
                 InvoiceId = id,
+                PaymentGatewayType = dto.PaymentGatewayType ?? PaymentType.Cash,
+                PaymentGatewayResponse = dto.PaymentGatewayResponse ?? "Manual payment recorded.",
+                PaymentSessionId = dto.PaymentSessionId,
+                RefundAmount = null,
+                RefundedAt = null
             };
 
             await _invoiceRepo.UpdateAsync(invoice);
-            var resultPayment = await _PayInvoiceRepo.AddAsync(Payinvoice);
+            await _payInvoiceRepo.AddAsync(payInvoice);
 
             return new GeneralResponse<bool>
             {
@@ -595,7 +668,6 @@ namespace invoice.Services
             };
         }
 
-
         public async Task<bool> ExistsAsync(string id, string userId)
         {
             var invoice = await _invoiceRepo.GetByIdAsync(id, userId);
@@ -610,7 +682,7 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByClientAsync(string clientId, string userId)
         {
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.Store, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.Store, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice, x => x.Language, x => x.User);
             var filtered = invoices.Where(i => i.ClientId == clientId);
 
             return new GeneralResponse<IEnumerable<InvoiceReadDTO>>
@@ -623,7 +695,7 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByStoreAsync(string storeId, string userId)
         {
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.Store, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.Store, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice, x => x.Language, x => x.User);
             var filtered = invoices.Where(i => i.StoreId == storeId);
 
             return new GeneralResponse<IEnumerable<InvoiceReadDTO>>
@@ -646,7 +718,7 @@ namespace invoice.Services
                 Data = _mapper.Map<IEnumerable<InvoiceReadDTO>>(filtered)
             };
         }
-      
+
         public async Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByTypeAsync(InvoiceType type, string userId)
         {
             var today = DateTime.Today;
@@ -662,6 +734,120 @@ namespace invoice.Services
                 Success = filtered.Any(),
                 Message = filtered.Any() ? "Invoices retrieved." : "No invoices found for this type.",
                 Data = _mapper.Map<IEnumerable<InvoiceReadDTO>>(filtered)
+            };
+        }
+
+        public async Task<GeneralResponse<InvoiceReadDTO>> RecalculateInvoiceTotalsAsync(string invoiceId, string userId)
+        {
+            if (string.IsNullOrWhiteSpace(invoiceId))
+                return new GeneralResponse<InvoiceReadDTO> { Success = false, Message = "Invoice ID is required" };
+
+            var invoice = await _invoiceRepo.GetByIdAsync(invoiceId, userId, q => q
+                .Include(i => i.InvoiceItems)
+                .Include(i => i.PaymentLinks).ThenInclude(pl => pl.Payments)
+                .Include(i => i.Payments));
+
+            if (invoice == null)
+                return new GeneralResponse<InvoiceReadDTO> { Success = false, Message = "Invoice not found" };
+
+            RecalculateInvoiceTotals(invoice);
+
+            invoice.UpdatedAt = DateTime.UtcNow;
+
+            var result = await _invoiceRepo.UpdateAsync(invoice);
+            if (!result.Success)
+                return new GeneralResponse<InvoiceReadDTO> { Success = false, Message = "Failed to recalculate invoice totals" };
+
+            return new GeneralResponse<InvoiceReadDTO>
+            {
+                Success = true,
+                Message = "Invoice totals recalculated successfully",
+                Data = _mapper.Map<InvoiceReadDTO>(result.Data)
+            };
+        }
+
+        public async Task<GeneralResponse<PaymentLinkReadDTO>> GeneratePaymentLinkAsync(string invoiceId, decimal value, string userId)
+        {
+            if (string.IsNullOrWhiteSpace(invoiceId))
+                return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Invoice ID is required" };
+
+            if (value <= 0)
+                return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Value must be greater than zero" };
+
+            var invoice = await _invoiceRepo.GetByIdAsync(invoiceId, userId);
+            if (invoice == null)
+                return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Invoice not found" };
+
+            var result = await _paymentLinkService.GenerateLinkAsync(invoiceId, value, userId);
+
+            if (result.Success)
+            {
+                await RecalculateInvoiceTotalsAsync(invoiceId, userId);
+            }
+
+            return result;
+        }
+
+        public async Task<GeneralResponse<bool>> AttachPaymentToLinkAsync(string paymentLinkId, Payment payment, string userId)
+        {
+            if (string.IsNullOrWhiteSpace(paymentLinkId))
+                return new GeneralResponse<bool> { Success = false, Message = "Payment link ID is required" };
+
+            if (payment == null)
+                return new GeneralResponse<bool> { Success = false, Message = "Payment data is required" };
+
+            var result = await _paymentLinkService.AttachPaymentAsync(paymentLinkId, payment, userId);
+
+            if (result.Success && result.Data)
+            {
+                var paymentLink = await _paymentLinkRepo.GetByIdAsync(paymentLinkId, userId);
+                if (paymentLink != null && !string.IsNullOrEmpty(paymentLink.InvoiceId))
+                {
+                    await RecalculateInvoiceTotalsAsync(paymentLink.InvoiceId, userId);
+                }
+            }
+
+            return result;
+        }
+
+        public async Task<GeneralResponse<decimal>> GetInvoiceRevenueAsync(string invoiceId, string userId)
+        {
+            if (string.IsNullOrWhiteSpace(invoiceId))
+                return new GeneralResponse<decimal> { Success = false, Message = "Invoice ID is required" };
+
+            var invoice = await _invoiceRepo.GetByIdAsync(invoiceId, userId, q => q
+                .Include(i => i.PaymentLinks).ThenInclude(pl => pl.Payments)
+                .Include(i => i.Payments));
+
+            if (invoice == null)
+                return new GeneralResponse<decimal> { Success = false, Message = "Invoice not found" };
+
+            var paymentsFromLinks = invoice.PaymentLinks?.SelectMany(pl => pl.Payments).Sum(p => p.Cost) ?? 0m;
+            var directPayments = invoice.Payments?.Sum(p => p.Cost) ?? 0m;
+            var totalRevenue = paymentsFromLinks + directPayments;
+
+            return new GeneralResponse<decimal>
+            {
+                Success = true,
+                Message = "Invoice revenue calculated successfully",
+                Data = totalRevenue
+            };
+        }
+
+        public async Task<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>> GetInvoicePaymentLinksAsync(string invoiceId, string userId)
+        {
+            if (string.IsNullOrWhiteSpace(invoiceId))
+                return new GeneralResponse<IEnumerable<PaymentLinkReadDTO>> { Success = false, Message = "Invoice ID is required" };
+
+            var paymentLinks = await _paymentLinkRepo.QueryAsync(
+                pl => pl.InvoiceId == invoiceId && (string.IsNullOrEmpty(userId) || pl.CreatedBy == userId),
+                pl => pl.Payments);
+
+            return new GeneralResponse<IEnumerable<PaymentLinkReadDTO>>
+            {
+                Success = true,
+                Message = paymentLinks.Any() ? "Payment links retrieved successfully" : "No payment links found for this invoice",
+                Data = _mapper.Map<IEnumerable<PaymentLinkReadDTO>>(paymentLinks)
             };
         }
 
@@ -798,15 +984,60 @@ namespace invoice.Services
 
         private void RecalculateInvoiceTotals(Invoice invoice)
         {
-            invoice.Value = invoice.InvoiceItems?.Sum(i => i.UnitPrice * i.Quantity) ?? 0;
-            invoice.FinalValue = invoice.DiscountType.HasValue && invoice.DiscountValue.HasValue
-                ? invoice.DiscountType switch
+            if (invoice == null) return;
+
+            var itemsTotal = invoice.InvoiceItems?
+                    .Where(item => item != null)
+                    .Sum(i => i.UnitPrice * i.Quantity) ?? 0m;
+
+            invoice.Value = itemsTotal;
+
+            decimal finalValue = invoice.Value;
+            if (invoice.DiscountType.HasValue && invoice.DiscountValue.HasValue)
+            {
+                finalValue = invoice.DiscountType.Value switch
                 {
-                    DiscountType.Amount => invoice.Value - invoice.DiscountValue.Value,
-                    DiscountType.Percentage => invoice.Value * (1 - invoice.DiscountValue.Value / 100),
+                    DiscountType.Amount => Math.Max(0, invoice.Value - invoice.DiscountValue.Value),
+                    DiscountType.Percentage => invoice.Value * Math.Max(0, (1 - invoice.DiscountValue.Value / 100m)),
                     _ => invoice.Value
-                }
-                : invoice.Value;
+                };
+            }
+
+            if (invoice.Tax && invoice.User?.Tax != null && invoice.User.Tax.Value > 0)
+            {
+                decimal taxRate = invoice.User.Tax.Value / 100m;
+                finalValue += finalValue * taxRate;
+            }
+
+            invoice.FinalValue = Math.Round(finalValue, 2);
+
+            var paymentsFromLinks = invoice.PaymentLinks?
+                .Where(pl => pl != null && pl.Payments != null)
+                .SelectMany(pl => pl.Payments)
+                .Where(p => p != null)
+                .Sum(p => p.Cost) ?? 0m;
+
+            var directPayments = invoice.Payments?
+                .Where(p => p != null)
+                .Sum(p => p.Cost) ?? 0m;
+
+            var totalPayments = Math.Round(paymentsFromLinks + directPayments, 2);
+
+            if (invoice.FinalValue == 0m)
+            {
+                invoice.InvoiceStatus = InvoiceStatus.Paid;
+            }
+            else if (totalPayments >= invoice.FinalValue)
+            {
+                invoice.InvoiceStatus = InvoiceStatus.Paid;
+            }
+            else if (invoice.InvoiceStatus != InvoiceStatus.Cancelled &&
+                     invoice.InvoiceStatus != InvoiceStatus.Refunded)
+            {
+                invoice.InvoiceStatus = InvoiceStatus.Active;
+            }
+
+            invoice.UpdatedAt = DateTime.UtcNow;
         }
     }
 }

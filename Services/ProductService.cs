@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Core.Interfaces.Services;
 using invoice.Core.DTO;
 using invoice.Core.DTO.Product;
 using invoice.Core.Entites;
@@ -40,6 +39,8 @@ namespace invoice.Services
             var dto = new ProductCreateDTO
             {
                 Name = request.Name,
+                Description = request.Description,
+                Url = $"PRO-{DateTime.UtcNow.Ticks}",
                 MainImage = mainImagePath,
                 Images = galleryPaths,
                 Price = request.Price,
@@ -79,6 +80,7 @@ namespace invoice.Services
             var dto = new ProductUpdateDTO
             {
                 Name = request.Name,
+                Description = request.Description,
                 MainImage = mainImagePath ?? product.MainImage,
                 Images = galleryPaths.Any() ? galleryPaths : product.Images,
                 Price = request.Price,
@@ -86,7 +88,6 @@ namespace invoice.Services
                 InPOS = request.InPOS,
                 InStore = request.InStore,
                 CategoryId = request.CategoryId,
-                Url = request.Url
             };
 
             _mapper.Map(dto, product);
@@ -146,13 +147,6 @@ namespace invoice.Services
             return new GeneralResponse<IEnumerable<ProductReadDTO>>(true, "Products by category retrieved successfully", dtos);
         }
 
-        public async Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetByStoreAsync(string storeId, string userId)
-        {
-            var products = await _productRepo.QueryAsync(p => p.UserId == userId, p => p.Category);
-            var dtos = _mapper.Map<IEnumerable<ProductReadDTO>>(products);
-            return new GeneralResponse<IEnumerable<ProductReadDTO>>(true, "Products by store retrieved successfully", dtos);
-        }
-
         public async Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetAvailableForPOSAsync(string userId)
         {
             var products = await _productRepo.QueryAsync(p => p.InPOS && p.UserId == userId && (p.Quantity == null || p.Quantity > 0), p => p.Category);
@@ -193,7 +187,6 @@ namespace invoice.Services
             await _productRepo.UpdateAsync(product);
             return new GeneralResponse<bool>(true, "Product images updated successfully", true);
         }
-
 
         public async Task<GeneralResponse<bool>> UpdateQuantityAsync(string id, int quantity, string userId)
         {
@@ -255,6 +248,8 @@ namespace invoice.Services
                 var dto = new ProductCreateDTO
                 {
                     Name = req.Name,
+                    Description = req.Description,
+                    Url = $"PRO-{DateTime.UtcNow.Ticks}",
                     MainImage = mainImagePath,
                     Images = galleryPaths,
                     Price = req.Price,
@@ -298,8 +293,8 @@ namespace invoice.Services
 
                 var dto = new ProductUpdateDTO
                 {
-                    Url = req.Url,
                     Name = req.Name,
+                    Description = req.Description,
                     MainImage = mainImagePath ?? product.MainImage,
                     Images = galleryPaths.Any() ? galleryPaths : product.Images,
                     Price = req.Price,

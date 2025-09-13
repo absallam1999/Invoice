@@ -11,6 +11,7 @@ namespace invoice.Core.DTO.Invoice
     {
         public string Id { get; set; }
         public string Code { get; set; }
+        public string Currency { get; set; }
         public bool Tax { get; set; } 
         public decimal Value { get; set; }
 
@@ -26,7 +27,8 @@ namespace invoice.Core.DTO.Invoice
         public InvoiceType InvoiceType { get; set; }
         public string? TermsConditions { get; set; }
 
-        //public string? UserId { get; set; }
+        public string? UserId { get; set; }
+
         //public string? StoreId { get; set; }
         //public StoreReadDTO? Store { get; set; }
 
@@ -34,7 +36,6 @@ namespace invoice.Core.DTO.Invoice
         
         public ClientSummaryDTO? Client { get; set; }
 
-        //public string LanguageId { get; set; }
         public LanguageReadDTO Language { get; set; }
         public string? payMethodId { get; set; }
         public PaymentType? payMethod { get; set; }

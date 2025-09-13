@@ -1,5 +1,4 @@
-﻿using Core.Interfaces.Services;
-using invoice.Core.Interfaces.Services;
+﻿using invoice.Core.Interfaces.Services;
 using invoice.Services;
 
 namespace invoice.Helpers
@@ -26,6 +25,7 @@ namespace invoice.Helpers
             services.AddScoped<IPaymentMethodService, PaymentMethodService>();
             services.AddScoped<IPaymentGatewayService, PaymentGatewayService>();
 
+            services.AddScoped<IPOSService, POSService>();
             services.AddScoped<IPageService, PageService>();
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IOrderService, OrderService>();

@@ -6,6 +6,7 @@ namespace invoice.Core.Entites
     {
         public bool Tax { get; set; } = false;
         public string Code { get; set; }
+        public string Currency { get; set; }
         public decimal Value { get; set; }
 
         public DiscountType? DiscountType { get; set; }

@@ -16,9 +16,19 @@ namespace invoice.Repo.Data.Configurations
                    .IsRequired()
                    .HasMaxLength(500);
 
+            builder.Property(pl => pl.GatewaySessionId)
+                   .HasMaxLength(200);
+
             builder.Property(pl => pl.Value)
                    .IsRequired()
                    .HasColumnType("decimal(18,2)");
+
+            builder.Property(pl => pl.Currency)
+                   .IsRequired()
+                   .HasMaxLength(10);
+
+            builder.Property(pl => pl.Purpose)
+                   .HasMaxLength(250);
 
             builder.Property(pl => pl.PaymentsNumber)
                    .IsRequired()
@@ -36,10 +46,14 @@ namespace invoice.Repo.Data.Configurations
             builder.Property(pl => pl.Terms)
                    .HasMaxLength(2000);
 
+            builder.Property(pl => pl.CreatedBy)
+                   .IsRequired()
+                   .HasMaxLength(450);
+
             builder.HasOne(pl => pl.Invoice)
                    .WithMany(i => i.PaymentLinks)
                    .HasForeignKey(pl => pl.InvoiceId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                   .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(pl => pl.Payments)
                    .WithOne(p => p.PaymentLink)

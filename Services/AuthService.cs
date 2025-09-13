@@ -126,7 +126,6 @@ namespace invoice.Services
                 : new GeneralResponse<object> { Success = false, Message = "Error deleting user.", Data = result.Errors };
         }
 
-        // ----------------- Private Helper -----------------
         private string GenerateJwtToken(ApplicationUser user)
         {
             var claims = new List<Claim>

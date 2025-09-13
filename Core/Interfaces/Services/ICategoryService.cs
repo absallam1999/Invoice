@@ -5,9 +5,10 @@ namespace invoice.Core.Interfaces.Services
 {
     public interface ICategoryService
     {
-        Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> GetAllAsync(string userId);
         Task<GeneralResponse<CategoryReadDTO>> GetByIdAsync(string id, string userId);
-        Task<GeneralResponse<CategoryReadDTO>> GetByUserIdAsync(string userId);
+        Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> GetAllAsync(string userId);
+
+        Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> GetByUserIdAsync(string userId);
         Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> QueryAsync(string userId, string keyword);
 
         Task<GeneralResponse<CategoryReadDTO>> CreateAsync(CategoryCreateDTO dto, string userId);

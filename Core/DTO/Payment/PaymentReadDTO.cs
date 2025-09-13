@@ -1,4 +1,5 @@
 ﻿using invoice.Core.DTO.PaymentMethod;
+using invoice.Core.Enums;
 
 namespace invoice.Core.DTO.Payment
 {
@@ -7,6 +8,7 @@ namespace invoice.Core.DTO.Payment
         public string ?Id { get; set; }
         public string? Name { get; set; }
         public decimal? Cost { get; set; }
+        public PaymentStatus Status { get; set; }
         public DateTime? Date { get; set; }
 
         public string? UserId { get; set; }

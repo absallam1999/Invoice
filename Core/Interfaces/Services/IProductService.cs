@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using invoice.Core.DTO.Product;
 using invoice.Core.Entites;
 
-namespace Core.Interfaces.Services
+namespace invoice.Core.Interfaces.Services
 {
     public interface IProductService
     {
@@ -16,7 +16,6 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<ProductReadDTO>>> QueryAsync(Expression<Func<Product, bool>> predicate, string userId);
 
         Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetByCategoryAsync(string categoryId, string userId);
-        Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetByStoreAsync(string storeId, string userId);
         Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetAvailableForPOSAsync(string userId);
         Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetAvailableForStoreAsync(string userId);
         Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetProductListAsync(string userId);

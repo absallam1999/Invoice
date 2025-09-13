@@ -1,19 +1,19 @@
 // Create New User
 {
   "userName": "absallam",
-  "email": "absallam1999@gmail.com",
+  "email": "absallam1999@test.com",
   "password": "Mm12345!",
   "confirmPassword": "Mm12345!"
 }
 
 // Login
 {
-  "email": "absallam1999@gmail.com",
+  "email": "absallam1999@test.com",
   "password": "Mm12345!",
   "rememberMe": true
 }
 
-Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkMjYzNWZiMC1jMzNhLTQxMzgtOWIwZS0yM2I4Yzk3OGNiZTIiLCJqdGkiOiI0N2U3ZDhlYS05MGNiLTRkM2QtYjBjNy01NjQzMjhmODU2YzUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImQyNjM1ZmIwLWMzM2EtNDEzOC05YjBlLTIzYjhjOTc4Y2JlMiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJhYnNhbGxhbSIsImV4cCI6MTc1NzIwMDY4OCwiaXNzIjoiSW52b2ljZSJ9.5xWRgC1yCUPQf738pJe-djArFZVthGcBZ_ZWte6r9MM
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZDZkMGIzMi1hMjFkLTQ5YmYtOTZkYi0xNTRiODM5ZGM4YTMiLCJqdGkiOiI5ZTM4Y2Q5Mi03YmExLTQ2ZWItOTIyMi0yYjYwM2QyZGNiOGIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImVkNmQwYjMyLWEyMWQtNDliZi05NmRiLTE1NGI4MzlkYzhhMyIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJhYnNhbGxhbSIsImV4cCI6MTc1NzgwMzY1NCwiaXNzIjoiSW52b2ljZSJ9.-QFRxESgM0CvDgSLGQCkJ4SWOe_ZhGPYUmSdCqA0USY
 
 // Create New Category
 {
@@ -50,25 +50,22 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkMjYzNWZiMC1jMzNhLTQxMzgt
 // Create New Invoice
 {
   "tax": true,
+  "currency": "USD",
   "discountType": "Amount",
-  "discountValue": 10,
-  "finalValue": 90,
-  "invoiceStatus": 0,
-  "invoiceType": 1,
-  "termsConditions": "Terms and Condition.",
-  "clientId": "MF8SMRSX",
-  "storeId": "MF8U08MJ",
-  "languageId": "ar",
-  "payments": [],
+  "discountValue": 0,
+  "finalValue": 100,
+  "invoiceType": "Active",
+  "termsConditions": "Invoice Terms",
+  "storeId": "MFITZQER",
+  "clientId": "MFITWLEN",
+  "languageId": "ar_i",
   "invoiceItems": [
-   {
+    {
       "quantity": 2,
-      "unitPrice": 100,
-      "productId": "MF8GBLJH"
+      "productId": "MFIU266S"
     }
   ]
 }
-
 
 // Create New Language
 {
@@ -83,8 +80,8 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkMjYzNWZiMC1jMzNhLTQxMzgt
   "description": "New Store Description",
   "tax": true,
   "paymentMethods": 1,
-  "languageId": "ar",
-  "userId": "d2635fb0-c33a-4138-9b0e-23b8c978cbe2"
+  "languageId": "AR_S",
+  "userId": "d1e6bb24-d51a-4831-8c73-7d70a23c8ff7"
 }
 
 // Modify appSettings.json File:

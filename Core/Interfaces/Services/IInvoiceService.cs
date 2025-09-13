@@ -4,6 +4,7 @@ using invoice.Core.DTO.PaymentLink;
 using invoice.Core.DTO;
 using invoice.Core.Enums;
 using invoice.Core.DTO.PayInvoice;
+using invoice.Core.Entites;
 
 namespace invoice.Core.Interfaces.Services
 {
@@ -18,9 +19,11 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> CreateRangeAsync(IEnumerable<InvoiceCreateDTO> dtos, string userId);
 
         Task<GeneralResponse<InvoiceReadDTO>> UpdateAsync(string id, InvoiceUpdateDTO dto, string userId);
-        Task<GeneralResponse<bool>>PayAsync(string id, PayInvoiceCreateDTO dto, string userId);
-        Task<GeneralResponse<bool>> RefundAsync(string id, string userId);
+        Task<GeneralResponse<InvoiceReadDTO>> UpdateStatusAsync(string id, InvoiceStatus status, string userId);
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> UpdateRangeAsync(IEnumerable<InvoiceUpdateDTO> dtos, string userId);
+
+        Task<GeneralResponse<bool>> PayAsync(string id, PayInvoiceCreateDTO dto, string userId);
+        Task<GeneralResponse<bool>> RefundAsync(string id, string userId);
 
         Task<GeneralResponse<bool>> DeleteAsync(string id, string userId);
         Task<GeneralResponse<bool>> DeleteRangeAsync(IEnumerable<string> ids, string userId);
@@ -41,5 +44,11 @@ namespace invoice.Core.Interfaces.Services
 
         Task<GeneralResponse<bool>> MarkAsPaidAsync(string invoiceId, string userId);
         Task<GeneralResponse<bool>> CancelAsync(string invoiceId, string userId);
+
+        Task<GeneralResponse<InvoiceReadDTO>> RecalculateInvoiceTotalsAsync(string invoiceId, string userId);
+        Task<GeneralResponse<PaymentLinkReadDTO>> GeneratePaymentLinkAsync(string invoiceId, decimal value, string userId);
+        Task<GeneralResponse<bool>> AttachPaymentToLinkAsync(string paymentLinkId, Payment payment, string userId);
+        Task<GeneralResponse<decimal>> GetInvoiceRevenueAsync(string invoiceId, string userId);
+        Task<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>> GetInvoicePaymentLinksAsync(string invoiceId, string userId);
     }
 }

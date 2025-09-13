@@ -1,131 +1,106 @@
-﻿//using invoice.DTO;
-//using invoice.Models.Enums;
-//using Microsoft.AspNetCore.Http;
-//using Microsoft.AspNetCore.Mvc;
-//using System.Security.Claims;
-//using invoice.Models.Entites;
-//using invoice.Models.DTO.Invoice;
-//using invoice.Repo.Data;
-//using invoice.Repo;
+﻿using invoice.Core.DTO;
+using invoice.Core.DTO.Invoice;
+using invoice.Core.Entites;
+using invoice.Core.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
+namespace invoice.Controllers
+{
+    [Authorize]
+    [ApiController]
+    [Route("api/[controller]")]
+    public class POSController : ControllerBase
+    {
+        private readonly IPOSService _posService;
 
-//namespace invoice.Controllers
-//{
-//    [Route("api/[controller]")]
-//    [ApiController]
-//    public class POSController : ControllerBase
-//    {
-//        private readonly IInvoiceRepository _invoiceRepository;
-//        private readonly IRepository<InvoiceItem> _invoiceItemRepository;
-//        private readonly IRepository<Product> _productRepository;
+        public POSController(IPOSService posService)
+        {
+            _posService = posService;
+        }
 
+        private string GetUserId() =>
+            User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
-//        public POSController(IInvoiceRepository invoiceRepository, IRepository<Product> productRepository, IRepository<InvoiceItem> invoiceItemRepository
-//            )
-//        {
-//            _invoiceRepository = invoiceRepository;
-//            _productRepository = productRepository;
-//            _invoiceItemRepository = invoiceItemRepository;
-            
-//        }
-//        [HttpPost]
-//        public async Task<IActionResult> Create([FromBody] InvoiceInfoDTO dto)
-//        {
-//            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-//            if (string.IsNullOrEmpty(userId))
-//                return Unauthorized();
+        [HttpGet("product/{name}")]
+        public async Task<IActionResult> GetProductByName(string name)
+        {
+            var response = await _posService.GetProductByNameAsync(name, GetUserId());
+            return Ok(response);
+        }
 
-//            if (!ModelState.IsValid)
-//            {
-//                return BadRequest(new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = "Validation failed.",
-//                    Data = ModelState
-//                });
-//            }
-//            var invoice = new Invoice
-//            {
-//                Code = await _invoiceRepository.GenerateInvoiceCode(userId),
-//                CreateAt = DateTime.UtcNow,
-//                TaxNumber = "tt",
-//                InvoiceStatus = InvoiceStatus.Active,
-//                InvoiceType = InvoiceType.Cashier,
-//                UserId = userId,
-//                ClientId = dto.ClientId,
-//                LanguageId = "ar",
-//                Value = 0,
+        [HttpGet("products/search")]
+        public async Task<IActionResult> SearchProducts([FromQuery] string keyword)
+        {
+            var response = await _posService.SearchProductsAsync(keyword, GetUserId());
+            return Ok(response);
+        }
 
-//            };
-//            invoice.InvoiceItems = new List<InvoiceItem>();
+        [HttpPost("invoice/draft")]
+        public async Task<IActionResult> CreateDraftInvoice([FromQuery] string storeId)
+        {
+            var response = await _posService.CreateDraftInvoiceAsync(storeId, GetUserId());
+            return Ok(response);
+        }
 
-//            foreach (var item in dto.Items)
-//            {
-//                if (item.Quantity <= 0)
-//                    return BadRequest($"Invalid quantity for product {item.ProductId}");
+        [HttpPost("invoice/{invoiceId}/items")]
+        public async Task<IActionResult> AddItemToInvoice(string invoiceId, [FromQuery] string productId, [FromQuery] int quantity)
+        {
+            var response = await _posService.AddItemToInvoiceAsync(invoiceId, productId, quantity, GetUserId());
+            return Ok(response);
+        }
 
-//                var product = await _productRepository.GetById(item.ProductId, userId);
-//                if (product == null) return BadRequest($"Product {item.ProductId} not found");
+        [HttpPut("invoice/items/{invoiceItemId}")]
+        public async Task<IActionResult> UpdateInvoiceItem(string invoiceItemId, [FromQuery] int newQuantity)
+        {
+            var response = await _posService.UpdateInvoiceItemAsync(invoiceItemId, newQuantity, GetUserId());
+            return Ok(response);
+        }
 
-               
+        [HttpDelete("invoice/items/{invoiceItemId}")]
+        public async Task<IActionResult> RemoveInvoiceItem(string invoiceItemId)
+        {
+            var response = await _posService.RemoveInvoiceItemAsync(invoiceItemId, GetUserId());
+            return Ok(response);
+        }
 
-//                if (product.Quantity != null)
-//                {
-//                    if (product.Quantity < item.Quantity)
-//                        return BadRequest($"Product Quantity not Enough for {product.Name}");
+        [HttpPost("invoice/{invoiceId}/finalize")]
+        public async Task<IActionResult> FinalizeSale(
+            string invoiceId,
+            [FromQuery] string paymentMethodId,
+            [FromQuery] decimal paidAmount)
+        {
+            var response = await _posService.FinalizeSaleAsync(invoiceId, paymentMethodId, paidAmount, GetUserId());
+            return Ok(response);
+        }
 
-//                    product.Quantity -= item.Quantity;
-//                    await _productRepository.Update(product);
-//                }
+        [HttpPost("invoice/{invoiceId}/cancel")]
+        public async Task<IActionResult> CancelSale(string invoiceId)
+        {
+            var response = await _posService.CancelSaleAsync(invoiceId, GetUserId());
+            return Ok(response);
+        }
 
+        [HttpPost("invoice/{invoiceId}/refund")]
+        public async Task<IActionResult> RefundInvoice(string invoiceId)
+        {
+            var response = await _posService.RefundInvoiceAsync(invoiceId, GetUserId());
+            return Ok(response);
+        }
 
-//                invoice.InvoiceItems.Add(new InvoiceItem
-//                {
-//                    ProductId = product.Id,
-//                    Quantity = item.Quantity,
-//                    UnitPrice = product.Price,
+        [HttpGet("invoices/{storeId}")]
+        public async Task<IActionResult> GetPOSInvoices(string storeId, [FromQuery] DateTime? date)
+        {
+            var response = await _posService.GetPOSInvoicesAsync(storeId, date, GetUserId());
+            return Ok(response);
+        }
 
-//                });
-
-//                invoice.Value += product.Price * item.Quantity;
-//            }
-//                invoice.FinalValue = invoice.Value;
-
-
-//            if (dto.DiscountType == DiscountType.Amount)
-//            {
-//                invoice.FinalValue -= dto.DiscountValue ?? 0;
-//                invoice.DiscountType = DiscountType.Amount;
-//                invoice.DiscountValue = dto.DiscountValue;
-//            }
-//            else if (dto.DiscountType == DiscountType.Percentage)
-//            {
-//                invoice.FinalValue -= (invoice.Value * (dto.DiscountValue ?? 0) / 100);
-//                invoice.DiscountType = DiscountType.Percentage;
-//                invoice.DiscountValue = dto.DiscountValue;
-//            }
-//            if (invoice.FinalValue < 0)
-//                invoice.FinalValue = 0;
-
-//            var result = await _invoiceRepository.Add(invoice);
-//            if (!result.Success)
-//            {
-//                return StatusCode(500, new GeneralResponse<object>
-//                {
-//                    Success = false,
-//                    Message = result.Message ?? "Failed to create invoice.",
-//                    Data = null
-//                });
-//            }
-
-//            return Ok(new GeneralResponse<string>
-//            {
-//                Success = true,
-//                Message = "invoice created successfully.",
-//                Data = invoice.Id,
-
-//            });
-
-//        }
-//    }
-//}
+        [HttpGet("sales/{storeId}/daily-total")]
+        public async Task<IActionResult> GetDailySalesTotal(string storeId, [FromQuery] DateTime date)
+        {
+            var response = await _posService.GetDailySalesTotalAsync(storeId, date, GetUserId());
+            return Ok(response);
+        }
+    }
+}

@@ -24,19 +24,12 @@ namespace invoice.Controllers
         }
 
         private string GetUserId() =>
-        User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var response = await _invoiceService.GetAllAsync(GetUserId());
-            return Ok(response);
-        }
-
-        [HttpGet("POSInvoice")]
-        public async Task<IActionResult> POSInvoice()
-        {
-            var response = await _invoiceService.GetByTypeAsync(InvoiceType.Cashier, GetUserId());
             return Ok(response);
         }
 
@@ -82,20 +75,6 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpPut("pay/{id}")]
-        public async Task<IActionResult> Pay(string id, [FromBody] PayInvoiceCreateDTO dto)
-        {
-            var response = await _invoiceService.PayAsync(id, dto, GetUserId());
-            return Ok(response);
-        }
-
-        [HttpPut("Refund/{id}")]
-        public async Task<IActionResult> Refund(string id)
-        {
-            var response = await _invoiceService.RefundAsync(id, GetUserId());
-            return Ok(response);
-        }
-
         [HttpPut("range")]
         public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<InvoiceUpdateDTO> dtos)
         {
@@ -114,6 +93,55 @@ namespace invoice.Controllers
         public async Task<IActionResult> DeleteRange([FromBody] IEnumerable<string> ids)
         {
             var response = await _invoiceService.DeleteRangeAsync(ids, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpPut("pay/{id}")]
+        public async Task<IActionResult> Pay(string id, [FromBody] PayInvoiceCreateDTO dto)
+        {
+            var response = await _invoiceService.PayAsync(id, dto, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpPut("refund/{id}")]
+        public async Task<IActionResult> Refund(string id)
+        {
+            var response = await _invoiceService.RefundAsync(id, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpPut("{id}/status")]
+        public async Task<IActionResult> UpdateStatus(string id, [FromBody] InvoiceStatus status)
+        {
+            var response = await _invoiceService.UpdateStatusAsync(id, status, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpPost("{invoiceId}/payments")]
+        public async Task<IActionResult> AddPayment(string invoiceId, [FromBody] PaymentCreateDTO dto)
+        {
+            var response = await _invoiceService.AddPaymentAsync(invoiceId, dto, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpPost("payment-links")]
+        public async Task<IActionResult> GeneratePaymentLink([FromBody] PaymentLinkCreateDTO dto)
+        {
+            var response = await _invoiceService.GeneratePaymentLinkAsync(dto, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpPost("{invoiceId}/mark-paid")]
+        public async Task<IActionResult> MarkAsPaid(string invoiceId)
+        {
+            var response = await _invoiceService.MarkAsPaidAsync(invoiceId, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpPost("{invoiceId}/cancel")]
+        public async Task<IActionResult> Cancel(string invoiceId)
+        {
+            var response = await _invoiceService.CancelAsync(invoiceId, GetUserId());
             return Ok(response);
         }
 
@@ -166,31 +194,24 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpPost("{invoiceId}/payments")]
-        public async Task<IActionResult> AddPayment(string invoiceId, [FromBody] PaymentCreateDTO dto)
+        [HttpPut("{invoiceId}/recalculate")]
+        public async Task<IActionResult> RecalculateTotals(string invoiceId)
         {
-            var response = await _invoiceService.AddPaymentAsync(invoiceId, dto, GetUserId());
+            var response = await _invoiceService.RecalculateInvoiceTotalsAsync(invoiceId, GetUserId());
             return Ok(response);
         }
 
-        [HttpPost("payment-links")]
-        public async Task<IActionResult> GeneratePaymentLink([FromBody] PaymentLinkCreateDTO dto)
+        [HttpGet("{invoiceId}/revenue")]
+        public async Task<IActionResult> GetRevenue(string invoiceId)
         {
-            var response = await _invoiceService.GeneratePaymentLinkAsync(dto, GetUserId());
+            var response = await _invoiceService.GetInvoiceRevenueAsync(invoiceId, GetUserId());
             return Ok(response);
         }
 
-        [HttpPost("{invoiceId}/mark-paid")]
-        public async Task<IActionResult> MarkAsPaid(string invoiceId)
+        [HttpGet("{invoiceId}/payment-links")]
+        public async Task<IActionResult> GetPaymentLinks(string invoiceId)
         {
-            var response = await _invoiceService.MarkAsPaidAsync(invoiceId, GetUserId());
-            return Ok(response);
-        }
-
-        [HttpPost("{invoiceId}/cancel")]
-        public async Task<IActionResult> Cancel(string invoiceId)
-        {
-            var response = await _invoiceService.CancelAsync(invoiceId, GetUserId());
+            var response = await _invoiceService.GetInvoicePaymentLinksAsync(invoiceId, GetUserId());
             return Ok(response);
         }
     }

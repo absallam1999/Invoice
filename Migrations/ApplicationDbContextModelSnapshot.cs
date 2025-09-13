@@ -406,6 +406,11 @@ namespace invoice.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
@@ -553,6 +558,9 @@ namespace invoice.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Id")
+                        .IsUnique();
+
                     b.HasIndex("Name", "Target")
                         .IsUnique();
 
@@ -561,19 +569,51 @@ namespace invoice.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "ar",
-                            CreatedAt = new DateTime(2025, 9, 6, 9, 25, 10, 627, DateTimeKind.Utc).AddTicks(5103),
+                            Id = "ar_p",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9632),
                             IsDeleted = false,
                             Name = "Arabic",
                             Target = "Page"
                         },
                         new
                         {
-                            Id = "en",
-                            CreatedAt = new DateTime(2025, 9, 6, 9, 25, 10, 627, DateTimeKind.Utc).AddTicks(5119),
+                            Id = "en_p",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9666),
                             IsDeleted = false,
                             Name = "English",
                             Target = "Page"
+                        },
+                        new
+                        {
+                            Id = "ar_s",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9680),
+                            IsDeleted = false,
+                            Name = "Arabic",
+                            Target = "Store"
+                        },
+                        new
+                        {
+                            Id = "en_s",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9724),
+                            IsDeleted = false,
+                            Name = "English",
+                            Target = "Store"
+                        },
+                        new
+                        {
+                            Id = "ar_i",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9736),
+                            IsDeleted = false,
+                            Name = "Arabic",
+                            Target = "Invoice"
+                        },
+                        new
+                        {
+                            Id = "en_i",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9749),
+                            IsDeleted = false,
+                            Name = "English",
+                            Target = "Invoice"
                         });
                 });
 
@@ -658,6 +698,9 @@ namespace invoice.Migrations
                     b.Property<string>("StoreId")
                         .IsRequired()
                         .HasColumnType("nvarchar(8)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -788,10 +831,18 @@ namespace invoice.Migrations
                         .HasMaxLength(8)
                         .HasColumnType("nvarchar(8)");
 
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -810,9 +861,30 @@ namespace invoice.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<string>("PaymentGatewayResponse")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PaymentGatewayType")
+                        .HasColumnType("int");
+
                     b.Property<string>("PaymentMethodId")
                         .IsRequired()
                         .HasColumnType("nvarchar(8)");
+
+                    b.Property<string>("PaymentSessionId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal?>("RefundAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("RefundedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -870,6 +942,9 @@ namespace invoice.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(8)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -901,6 +976,16 @@ namespace invoice.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
@@ -908,6 +993,14 @@ namespace invoice.Migrations
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GatewaySessionId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Image")
                         .IsRequired()
@@ -917,6 +1010,9 @@ namespace invoice.Migrations
                     b.Property<string>("InvoiceId")
                         .IsRequired()
                         .HasColumnType("nvarchar(8)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -928,6 +1024,9 @@ namespace invoice.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int?>("MaxUsageCount")
+                        .HasColumnType("int");
+
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasMaxLength(1000)
@@ -937,6 +1036,11 @@ namespace invoice.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("Terms")
                         .IsRequired()
@@ -985,22 +1089,95 @@ namespace invoice.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Id")
+                        .IsUnique();
+
                     b.ToTable("PaymentMethods", (string)null);
 
                     b.HasData(
                         new
                         {
                             Id = "ca",
-                            CreatedAt = new DateTime(2025, 9, 6, 9, 25, 10, 627, DateTimeKind.Utc).AddTicks(5618),
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(565),
                             IsDeleted = false,
                             Name = "Cash"
                         },
                         new
                         {
+                            Id = "cc",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(620),
+                            IsDeleted = false,
+                            Name = "CreditCard"
+                        },
+                        new
+                        {
+                            Id = "dc",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(649),
+                            IsDeleted = false,
+                            Name = "DebitCard"
+                        },
+                        new
+                        {
                             Id = "bt",
-                            CreatedAt = new DateTime(2025, 9, 6, 9, 25, 10, 627, DateTimeKind.Utc).AddTicks(5657),
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(687),
                             IsDeleted = false,
                             Name = "BankTransfer"
+                        },
+                        new
+                        {
+                            Id = "pp",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(710),
+                            IsDeleted = false,
+                            Name = "PayPal"
+                        },
+                        new
+                        {
+                            Id = "st",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(722),
+                            IsDeleted = false,
+                            Name = "Stripe"
+                        },
+                        new
+                        {
+                            Id = "ap",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(853),
+                            IsDeleted = false,
+                            Name = "ApplePay"
+                        },
+                        new
+                        {
+                            Id = "gp",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(869),
+                            IsDeleted = false,
+                            Name = "GooglePay"
+                        },
+                        new
+                        {
+                            Id = "ma",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(900),
+                            IsDeleted = false,
+                            Name = "Mada"
+                        },
+                        new
+                        {
+                            Id = "sp",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(913),
+                            IsDeleted = false,
+                            Name = "STCPay"
+                        },
+                        new
+                        {
+                            Id = "sa",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(924),
+                            IsDeleted = false,
+                            Name = "Sadad"
+                        },
+                        new
+                        {
+                            Id = "dl",
+                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(943),
+                            IsDeleted = false,
+                            Name = "Delivery"
                         });
                 });
 
@@ -1020,6 +1197,11 @@ namespace invoice.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Images")
                         .HasColumnType("nvarchar(max)");
@@ -1068,6 +1250,7 @@ namespace invoice.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Url")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -1456,7 +1639,7 @@ namespace invoice.Migrations
                     b.HasOne("invoice.Core.Entites.Invoice", "Invoice")
                         .WithMany("PaymentLinks")
                         .HasForeignKey("InvoiceId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Invoice");

@@ -24,9 +24,7 @@ namespace invoice.Services
             var taxDB = await _taxRepo.GetAllAsync(userId);
             if (taxDB.Any())
             {
-
                 return new GeneralResponse<TaxReadDTO>(false, "this user have tax can update it only", null);
-
             }
 
             var tax = _mapper.Map<Tax>(dto);
@@ -39,7 +37,6 @@ namespace invoice.Services
 
         }
 
-
         public async Task<GeneralResponse<TaxReadDTO>> GetByUserIdAsync(string userId)
         {
             var tax = (await _taxRepo.QueryAsync(p => p.UserId == userId)).FirstOrDefault();
@@ -51,18 +48,19 @@ namespace invoice.Services
             return new GeneralResponse<TaxReadDTO>(true, "tax retrieved successfully", dto);
         }
 
-      
         public async Task<GeneralResponse<TaxReadDTO>> UpdateAsync(TaxReadDTO dto, string userId)
         {
-            var tax = await _taxRepo.GetByUserIdAsync( userId);
+            var taxes = await _taxRepo.GetByUserIdAsync(userId);
+            var tax = taxes.FirstOrDefault(t => t.Id == dto.Id);
+
             if (tax == null)
-                return new GeneralResponse<TaxReadDTO>(false, "tax not found");
+                return new GeneralResponse<TaxReadDTO>(false, "Tax not found");
 
             _mapper.Map(dto, tax);
             await _taxRepo.UpdateAsync(tax);
 
             var readDto = _mapper.Map<TaxReadDTO>(tax);
-            return new GeneralResponse<TaxReadDTO>(true, "tax updated successfully", readDto);
+            return new GeneralResponse<TaxReadDTO>(true, "Tax updated successfully", readDto);
         }
     }
 }

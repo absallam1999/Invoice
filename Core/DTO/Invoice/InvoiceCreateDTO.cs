@@ -6,9 +6,9 @@ namespace invoice.Core.DTO.Invoice
 {
     public class InvoiceCreateDTO
     {
-       // public decimal Value { get; set; }
-
         public bool Tax { get; set; } = false;
+        public string? Currency { get; set; }
+
         public DiscountType? DiscountType { get; set; }
         public decimal? DiscountValue { get; set; }
         public decimal FinalValue { get; set; }

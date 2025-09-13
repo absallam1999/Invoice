@@ -2,7 +2,7 @@
 {
     public class TaxReadDTO
     {
-
+        public string Id { get; set; }
         public string TaxNumber { get; set; }
         public string TaxName { get; set; }
         public decimal Value { get; set; }

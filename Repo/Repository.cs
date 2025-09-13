@@ -1,13 +1,13 @@
-﻿using invoice.Core.DTO;
-using invoice.Core.Interfaces;
+﻿using System.Linq.Expressions;
+using invoice.Core.DTO;
 using invoice.Repo;
 using invoice.Repo.Data;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace Repo
 {
-    public class Repository<T> : IRepository<T> where T : class
+    public class Repository<T> : IRepository<T>
+        where T : class
     {
         private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;
@@ -20,24 +20,30 @@ namespace Repo
 
         // ---------- Retrieval ----------
 
-        public async Task<IEnumerable<T>> GetAllAsync(string userId = null, params Expression<Func<T, object>>[] includes)
+        public async Task<IEnumerable<T>> GetAllAsync(
+            string userId = null,
+            params Expression<Func<T, object>>[] includes
+        )
         {
             IQueryable<T> query = _dbSet;
 
             if (includes != null && includes.Any())
                 query = includes.Aggregate(query, (current, include) => current.Include(include));
-           
+
             if (typeof(T).GetProperty("IsDeleted") != null)
                 query = query.Where(e => EF.Property<bool>(e, "IsDeleted") == false);
 
             if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
                 query = query.Where(e => EF.Property<string>(e, "UserId") == userId);
-               
 
             return await query.ToListAsync();
         }
 
-        public async Task<T> GetByIdAsync(string id, string userId = null, Func<IQueryable<T>, IQueryable<T>> include = null)
+        public async Task<T> GetByIdAsync(
+            string id,
+            string userId = null,
+            Func<IQueryable<T>, IQueryable<T>> include = null
+        )
         {
             IQueryable<T> query = _dbSet;
 
@@ -45,13 +51,19 @@ namespace Repo
                 query = include(query);
 
             if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
-                query = query.Where(e => EF.Property<string>(e, "UserId") == userId &&
-                 EF.Property<bool>(e, "IsDeleted") == false);
+                query = query.Where(e =>
+                    EF.Property<string>(e, "UserId") == userId
+                    && EF.Property<bool>(e, "IsDeleted") == false
+                );
 
             return await query.FirstOrDefaultAsync(e => EF.Property<string>(e, "Id") == id);
         }
 
-        public async Task<List<T>> GetByIdsAsync(List<string> ids, string userId = null, Func<IQueryable<T>, IQueryable<T>> include = null)
+        public async Task<List<T>> GetByIdsAsync(
+            List<string> ids,
+            string userId = null,
+            Func<IQueryable<T>, IQueryable<T>> include = null
+        )
         {
             IQueryable<T> query = _dbSet;
 
@@ -59,30 +71,55 @@ namespace Repo
                 query = include(query);
 
             if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
-                query = query.Where(e => EF.Property<string>(e, "UserId") == userId &&
-                                         EF.Property<bool>(e, "IsDeleted") == false);
+                query = query.Where(e =>
+                    EF.Property<string>(e, "UserId") == userId
+                    && EF.Property<bool>(e, "IsDeleted") == false
+                );
 
             return await query.Where(e => ids.Contains(EF.Property<string>(e, "Id"))).ToListAsync();
         }
 
-
-        public async Task<T> GetByUserIdAsync(string userId, Func<IQueryable<T>, IQueryable<T>> include = null)
+        public async Task<IEnumerable<T>> GetByUserIdAsync(
+            string userId,
+            Func<IQueryable<T>, IQueryable<T>> include = null
+        )
         {
             IQueryable<T> query = _dbSet;
 
             if (include != null)
                 query = include(query);
 
-            return await query.FirstOrDefaultAsync(e => EF.Property<string>(e, "UserId") == userId &&
-             EF.Property<bool>(e, "IsDeleted") == false);
+            if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
+                query = query.Where(e =>
+                    EF.Property<string>(e, "UserId") == userId
+                    && EF.Property<bool>(e, "IsDeleted") == false
+                );
+
+            return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<T>> QueryAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+        public async Task<IEnumerable<T>> QueryAsync(
+            Expression<Func<T, bool>> predicate,
+            params Expression<Func<T, object>>[] includes
+        )
         {
             IQueryable<T> query = _dbSet.Where(predicate);
 
             if (includes != null && includes.Any())
                 query = includes.Aggregate(query, (current, include) => current.Include(include));
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<IEnumerable<T>> QueryAsync(
+            Expression<Func<T, bool>> predicate,
+            Func<IQueryable<T>, IQueryable<T>> include = null
+        )
+        {
+            IQueryable<T> query = _dbSet.Where(predicate);
+
+            if (include != null)
+                query = include(query);
 
             return await query.ToListAsync();
         }
@@ -96,7 +133,9 @@ namespace Repo
 
         public async Task<int> CountAsync(Expression<Func<T, bool>> predicate = null)
         {
-            return predicate == null ? await _dbSet.CountAsync() : await _dbSet.CountAsync(predicate);
+            return predicate == null
+                ? await _dbSet.CountAsync()
+                : await _dbSet.CountAsync(predicate);
         }
 
         // ---------- Add / Update / Delete ----------
@@ -110,7 +149,7 @@ namespace Repo
             {
                 Success = true,
                 Message = "Entity added successfully.",
-                Data = entity
+                Data = entity,
             };
         }
 
@@ -123,7 +162,7 @@ namespace Repo
             {
                 Success = true,
                 Message = "Entities added successfully.",
-                Data = entities
+                Data = entities,
             };
         }
 
@@ -136,10 +175,10 @@ namespace Repo
             {
                 Success = true,
                 Message = "Entity updated successfully.",
-                Data = entity
+                Data = entity,
             };
         }
-        
+
         public async Task<GeneralResponse<IEnumerable<T>>> UpdateRangeAsync(IEnumerable<T> entities)
         {
             _dbSet.UpdateRange(entities);
@@ -149,7 +188,7 @@ namespace Repo
             {
                 Success = true,
                 Message = "Entities updated successfully.",
-                Data = entities
+                Data = entities,
             };
         }
 
@@ -158,11 +197,7 @@ namespace Repo
             var entity = await _dbSet.FirstOrDefaultAsync(e => EF.Property<string>(e, "Id") == id);
             if (entity == null)
             {
-                return new GeneralResponse<T>
-                {
-                    Success = false,
-                    Message = "Entity not found."
-                };
+                return new GeneralResponse<T> { Success = false, Message = "Entity not found." };
             }
 
             var property = entity.GetType().GetProperty("IsDeleted");
@@ -182,24 +217,24 @@ namespace Repo
             {
                 Success = true,
                 Message = "Entity deleted successfully.",
-                Data = entity
+                Data = entity,
             };
         }
-      
 
         public async Task<GeneralResponse<IEnumerable<T>>> DeleteRangeAsync(IEnumerable<string> ids)
         {
-            var entities = await _dbSet.Where(e => ids.Contains(EF.Property<string>(e, "Id"))).ToListAsync();
+            var entities = await _dbSet
+                .Where(e => ids.Contains(EF.Property<string>(e, "Id")))
+                .ToListAsync();
 
             if (!entities.Any())
             {
                 return new GeneralResponse<IEnumerable<T>>
                 {
                     Success = false,
-                    Message = "No entities found for deletion."
+                    Message = "No entities found for deletion.",
                 };
             }
-
 
             var property = entities.GetType().GetProperty("IsDeleted");
             if (property != null)
@@ -213,13 +248,12 @@ namespace Repo
                 _dbSet.RemoveRange(entities);
                 await _context.SaveChangesAsync();
             }
-          
 
             return new GeneralResponse<IEnumerable<T>>
             {
                 Success = true,
                 Message = "Entities deleted successfully.",
-                Data = entities
+                Data = entities,
             };
         }
 

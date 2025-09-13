@@ -375,6 +375,7 @@ namespace invoice.Migrations
                     Id = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     Tax = table.Column<bool>(type: "bit", nullable: false),
                     Code = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Currency = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     Value = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DiscountType = table.Column<int>(type: "int", nullable: true),
                     DiscountValue = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
@@ -460,6 +461,8 @@ namespace invoice.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     MainImage = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Images = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -469,7 +472,6 @@ namespace invoice.Migrations
                     InStore = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CategoryId = table.Column<string>(type: "nvarchar(8)", nullable: true),
-                    Url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     StoreId = table.Column<string>(type: "nvarchar(8)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -504,6 +506,7 @@ namespace invoice.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     OrderStatus = table.Column<int>(type: "int", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     StoreId = table.Column<string>(type: "nvarchar(8)", nullable: false),
                     InvoiceId = table.Column<string>(type: "nvarchar(8)", nullable: false),
                     ClientId = table.Column<string>(type: "nvarchar(8)", nullable: false),
@@ -541,8 +544,16 @@ namespace invoice.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     PaidAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Currency = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     PaymentMethodId = table.Column<string>(type: "nvarchar(8)", nullable: false),
                     InvoiceId = table.Column<string>(type: "nvarchar(8)", nullable: false),
+                    PaymentGatewayType = table.Column<int>(type: "int", nullable: false),
+                    PaymentSessionId = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    PaymentGatewayResponse = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RefundAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    RefundedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
@@ -571,12 +582,19 @@ namespace invoice.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     Link = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    GatewaySessionId = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Value = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Currency = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Purpose = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     PaymentsNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     Message = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     Image = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     Terms = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    MaxUsageCount = table.Column<int>(type: "int", nullable: true),
                     InvoiceId = table.Column<string>(type: "nvarchar(8)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -591,7 +609,7 @@ namespace invoice.Migrations
                         column: x => x.InvoiceId,
                         principalTable: "Invoices",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -665,6 +683,7 @@ namespace invoice.Migrations
                     Id = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     Cost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     InvoiceId = table.Column<string>(type: "nvarchar(8)", nullable: false),
@@ -709,8 +728,12 @@ namespace invoice.Migrations
                 columns: new[] { "Id", "CreatedAt", "DeletedAt", "Name", "Target", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { "ar", new DateTime(2025, 9, 6, 9, 25, 10, 627, DateTimeKind.Utc).AddTicks(5103), null, "Arabic", "Page", null },
-                    { "en", new DateTime(2025, 9, 6, 9, 25, 10, 627, DateTimeKind.Utc).AddTicks(5119), null, "English", "Page", null }
+                    { "ar_i", new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9736), null, "Arabic", "Invoice", null },
+                    { "ar_p", new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9632), null, "Arabic", "Page", null },
+                    { "ar_s", new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9680), null, "Arabic", "Store", null },
+                    { "en_i", new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9749), null, "English", "Invoice", null },
+                    { "en_p", new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9666), null, "English", "Page", null },
+                    { "en_s", new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9724), null, "English", "Store", null }
                 });
 
             migrationBuilder.InsertData(
@@ -718,8 +741,18 @@ namespace invoice.Migrations
                 columns: new[] { "Id", "CreatedAt", "DeletedAt", "Name", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { "bt", new DateTime(2025, 9, 6, 9, 25, 10, 627, DateTimeKind.Utc).AddTicks(5657), null, "BankTransfer", null },
-                    { "ca", new DateTime(2025, 9, 6, 9, 25, 10, 627, DateTimeKind.Utc).AddTicks(5618), null, "Cash", null }
+                    { "ap", new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(853), null, "ApplePay", null },
+                    { "bt", new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(687), null, "BankTransfer", null },
+                    { "ca", new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(565), null, "Cash", null },
+                    { "cc", new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(620), null, "CreditCard", null },
+                    { "dc", new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(649), null, "DebitCard", null },
+                    { "dl", new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(943), null, "Delivery", null },
+                    { "gp", new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(869), null, "GooglePay", null },
+                    { "ma", new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(900), null, "Mada", null },
+                    { "pp", new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(710), null, "PayPal", null },
+                    { "sa", new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(924), null, "Sadad", null },
+                    { "sp", new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(913), null, "STCPay", null },
+                    { "st", new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(722), null, "Stripe", null }
                 });
 
             migrationBuilder.CreateIndex(
@@ -813,6 +846,12 @@ namespace invoice.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Languages_Id",
+                table: "Languages",
+                column: "Id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Languages_Name_Target",
                 table: "Languages",
                 columns: new[] { "Name", "Target" },
@@ -873,6 +912,12 @@ namespace invoice.Migrations
                 name: "IX_PaymentLinks_InvoiceId",
                 table: "PaymentLinks",
                 column: "InvoiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentMethods_Id",
+                table: "PaymentMethods",
+                column: "Id",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_InvoiceId",

@@ -21,7 +21,6 @@ namespace invoice
         {
             var builder = WebApplication.CreateBuilder(args);
 
-
             builder.Services.AddControllers()
                 .AddJsonOptions(x =>
                 {
@@ -48,7 +47,7 @@ namespace invoice
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "Enter 'Bearer {your token}'"
+                    Description = "Enter 'Bearer {token}'"
                 });
 
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -96,6 +95,7 @@ namespace invoice
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
             // Adding Scopes
+            builder.Services.AddHttpClient();
             builder.Services.AddApplicationServices();
 
             // DbContext

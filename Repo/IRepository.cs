@@ -8,10 +8,12 @@ namespace invoice.Repo
         // ---------- Retrieval ----------
         Task<IEnumerable<T>> GetAllAsync(string userId = null, params Expression<Func<T, object>>[] includes);
         Task<T> GetByIdAsync(string id, string userId = null, Func<IQueryable<T>, IQueryable<T>> include = null);
-        Task<T> GetByUserIdAsync(string userId, Func<IQueryable<T>, IQueryable<T>> include = null);
+        Task<IEnumerable<T>> GetByUserIdAsync(string userId, Func<IQueryable<T>, IQueryable<T>> include = null);
         Task<List<T>> GetByIdsAsync(List<string> ids, string userId = null, Func<IQueryable<T>, IQueryable<T>> include = null);
 
         Task<IEnumerable<T>> QueryAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
+        Task<IEnumerable<T>> QueryAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IQueryable<T>> include = null);
+
 
         // ---------- Existence & Count ----------
         Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);

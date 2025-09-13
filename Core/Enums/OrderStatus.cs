@@ -1,12 +1,18 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace invoice.Core.Enums
 {
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum OrderStatus
     {
-        Pending,
-        Completed,
-        Canceled
+        [EnumMember(Value = "pending")]
+        Pending = 0,
+
+        [EnumMember(Value = "completed")]
+        Completed = 1,
+
+        [EnumMember(Value = "canceled")]
+        Canceled = 2
     }
 }

@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO;
-using invoice.Core.DTO.Category;
-using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentMethod;
 using invoice.Core.Entites;
 using invoice.Core.Enums;
@@ -14,7 +12,6 @@ namespace invoice.Services
     {
         private readonly IRepository<PaymentMethod> _repo;
         private readonly IMapper _mapper;
-
 
         public PaymentMethodService(IRepository<PaymentMethod> repo, IMapper mapper)
         {
@@ -32,7 +29,6 @@ namespace invoice.Services
             return new GeneralResponse<IEnumerable<PaymentMethodReadDTO>>(true, "Payment methods retrieved successfully", dto);
 
         }
-
 
         public async Task<GeneralResponse<PaymentMethod>> GetByIdAsync(string id)
         {
@@ -62,8 +58,6 @@ namespace invoice.Services
         {
             var response = await _repo.DeleteAsync(id);
             return new GeneralResponse<bool> { Success = response.Success, Data = response.Success };
-        }
-
-        
+        }   
     }
 }
