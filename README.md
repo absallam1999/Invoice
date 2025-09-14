@@ -77,3 +77,12 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZDZkMGIzMi1hMjFkLTQ5YmYt
   "languageId": "AR_S",
   "userId": "d1e6bb24-d51a-4831-8c73-7d70a23c8ff7"
 }
+
+
+// Strip Secret Key [appsettings.json]
+"Stripe": 
+{
+    "SecretKey": "sk_test_51RqUuWByun3VvENhtD9lsr4ep5elIoe00beRvbVvFGmcaioKCEXckeVoXiiM3k6U9IB9PQKXyh1tuOOjSU6ciMv800GWkjFoqO",
+    "PublishableKey": "pk_test_51RqUuWByun3VvENhRxap2Se1EaSVovUfKZhg73ev1COZY86QRBu7HQUbO98ubJwI4aeYNI7F5pIjnRIKAUMGEDDA00icnZPzYP",
+    "WebhookSecret": "whsec_StXeiXoDiJ074yRXjlA98bSeS9CKH4j9"
+}
