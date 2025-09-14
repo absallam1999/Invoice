@@ -5,6 +5,7 @@ namespace invoice.Core.DTO.PaymentResponse
     public class PaymentStatusResponse
     {
         public string PaymentId { get; set; }
+        public string RawResponse { get; set; }
         public PaymentStatus Status { get; set; }
         public decimal Amount { get; set; }
         public string Currency { get; set; }

@@ -70,6 +70,7 @@ namespace invoice.Services
                 };
 
                 var gatewayResponse = await _gatewayService.CreatePaymentSessionAsync(paymentDto, PaymentType.Stripe);
+
                 if (gatewayResponse.Success)
                 {
                     paymentLink.Link = gatewayResponse.Data.PaymentUrl;

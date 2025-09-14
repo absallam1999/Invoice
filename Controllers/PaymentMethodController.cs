@@ -1,6 +1,4 @@
-﻿using invoice.Core.DTO.PaymentMethod;
-using invoice.Core.Entites;
-using invoice.Core.Enums;
+﻿using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +28,13 @@ namespace invoice.Controllers
         public async Task<IActionResult> GetById(string id)
         {
             var response = await _paymentMethodService.GetByIdAsync(id);
+            return Ok(response);
+        }
+
+        [HttpGet("get-id-from-type/{paymentType}")]
+        public async Task<IActionResult> GetIdFromType(PaymentType paymentType)
+        {
+            var response = await _paymentMethodService.GetIdFromTypeAsync(paymentType);
             return Ok(response);
         }
 

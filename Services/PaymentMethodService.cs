@@ -37,6 +37,17 @@ namespace invoice.Services
             return new GeneralResponse<PaymentMethod> { Success = true, Data = method };
         }
 
+        public async Task<string> GetIdFromTypeAsync(PaymentType paymentType)
+        {
+            var methods = await _repo.GetAllAsync();
+            var method = methods.FirstOrDefault(m => m.Name == paymentType);
+
+            if (method.Name == null)
+                throw new Exception($"Payment method not found for type: {paymentType}");
+
+            return method.Id;
+        }
+
         public async Task<GeneralResponse<PaymentMethod>> CreateAsync(PaymentType type)
         {
             var method = new PaymentMethod { Name = type };

@@ -456,7 +456,6 @@ namespace invoice.Services
             }
 
             var sessionResponse = await _gatewayService.CreatePaymentSessionAsync(dto, method.Name);
-
             if (!sessionResponse.Success)
                 return new GeneralResponse<string>
                 {
