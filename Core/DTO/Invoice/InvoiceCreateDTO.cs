@@ -1,5 +1,4 @@
 ﻿using invoice.Core.DTO.InvoiceItem;
-using invoice.Core.DTO.Payment;
 using invoice.Core.Enums;
 
 namespace invoice.Core.DTO.Invoice
@@ -20,7 +19,6 @@ namespace invoice.Core.DTO.Invoice
         public string? ClientId { get; set; }
         public string? LanguageId { get; set; }
 
-        //public IEnumerable<PaymentCreateDTO>? Payments { get; set; }
         public IEnumerable<InvoiceItemCreateDTO>? InvoiceItems { get; set; }
     }
 }

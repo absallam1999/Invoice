@@ -12,7 +12,7 @@ using invoice.Repo.Data;
 namespace invoice.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250913213319_newMig")]
+    [Migration("20250916143326_newMig")]
     partial class newMig
     {
         /// <inheritdoc />
@@ -441,6 +441,9 @@ namespace invoice.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(8)");
 
+                    b.Property<string>("OrderId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("StoreId")
                         .HasColumnType("nvarchar(8)");
 
@@ -573,7 +576,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ar_p",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9632),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(7745),
                             IsDeleted = false,
                             Name = "Arabic",
                             Target = "Page"
@@ -581,7 +584,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "en_p",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9666),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(7759),
                             IsDeleted = false,
                             Name = "English",
                             Target = "Page"
@@ -589,7 +592,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ar_s",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9680),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(7771),
                             IsDeleted = false,
                             Name = "Arabic",
                             Target = "Store"
@@ -597,7 +600,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "en_s",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9724),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(7814),
                             IsDeleted = false,
                             Name = "English",
                             Target = "Store"
@@ -605,7 +608,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ar_i",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9736),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(7826),
                             IsDeleted = false,
                             Name = "Arabic",
                             Target = "Invoice"
@@ -613,7 +616,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "en_i",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 557, DateTimeKind.Utc).AddTicks(9749),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(7836),
                             IsDeleted = false,
                             Name = "English",
                             Target = "Invoice"
@@ -678,6 +681,10 @@ namespace invoice.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(8)");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -712,7 +719,8 @@ namespace invoice.Migrations
 
                     b.HasIndex("ClientId");
 
-                    b.HasIndex("InvoiceId");
+                    b.HasIndex("InvoiceId")
+                        .IsUnique();
 
                     b.HasIndex("StoreId");
 
@@ -1101,84 +1109,84 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ca",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(565),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8199),
                             IsDeleted = false,
                             Name = "Cash"
                         },
                         new
                         {
                             Id = "cc",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(620),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8211),
                             IsDeleted = false,
                             Name = "CreditCard"
                         },
                         new
                         {
                             Id = "dc",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(649),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8230),
                             IsDeleted = false,
                             Name = "DebitCard"
                         },
                         new
                         {
                             Id = "bt",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(687),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8241),
                             IsDeleted = false,
                             Name = "BankTransfer"
                         },
                         new
                         {
                             Id = "pp",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(710),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8251),
                             IsDeleted = false,
                             Name = "PayPal"
                         },
                         new
                         {
                             Id = "st",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(722),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8261),
                             IsDeleted = false,
                             Name = "Stripe"
                         },
                         new
                         {
                             Id = "ap",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(853),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8295),
                             IsDeleted = false,
                             Name = "ApplePay"
                         },
                         new
                         {
                             Id = "gp",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(869),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8306),
                             IsDeleted = false,
                             Name = "GooglePay"
                         },
                         new
                         {
                             Id = "ma",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(900),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8324),
                             IsDeleted = false,
                             Name = "Mada"
                         },
                         new
                         {
                             Id = "sp",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(913),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8336),
                             IsDeleted = false,
                             Name = "STCPay"
                         },
                         new
                         {
                             Id = "sa",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(924),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8351),
                             IsDeleted = false,
                             Name = "Sadad"
                         },
                         new
                         {
                             Id = "dl",
-                            CreatedAt = new DateTime(2025, 9, 13, 21, 33, 16, 558, DateTimeKind.Utc).AddTicks(943),
+                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8361),
                             IsDeleted = false,
                             Name = "Delivery"
                         });
@@ -1528,8 +1536,8 @@ namespace invoice.Migrations
                         .IsRequired();
 
                     b.HasOne("invoice.Core.Entites.Invoice", "Invoice")
-                        .WithMany("Orders")
-                        .HasForeignKey("InvoiceId")
+                        .WithOne("Order")
+                        .HasForeignKey("invoice.Core.Entites.Order", "InvoiceId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1838,7 +1846,7 @@ namespace invoice.Migrations
                 {
                     b.Navigation("InvoiceItems");
 
-                    b.Navigation("Orders");
+                    b.Navigation("Order");
 
                     b.Navigation("PayInvoice");
 

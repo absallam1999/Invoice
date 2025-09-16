@@ -63,10 +63,10 @@ namespace invoice.Repo.Data.Configurations
                    .HasForeignKey<PayInvoice>(pi => pi.InvoiceId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasMany(i => i.Orders)
+            builder.HasOne(i => i.Order)
                    .WithOne(o => o.Invoice)
-                   .HasForeignKey(o => o.InvoiceId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .HasForeignKey<Invoice>(i => i.OrderId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(i => i.Payments)
                    .WithOne(p => p.Invoice)

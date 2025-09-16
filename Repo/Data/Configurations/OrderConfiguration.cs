@@ -21,8 +21,8 @@ namespace invoice.Repo.Data.Configurations
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(o => o.Invoice)
-                   .WithMany(i => i.Orders)
-                   .HasForeignKey(o => o.InvoiceId)
+                   .WithOne(i => i.Order)
+                   .HasForeignKey<Order>(o => o.InvoiceId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(o => o.Client)

@@ -4,6 +4,7 @@ namespace invoice.Core.Entites
 {
     public class Order : BaseEntity
     {
+        public string Code { get; set; }
         public OrderStatus OrderStatus { get; set; }
         public decimal TotalAmount { get; set; }
 

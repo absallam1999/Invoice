@@ -26,11 +26,13 @@ namespace invoice.Core.Entites
         public string? ClientId { get; set; }
         public Client? Client { get; set; }
 
+        public string? OrderId { get; set; }
+        public Order? Order { get; set; }
+
         public string LanguageId { get; set; }
         public Language Language { get; set; }
 
         public PayInvoice? PayInvoice { get; set; }
-        public List<Order>? Orders { get; set; } = new();
         public List<Payment> Payments { get; set; } = new();
         public List<InvoiceItem> InvoiceItems { get; set; } = new();
         public List<PaymentLink> PaymentLinks { get; set; } = new();

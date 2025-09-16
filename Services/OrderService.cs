@@ -1,35 +1,45 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO;
+using invoice.Core.DTO.Invoice;
+using invoice.Core.DTO.InvoiceItem;
 using invoice.Core.DTO.Order;
 using invoice.Core.Entites;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
 using invoice.Repo;
+using invoice.Repo.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace invoice.Services
 {
     public class OrderService : IOrderService
     {
+        private readonly ApplicationDbContext _dbContext;
+        private readonly IRepository<Store> _storeRepo;
         private readonly IRepository<Order> _orderRepo;
         private readonly IRepository<Client> _clientRepo;
-        private readonly IRepository<Store> _storeRepo;
         private readonly IRepository<Product> _productRepo;
+        private readonly IInvoiceService _invoiceService;
         private readonly IMapper _mapper;
 
         public OrderService(
+            ApplicationDbContext dbContext,
             IRepository<Order> orderRepo,
             IRepository<Client> clientRepo,
             IRepository<Store> storeRepo,
             IRepository<Product> productRepo,
+            IInvoiceService invoiceService,
             IMapper mapper)
         {
+            _mapper = mapper;
             _orderRepo = orderRepo;
             _clientRepo = clientRepo;
             _storeRepo = storeRepo;
             _productRepo = productRepo;
-            _mapper = mapper;
+            _invoiceService = invoiceService;
+            _dbContext = dbContext;
         }
+
 
         public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetAllAsync(string userId)
         {
@@ -98,75 +108,82 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<OrderReadDTO>> CreateAsync(OrderCreateDTO dto, string userId)
         {
-            if (dto == null)
-                return new GeneralResponse<OrderReadDTO> { Success = false, Message = "Order data is required" };
+            if (dto == null || string.IsNullOrWhiteSpace(userId))
+                return new GeneralResponse<OrderReadDTO>(false, "Order data and UserId are required.");
 
-            if (string.IsNullOrWhiteSpace(userId))
-                return new GeneralResponse<OrderReadDTO> { Success = false, Message = "User ID is required" };
+            if (dto.OrderItems == null || !dto.OrderItems.Any())
+                return new GeneralResponse<OrderReadDTO>(false, "At least one order item is required.");
 
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
-                if (!string.IsNullOrEmpty(dto.ClientId))
-                {
-                    var client = await _clientRepo.GetByIdAsync(dto.ClientId, userId);
-                    if (client == null)
-                        return new GeneralResponse<OrderReadDTO> { Success = false, Message = "Client not found" };
-                }
-
-                if (!string.IsNullOrEmpty(dto.StoreId))
-                {
-                    var store = await _storeRepo.GetByIdAsync(dto.StoreId, userId);
-                    if (store == null)
-                        return new GeneralResponse<OrderReadDTO> { Success = false, Message = "Store not found" };
-                }
-
                 var order = _mapper.Map<Order>(dto);
+                order.ClientId = dto.ClientId;
+                order.OrderStatus = OrderStatus.Pending;
+                order.Code = $"ORD-{DateTime.UtcNow.Ticks}";
                 order.CreatedAt = DateTime.UtcNow;
-                order.UpdatedAt = DateTime.UtcNow;
+                order.OrderItems = new List<OrderItem>();
+                decimal totalAmount = 0;
 
-                if (dto.OrderItems != null && dto.OrderItems.Any())
+                foreach (var itemDto in dto.OrderItems)
                 {
-                    order.OrderItems = new List<OrderItem>();
-                    decimal totalAmount = 0;
+                    var product = await _productRepo.GetByIdAsync(itemDto.ProductId, userId);
+                    if (product == null)
+                        return new GeneralResponse<OrderReadDTO>(false, $"Product {itemDto.ProductId} not found");
 
-                    foreach (var itemDto in dto.OrderItems)
+                    var orderItem = new OrderItem
                     {
-                        var product = await _productRepo.GetByIdAsync(itemDto.ProductId, userId);
-                        if (product == null)
-                            return new GeneralResponse<OrderReadDTO> { Success = false, Message = $"Product {itemDto.ProductId} not found" };
+                        ProductId = product.Id,
+                        Quantity = itemDto.Quantity,
+                        UnitPrice = product.Price,
+                    };
 
-                        var orderItem = new OrderItem
-                        {
-                            ProductId = product.Id,
-                            Quantity = itemDto.Quantity,
-                            UnitPrice = itemDto.UnitPrice > 0 ? itemDto.UnitPrice : product.Price,
-                        };
-
-                        order.OrderItems.Add(orderItem);
-                        totalAmount += orderItem.UnitPrice * orderItem.Quantity;
-                    }
-
-                    order.TotalAmount = totalAmount;
+                    order.OrderItems.Add(orderItem);
+                    totalAmount += orderItem.UnitPrice * orderItem.Quantity;
                 }
 
-                var response = await _orderRepo.AddAsync(order);
-                if (!response.Success)
-                    return new GeneralResponse<OrderReadDTO> { Success = false, Message = "Failed to create order" };
+                order.TotalAmount = totalAmount;
+                await _orderRepo.AddAsync(order);
 
-                return new GeneralResponse<OrderReadDTO>
+                var invoiceDto = new InvoiceCreateDTO
                 {
-                    Success = true,
-                    Message = "Order created successfully",
-                    Data = _mapper.Map<OrderReadDTO>(response.Data)
+                    StoreId = dto.StoreId,
+                    ClientId = dto.ClientId,
+                    LanguageId = dto.LanguageId,
+                    InvoiceType = InvoiceType.Detailed,
+                    TermsConditions = "Auto-generated invoice for order",
+                    Tax = dto.Tax,
+                    DiscountType = dto.DiscountType,
+                    DiscountValue = dto.DiscountValue,
+                    InvoiceItems = dto.OrderItems.Select(o => new InvoiceItemCreateDTO
+                    {
+                        ProductId = o.ProductId,
+                        Quantity = o.Quantity
+                    }).ToList()
                 };
+
+                var invoiceResponse = await _invoiceService.CreateAsync(invoiceDto, userId);
+                if (!invoiceResponse.Success)
+                {
+                    await transaction.RollbackAsync();
+                    return new GeneralResponse<OrderReadDTO>(false, $"Order created but invoice failed: {invoiceResponse.Message}");
+                }
+
+                order.InvoiceId = invoiceResponse.Data.Id;
+                await _orderRepo.UpdateAsync(order);
+
+                await transaction.CommitAsync();
+
+                return new GeneralResponse<OrderReadDTO>(
+                    true,
+                    "Order created successfully with new Invoice.",
+                    _mapper.Map<OrderReadDTO>(order)
+                );
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<OrderReadDTO>
-                {
-                    Success = false,
-                    Message = $"Failed to create order: {ex.Message}"
-                };
+                await transaction.RollbackAsync();
+                return new GeneralResponse<OrderReadDTO>(false, $"Failed to create Order and Invoice: {ex.Message}");
             }
         }
 
