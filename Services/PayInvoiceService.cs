@@ -22,7 +22,6 @@ namespace invoice.Services
         private readonly IRepository<Payment> _paymentRepo;
         private readonly IRepository<Invoice> _invoiceRepo;
         private readonly IInvoiceService _invoiceService;
-        private readonly IMapper _mapper;
 
         public PayInvoiceService(
             ApplicationDbContext dbContext,
@@ -32,8 +31,7 @@ namespace invoice.Services
             IRepository<PayInvoice> payInvoiceRepo,
             IRepository<Payment> paymentRepo,
             IRepository<Invoice> invoiceRepo,
-            IInvoiceService invoiceService,
-            IMapper mapper)
+            IInvoiceService invoiceService)
         {
             _paymentGatewayService = paymentGatewayService;
             _paymentMethodService = paymentMethodService;
@@ -43,7 +41,6 @@ namespace invoice.Services
             _invoiceRepo = invoiceRepo;
             _paymentRepo = paymentRepo;
             _dbContext = dbContext;
-            _mapper = mapper;
         }
 
         private static bool IsEmpty(string value) => string.IsNullOrWhiteSpace(value);
