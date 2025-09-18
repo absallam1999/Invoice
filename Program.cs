@@ -1,9 +1,9 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Text;
+﻿using System.Text;
 using invoice.Core.Entites;
 using invoice.Helpers;
 using invoice.Repo;
 using invoice.Repo.Data;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
