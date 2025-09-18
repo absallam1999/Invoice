@@ -29,7 +29,6 @@ namespace invoice.Core.DTO.Payment
         public string ClientEmail { get; set; }
 
         public string PaymentMethodId { get; set; }
-        public string PaymentLinkId { get; set; }
 
         public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
     }

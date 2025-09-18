@@ -1,7 +1,7 @@
 ﻿using invoice.Core.DTO.Client;
 using invoice.Core.DTO.InvoiceItem;
 using invoice.Core.DTO.Language;
-using invoice.Core.DTO.Store;
+using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.Tax;
 using invoice.Core.Enums;
 
@@ -29,9 +29,6 @@ namespace invoice.Core.DTO.Invoice
 
         public string? UserId { get; set; }
 
-        //public string? StoreId { get; set; }
-        //public StoreReadDTO? Store { get; set; }
-
         public string? ClientId { get; set; }
         
         public ClientSummaryDTO? Client { get; set; }
@@ -42,6 +39,7 @@ namespace invoice.Core.DTO.Invoice
 
         public TaxReadDTO Taxinfo { get; set; }
 
+        public List<PaymentReadDTO> Payments { get; set; } = new();
         public List<InvoiceItemReadDTO> InvoiceItems { get; set; } = new();
     }
 }

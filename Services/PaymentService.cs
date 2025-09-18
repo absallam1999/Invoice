@@ -162,14 +162,16 @@ namespace invoice.Services
         }
 
         public async Task<GeneralResponse<IEnumerable<PaymentReadDTO>>> CreateRangeAsync(
-     IEnumerable<PaymentCreateDTO> dtos, string userId)
+            IEnumerable<PaymentCreateDTO> dtos, string userId)
         {
             if (dtos == null || !dtos.Any())
+            {
                 return new GeneralResponse<IEnumerable<PaymentReadDTO>>
                 {
                     Success = false,
                     Message = "No payment data provided"
                 };
+            }
 
             var createdPayments = new List<Payment>();
             var skippedInvoices = new List<string>();
@@ -215,28 +217,33 @@ namespace invoice.Services
                 if (paymentMethod.Name is PaymentType.Stripe or PaymentType.PayPal or PaymentType.ApplePay or PaymentType.GooglePay)
                 {
                     var linkResponse = await _gatewayService.CreatePaymentSessionAsync(dto, paymentMethod.Name);
-                    if (linkResponse.Success)
-                    {
-                        var paymentLink = new PaymentLink
-                        {
-                            InvoiceId = invoice.Id,
-                            Value = dto.Cost,
-                            PaymentsNumber = "1",
-                            Description = $"Payment link for invoice {invoice.Id}",
-                            Message = "Generated automatically",
-                            Link = linkResponse.Data.PaymentUrl
-                        };
+                    if (!linkResponse.Success)
+                        continue;
 
-                        var linkResult = await _paymentLinkRepo.AddAsync(paymentLink);
-                        if (linkResult.Success)
-                            payment.PaymentLinkId = paymentLink.Id;
-                    }
+                    var paymentLink = new PaymentLink
+                    {
+                        InvoiceId = invoice.Id,
+                        Value = dto.Cost,
+                        PaymentsNumber = "1",
+                        Description = $"Payment link for invoice {invoice.Id}",
+                        Message = "Generated automatically",
+                        Link = linkResponse.Data.PaymentUrl
+                    };
+
+                    var linkResult = await _paymentLinkRepo.AddAsync(paymentLink);
+                    if (!linkResult.Success)
+                        continue;
+
+                    payment.PaymentLinkId = paymentLink.Id;
                 }
 
                 invoice.Payments.Add(payment);
-                var updateResult = await _invoiceRepo.UpdateAsync(invoice);
-                if (updateResult.Success)
+
+                var invoiceUpdate = await _invoiceRepo.UpdateAsync(invoice);
+                if (invoiceUpdate.Success)
+                {
                     createdPayments.Add(payment);
+                }
             }
 
             return new GeneralResponse<IEnumerable<PaymentReadDTO>>
@@ -248,6 +255,7 @@ namespace invoice.Services
                 Data = _mapper.Map<IEnumerable<PaymentReadDTO>>(createdPayments)
             };
         }
+
 
         public async Task<GeneralResponse<PaymentReadDTO>> UpdateAsync(string id, PaymentUpdateDTO dto, string userId)
         {

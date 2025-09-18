@@ -20,7 +20,7 @@ namespace invoice.Services.Mappers
                 .ForMember(dest => dest.PayAt, opt => opt.MapFrom(src => src.PayInvoice.PaidAt))
                 .ForMember(dest => dest.Language, opt => opt.MapFrom(src => src.Language))
                 .ForMember(dest => dest.InvoiceItems, opt => opt.MapFrom(src => src.InvoiceItems))
-                //.ForMember(dest => dest.Payments, opt => opt.MapFrom(src => src.Payments))
+                .ForMember(dest => dest.Payments, opt => opt.MapFrom(src => src.Payments))
                 //.ForMember(dest => dest.PaymentLinks, opt => opt.MapFrom(src => src.PaymentLinks))
                 .ForMember(dest => dest.Taxinfo, opt => opt.MapFrom(src => src.User.Tax))
                 .ForMember(dest => dest.payMethodId, opt => opt.MapFrom(src => src.PayInvoice != null ? src.PayInvoice.PaymentMethodId : null))
@@ -37,7 +37,6 @@ namespace invoice.Services.Mappers
 
             CreateMap<InvoiceCreateDTO, Invoice>()
                 .ForMember(dest => dest.InvoiceItems, opt => opt.MapFrom(src => src.InvoiceItems))
-                //.ForMember(dest => dest.Payments, opt => opt.MapFrom(src => src.Payments))
                 .ReverseMap();
 
             CreateMap<InvoiceUpdateDTO, Invoice>()

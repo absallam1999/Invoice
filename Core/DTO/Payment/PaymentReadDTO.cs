@@ -5,7 +5,7 @@ namespace invoice.Core.DTO.Payment
 {
     public class PaymentReadDTO
     {
-        public string ?Id { get; set; }
+        public string? Id { get; set; }
         public string? Name { get; set; }
         public decimal? Cost { get; set; }
         public PaymentStatus Status { get; set; }

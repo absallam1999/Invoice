@@ -23,8 +23,10 @@ namespace invoice.Controllers
             _mapper = mapper;
         }
 
-        private string GetUserId() =>
-            User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+        private string GetUserId()
+        {
+            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+        }
 
         [HttpPost("session")]
         public async Task<IActionResult> CreateSession([FromQuery] string invoiceId, [FromQuery] PaymentType paymentType)
@@ -49,6 +51,20 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
+        [HttpPost("cancel/{paymentId}")]
+        public async Task<IActionResult> Cancel(string paymentId)
+        {
+            var response = await _payInvoiceService.CancelPaymentAsync(paymentId);
+            return Ok(response);
+        }
+
+        [HttpPost("retry/{paymentId}")]
+        public async Task<IActionResult> RetryFailed(string paymentId)
+        {
+            var response = await _payInvoiceService.RetryFailedPaymentAsync(paymentId);
+            return Ok(response);
+        }
+
         [HttpGet("status/{paymentId}")]
         public async Task<IActionResult> GetStatus(string paymentId)
         {
@@ -70,17 +86,10 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpPost("cancel/{paymentId}")]
-        public async Task<IActionResult> Cancel(string paymentId)
+        [HttpGet("status")]
+        public async Task<IActionResult> GetByStatus([FromQuery] PaymentStatus status)
         {
-            var response = await _payInvoiceService.CancelPaymentAsync(paymentId);
-            return Ok(response);
-        }
-
-        [HttpPost("retry/{paymentId}")]
-        public async Task<IActionResult> RetryFailed(string paymentId)
-        {
-            var response = await _payInvoiceService.RetryFailedPaymentAsync(paymentId);
+            var response = await _payInvoiceService.GetByStatusAsync(status, GetUserId());
             return Ok(response);
         }
 
@@ -119,34 +128,24 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpGet("status")]
-        public async Task<IActionResult> GetByStatus([FromQuery] PaymentStatus status)
-        {
-            var response = await _payInvoiceService.GetByStatusAsync(status, GetUserId());
-            return Ok(response);
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] PayInvoiceCreateDTO dto)
         {
-            var entity = _mapper.Map<PayInvoice>(dto);
-            var response = await _payInvoiceService.CreateAsync(entity);
+            var response = await _payInvoiceService.CreateAsync(_mapper.Map<PayInvoice>(dto));
             return Ok(response);
         }
 
         [HttpPost("range")]
         public async Task<IActionResult> CreateRange([FromBody] IEnumerable<PayInvoiceCreateDTO> dtos)
         {
-            var entities = _mapper.Map<IEnumerable<PayInvoice>>(dtos);
-            var response = await _payInvoiceService.CreateRangeAsync(entities);
+            var response = await _payInvoiceService.CreateRangeAsync(_mapper.Map<IEnumerable<PayInvoice>>(dtos));
             return Ok(response);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] PayInvoiceUpdateDTO dto)
         {
-            var entity = _mapper.Map<PayInvoice>(dto);
-            var response = await _payInvoiceService.UpdateAsync(id, entity);
+            var response = await _payInvoiceService.UpdateAsync(id, _mapper.Map<PayInvoice>(dto));
             return Ok(response);
         }
 
@@ -160,8 +159,7 @@ namespace invoice.Controllers
         [HttpPut("range")]
         public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<PayInvoiceUpdateDTO> dtos)
         {
-            var entities = _mapper.Map<IEnumerable<PayInvoice>>(dtos);
-            var response = await _payInvoiceService.UpdateRangeAsync(entities);
+            var response = await _payInvoiceService.UpdateRangeAsync(_mapper.Map<IEnumerable<PayInvoice>>(dtos));
             return Ok(response);
         }
 
@@ -186,32 +184,33 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
+
         [HttpGet("exists/{id}")]
         public async Task<IActionResult> Exists(string id)
         {
-            var result = await _payInvoiceService.ExistsAsync(id);
-            return Ok(result);
+            var response = await _payInvoiceService.ExistsAsync(id);
+            return Ok(response);
         }
 
         [HttpGet("exists/session/{sessionId}")]
         public async Task<IActionResult> ExistsBySession(string sessionId)
         {
-            var result = await _payInvoiceService.ExistsBySessionAsync(sessionId);
-            return Ok(result);
+            var response = await _payInvoiceService.ExistsBySessionAsync(sessionId);
+            return Ok(response);
         }
 
         [HttpGet("count")]
         public async Task<IActionResult> Count([FromQuery] string? invoiceId = null)
         {
-            var result = await _payInvoiceService.CountAsync(invoiceId);
-            return Ok(result);
+            var response = await _payInvoiceService.CountAsync(invoiceId);
+            return Ok(response);
         }
 
         [HttpGet("count/status")]
         public async Task<IActionResult> CountByStatus([FromQuery] PaymentStatus status, [FromQuery] string? invoiceId = null)
         {
-            var result = await _payInvoiceService.CountByStatusAsync(status, invoiceId);
-            return Ok(result);
+            var response = await _payInvoiceService.CountByStatusAsync(status, invoiceId);
+            return Ok(response);
         }
 
         [HttpGet("totalpaid/{invoiceId}")]

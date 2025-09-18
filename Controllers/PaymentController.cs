@@ -53,14 +53,24 @@ namespace invoice.Controllers
         public async Task<IActionResult> Exists(string id)
         {
             var exists = await _service.ExistsAsync(id, GetUserId());
-            return Ok(new { exists });
+            return Ok(new GeneralResponse<bool>
+            {
+                Success = true,
+                Message = exists ? "Payment exists" : "Payment not found",
+                Data = exists
+            });
         }
 
         [HttpGet("count")]
         public async Task<IActionResult> Count()
         {
             var count = await _service.CountAsync(GetUserId());
-            return Ok(new { count });
+            return Ok(new GeneralResponse<int>
+            {
+                Success = true,
+                Message = "Total payments retrieved successfully",
+                Data = count
+            });
         }
 
         [HttpGet("total-paid/{invoiceId}")]
@@ -74,12 +84,14 @@ namespace invoice.Controllers
         public async Task<IActionResult> Create([FromBody] PaymentCreateDTO dto)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(new GeneralResponse<object>
                 {
                     Success = false,
                     Message = "Invalid data submitted",
                     Data = ModelState
                 });
+            }
 
             var response = await _service.CreateAsync(dto, GetUserId());
             return Ok(response);
@@ -96,12 +108,14 @@ namespace invoice.Controllers
         public async Task<IActionResult> ProcessPayment(string paymentMethodId, [FromBody] PaymentCreateDTO dto)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(new GeneralResponse<object>
                 {
                     Success = false,
                     Message = "Invalid data submitted",
                     Data = ModelState
                 });
+            }
 
             var response = await _service.ProcessPaymentAsync(paymentMethodId, dto, GetUserId());
             return Ok(response);
@@ -136,4 +150,3 @@ namespace invoice.Controllers
         }
     }
 }
-

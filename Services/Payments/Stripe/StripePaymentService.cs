@@ -101,9 +101,7 @@ namespace invoice.Services.Payments.Stripe
             }
             catch (StripeException ex)
             {
-                // Log the full Stripe exception for debugging
                 var errorMessage = $"Stripe error: {ex.StripeError?.Message}, Code: {ex.StripeError?.Code}, Type: {ex.StripeError?.Type}";
-                Console.WriteLine(errorMessage);
 
                 return new GeneralResponse<PaymentSessionResponse>
                 {
@@ -114,8 +112,6 @@ namespace invoice.Services.Payments.Stripe
             }
             catch (Exception ex)
             {
-                // Log unexpected errors
-                Console.WriteLine($"Unexpected error: {ex}");
                 return new GeneralResponse<PaymentSessionResponse>
                 {
                     Success = false,
