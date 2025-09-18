@@ -64,12 +64,7 @@ namespace invoice
                     {
                         Title = "Invoice API",
                         Version = "v1",
-                        Description = "API for Invoice Management System",
-                        Contact = new OpenApiContact
-                        {
-                            Name = "Support",
-                            Email = "support@invoice.com",
-                        },
+                        Description = "API for Invoice Management System"
                     }
                 );
 
@@ -181,7 +176,7 @@ namespace invoice
                     options.Lockout.AllowedForNewUsers = true;
 
                     options.User.RequireUniqueEmail = true;
-                    options.SignIn.RequireConfirmedEmail = false; // Set to true for production
+                    options.SignIn.RequireConfirmedEmail = false; // true for production
                 })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();

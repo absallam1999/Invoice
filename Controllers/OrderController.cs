@@ -152,7 +152,7 @@ namespace invoice.Controllers
             return Ok(new { Success = true, Count = count });
         }
 
-        [HttpHead("{id}")]
+        [HttpPost("{id}")]
         public async Task<IActionResult> Exists(string id)
         {
             if (string.IsNullOrWhiteSpace(GetUserId()))

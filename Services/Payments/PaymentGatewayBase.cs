@@ -3,7 +3,6 @@ using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentResponse;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
-using Microsoft.Extensions.Logging;
 
 namespace invoice.Services.Payments
 {

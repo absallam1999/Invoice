@@ -97,7 +97,7 @@ namespace invoice.Services
             if (string.IsNullOrWhiteSpace(dto.InvoiceId))
                 return new GeneralResponse<PaymentReadDTO> { Success = false, Message = "Invoice ID is required" };
 
-            var invoice = await _invoiceRepo.GetByIdAsync(dto.InvoiceId);
+            var invoice = await _invoiceRepo.GetByIdAsync(dto.InvoiceId, userId, q => q.Include(i => i.Payments));
             if (invoice == null)
                 return new GeneralResponse<PaymentReadDTO> { Success = false, Message = "Invoice not found" };
 
@@ -109,10 +109,7 @@ namespace invoice.Services
 
             if (paymentMethod == null && Enum.TryParse<PaymentType>(dto.Name, out var paymentType))
             {
-                paymentMethod = new PaymentMethod
-                {
-                    Name = paymentType
-                };
+                paymentMethod = new PaymentMethod { Name = paymentType };
                 var methodResult = await _paymentMethodRepo.AddAsync(paymentMethod);
                 if (!methodResult.Success)
                     return new GeneralResponse<PaymentReadDTO> { Success = false, Message = "Failed to create payment method" };
@@ -121,74 +118,76 @@ namespace invoice.Services
             if (paymentMethod == null)
                 return new GeneralResponse<PaymentReadDTO> { Success = false, Message = "Payment method not found or invalid" };
 
-            var paymentLinks = await _paymentLinkRepo.QueryAsync(
-                pl => pl.InvoiceId == invoice.Id && pl.Id == dto.PaymentLinkId
-            );
+            var payment = _mapper.Map<Payment>(dto);
+            payment.UserId = userId;
+            payment.PaymentMethodId = paymentMethod.Id;
+            payment.CreatedAt = DateTime.UtcNow;
+            payment.UpdatedAt = DateTime.UtcNow;
 
-            PaymentLink paymentLink = paymentLinks.FirstOrDefault();
-
-            if (paymentLink == null)
+            if (paymentMethod.Name is PaymentType.Stripe or PaymentType.PayPal or PaymentType.ApplePay or PaymentType.GooglePay)
             {
-                paymentLink = new PaymentLink
+                var linkResponse = await _gatewayService.CreatePaymentSessionAsync(dto, paymentMethod.Name);
+                if (!linkResponse.Success)
+                    return new GeneralResponse<PaymentReadDTO> { Success = false, Message = "Failed to generate payment link" };
+
+                var paymentLink = new PaymentLink
                 {
                     InvoiceId = invoice.Id,
                     Value = dto.Cost,
                     PaymentsNumber = "1",
                     Description = $"Payment link for invoice {invoice.Id}",
                     Message = "Generated automatically",
-                    Link = string.Empty,
+                    Link = linkResponse.Data.PaymentUrl
                 };
-
-                if (paymentMethod.Name is PaymentType.Stripe or PaymentType.PayPal or PaymentType.ApplePay or PaymentType.GooglePay)
-                {
-                    var linkResponse = await _gatewayService.CreatePaymentSessionAsync(dto, paymentMethod.Name);
-                    if (!linkResponse.Success)
-                        return new GeneralResponse<PaymentReadDTO> { Success = false, Message = "Failed to generate payment link" };
-
-                    paymentLink.Link = linkResponse.Data.PaymentUrl;
-                }
 
                 var linkResult = await _paymentLinkRepo.AddAsync(paymentLink);
                 if (!linkResult.Success)
                     return new GeneralResponse<PaymentReadDTO> { Success = false, Message = "Failed to create payment link" };
+
+                payment.PaymentLinkId = paymentLink.Id;
             }
 
-            var payment = _mapper.Map<Payment>(dto);
-            payment.UserId = userId;
-            payment.PaymentMethodId = paymentMethod.Id;
-            payment.PaymentLinkId = paymentLink.Id;
-            payment.CreatedAt = DateTime.UtcNow;
-            payment.UpdatedAt = DateTime.UtcNow;
+            invoice.Payments.Add(payment);
 
-            var response = await _paymentRepo.AddAsync(payment);
-            if (!response.Success)
-                return new GeneralResponse<PaymentReadDTO> { Success = false, Message = "Failed to create payment" };
-
-            var resultDto = _mapper.Map<PaymentReadDTO>(response.Data);
+            var invoiceUpdate = await _invoiceRepo.UpdateAsync(invoice);
+            if (!invoiceUpdate.Success)
+                return new GeneralResponse<PaymentReadDTO> { Success = false, Message = "Failed to add payment to invoice" };
 
             return new GeneralResponse<PaymentReadDTO>
             {
                 Success = true,
                 Message = "Payment created successfully",
-                Data = resultDto
+                Data = _mapper.Map<PaymentReadDTO>(payment)
             };
         }
 
-        public async Task<GeneralResponse<IEnumerable<PaymentReadDTO>>> CreateRangeAsync(IEnumerable<PaymentCreateDTO> dtos, string userId)
+        public async Task<GeneralResponse<IEnumerable<PaymentReadDTO>>> CreateRangeAsync(
+     IEnumerable<PaymentCreateDTO> dtos, string userId)
         {
             if (dtos == null || !dtos.Any())
-                return new GeneralResponse<IEnumerable<PaymentReadDTO>> { Success = false, Message = "Payment data is required" };
+                return new GeneralResponse<IEnumerable<PaymentReadDTO>>
+                {
+                    Success = false,
+                    Message = "No payment data provided"
+                };
 
             var createdPayments = new List<Payment>();
+            var skippedInvoices = new List<string>();
 
             foreach (var dto in dtos)
             {
                 if (string.IsNullOrWhiteSpace(dto.InvoiceId))
                     continue;
 
-                var invoice = await _invoiceRepo.GetByIdAsync(dto.InvoiceId);
+                var invoice = await _invoiceRepo.GetByIdAsync(dto.InvoiceId, userId, q => q.Include(i => i.Payments));
                 if (invoice == null)
                     continue;
+
+                if (invoice.Payments.Any())
+                {
+                    skippedInvoices.Add(invoice.Id);
+                    continue;
+                }
 
                 PaymentMethod paymentMethod = null;
                 if (!string.IsNullOrEmpty(dto.PaymentMethodId))
@@ -207,55 +206,45 @@ namespace invoice.Services
                 if (paymentMethod == null)
                     continue;
 
-                var paymentLinks = await _paymentLinkRepo.QueryAsync(
-                    pl => pl.InvoiceId == invoice.Id && pl.Id == dto.PaymentLinkId
-                );
-                PaymentLink paymentLink = paymentLinks.FirstOrDefault();
-
-                if (paymentLink == null)
-                {
-                    paymentLink = new PaymentLink
-                    {
-                        InvoiceId = invoice.Id,
-                        Value = dto.Cost,
-                        PaymentsNumber = "1",
-                        Description = $"Payment link for invoice {invoice.Id}",
-                        Message = "Generated automatically",
-                        Link = string.Empty,
-                    };
-
-                    if (paymentMethod.Name is PaymentType.Stripe or PaymentType.PayPal or PaymentType.ApplePay or PaymentType.GooglePay)
-                    {
-                        var linkResponse = await _gatewayService.CreatePaymentSessionAsync(dto, paymentMethod.Name);
-                        if (!linkResponse.Success)
-                            continue;
-
-                        paymentLink.Link = linkResponse.Data.PaymentUrl;
-                    }
-
-                    var linkResult = await _paymentLinkRepo.AddAsync(paymentLink);
-                    if (!linkResult.Success)
-                        continue;
-                }
-
                 var payment = _mapper.Map<Payment>(dto);
                 payment.UserId = userId;
                 payment.PaymentMethodId = paymentMethod.Id;
-                payment.PaymentLinkId = paymentLink.Id;
                 payment.CreatedAt = DateTime.UtcNow;
                 payment.UpdatedAt = DateTime.UtcNow;
 
-                var response = await _paymentRepo.AddAsync(payment);
-                if (response.Success)
+                if (paymentMethod.Name is PaymentType.Stripe or PaymentType.PayPal or PaymentType.ApplePay or PaymentType.GooglePay)
                 {
-                    createdPayments.Add(response.Data);
+                    var linkResponse = await _gatewayService.CreatePaymentSessionAsync(dto, paymentMethod.Name);
+                    if (linkResponse.Success)
+                    {
+                        var paymentLink = new PaymentLink
+                        {
+                            InvoiceId = invoice.Id,
+                            Value = dto.Cost,
+                            PaymentsNumber = "1",
+                            Description = $"Payment link for invoice {invoice.Id}",
+                            Message = "Generated automatically",
+                            Link = linkResponse.Data.PaymentUrl
+                        };
+
+                        var linkResult = await _paymentLinkRepo.AddAsync(paymentLink);
+                        if (linkResult.Success)
+                            payment.PaymentLinkId = paymentLink.Id;
+                    }
                 }
+
+                invoice.Payments.Add(payment);
+                var updateResult = await _invoiceRepo.UpdateAsync(invoice);
+                if (updateResult.Success)
+                    createdPayments.Add(payment);
             }
 
             return new GeneralResponse<IEnumerable<PaymentReadDTO>>
             {
-                Success = true,
-                Message = createdPayments.Any() ? "Payments created successfully" : "No payments were created",
+                Success = createdPayments.Any(),
+                Message = createdPayments.Any()
+                    ? $"Created {createdPayments.Count} payments successfully. Skipped {skippedInvoices.Count} invoices with existing payments."
+                    : "No payments created",
                 Data = _mapper.Map<IEnumerable<PaymentReadDTO>>(createdPayments)
             };
         }

@@ -573,7 +573,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ar_p",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(7745),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4283),
                             IsDeleted = false,
                             Name = "Arabic",
                             Target = "Page"
@@ -581,7 +581,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "en_p",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(7759),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4297),
                             IsDeleted = false,
                             Name = "English",
                             Target = "Page"
@@ -589,7 +589,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ar_s",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(7771),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4309),
                             IsDeleted = false,
                             Name = "Arabic",
                             Target = "Store"
@@ -597,7 +597,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "en_s",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(7814),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4349),
                             IsDeleted = false,
                             Name = "English",
                             Target = "Store"
@@ -605,7 +605,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ar_i",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(7826),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4360),
                             IsDeleted = false,
                             Name = "Arabic",
                             Target = "Invoice"
@@ -613,7 +613,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "en_i",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(7836),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4371),
                             IsDeleted = false,
                             Name = "English",
                             Target = "Invoice"
@@ -921,11 +921,6 @@ namespace invoice.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<DateTime>("Date")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
@@ -1106,84 +1101,84 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ca",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8199),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4885),
                             IsDeleted = false,
                             Name = "Cash"
                         },
                         new
                         {
                             Id = "cc",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8211),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4897),
                             IsDeleted = false,
                             Name = "CreditCard"
                         },
                         new
                         {
                             Id = "dc",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8230),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4909),
                             IsDeleted = false,
                             Name = "DebitCard"
                         },
                         new
                         {
                             Id = "bt",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8241),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4919),
                             IsDeleted = false,
                             Name = "BankTransfer"
                         },
                         new
                         {
                             Id = "pp",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8251),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4930),
                             IsDeleted = false,
                             Name = "PayPal"
                         },
                         new
                         {
                             Id = "st",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8261),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4941),
                             IsDeleted = false,
                             Name = "Stripe"
                         },
                         new
                         {
                             Id = "ap",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8295),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4952),
                             IsDeleted = false,
                             Name = "ApplePay"
                         },
                         new
                         {
                             Id = "gp",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8306),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4962),
                             IsDeleted = false,
                             Name = "GooglePay"
                         },
                         new
                         {
                             Id = "ma",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8324),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(4989),
                             IsDeleted = false,
                             Name = "Mada"
                         },
                         new
                         {
                             Id = "sp",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8336),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(5000),
                             IsDeleted = false,
                             Name = "STCPay"
                         },
                         new
                         {
                             Id = "sa",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8351),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(5010),
                             IsDeleted = false,
                             Name = "Sadad"
                         },
                         new
                         {
                             Id = "dl",
-                            CreatedAt = new DateTime(2025, 9, 16, 14, 33, 24, 575, DateTimeKind.Utc).AddTicks(8361),
+                            CreatedAt = new DateTime(2025, 9, 18, 14, 48, 4, 669, DateTimeKind.Utc).AddTicks(5020),
                             IsDeleted = false,
                             Name = "Delivery"
                         });

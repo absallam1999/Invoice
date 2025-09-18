@@ -7,7 +7,6 @@ namespace invoice.Core.Entites
         public string Name { get; set; }
         public decimal Cost { get; set; }
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
-        public DateTime Date { get; set; } = DateTime.UtcNow;
 
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
@@ -19,6 +18,6 @@ namespace invoice.Core.Entites
         public PaymentMethod PaymentMethod { get; set; }
 
         public string? PaymentLinkId { get; set; }
-        public PaymentLink PaymentLink { get; set; }
+        public PaymentLink? PaymentLink { get; set; }
     }
 }

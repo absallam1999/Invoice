@@ -4,19 +4,36 @@ namespace invoice.Core.DTO.PaymentLink
 {
     public class PaymentLinkUpdateDTO
     {
-        [Required]
+        [Required(ErrorMessage = "Id is required")]
         public string Id { get; set; }
 
+        [StringLength(200, ErrorMessage = "Purpose cannot exceed 200 characters")]
         public string Purpose { get; set; }
+
+        [Range(0.01, double.MaxValue, ErrorMessage = "Value must be greater than 0")]
         public decimal? Value { get; set; }
+
+        [StringLength(3, MinimumLength = 3, ErrorMessage = "Currency must be a valid 3-letter ISO code")]
         public string Currency { get; set; }
-        public string PaymentsNumber { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "Payments number must be at least 1")]
+        public int? PaymentsNumber { get; set; }
+
+        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string Description { get; set; }
+
+        [StringLength(500, ErrorMessage = "Message cannot exceed 500 characters")]
         public string Message { get; set; }
+
         public IFormFile Image { get; set; }
+
+        [StringLength(2000, ErrorMessage = "Terms cannot exceed 2000 characters")]
         public string Terms { get; set; }
+
         public bool? IsActive { get; set; }
         public DateTime? ExpiresAt { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "Max usage must be at least 1")]
         public int? MaxUsageCount { get; set; }
     }
 }

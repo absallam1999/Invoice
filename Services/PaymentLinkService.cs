@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO;
+using invoice.Core.DTO.Invoice;
+using invoice.Core.DTO.InvoiceItem;
 using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentLink;
 using invoice.Core.Entites;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
 using invoice.Repo;
+using invoice.Repo.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -14,6 +17,7 @@ namespace invoice.Services
     public class PaymentLinkService : IPaymentLinkService
     {
         private readonly IRepository<Invoice> _invoiceRepo;
+        private readonly ApplicationDbContext _dbContext;
         private readonly IRepository<PaymentLink> _paymentLinkRepo;
         private readonly IPaymentGatewayService _gatewayService;
         private readonly IFileService _fileService;
@@ -23,6 +27,7 @@ namespace invoice.Services
             IRepository<PaymentLink> paymentLinkRepo,
             IPaymentGatewayService gatewayService,
             IRepository<Invoice> invoiceRepo,
+            ApplicationDbContext dbContext,
             IFileService fileService,
             IMapper mapper)
         {
@@ -30,125 +35,216 @@ namespace invoice.Services
             _gatewayService = gatewayService;
             _invoiceRepo = invoiceRepo;
             _fileService = fileService;
+            _dbContext = dbContext;
             _mapper = mapper;
         }
 
         public async Task<GeneralResponse<PaymentLinkReadDTO>> CreateAsync(PaymentLinkCreateDTO dto, string userId)
         {
             if (dto == null)
-                return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Payment link data is required" };
+                return new GeneralResponse<PaymentLinkReadDTO>(false, "Payment link data is required");
 
-            if (!string.IsNullOrEmpty(dto.InvoiceId))
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
             {
-                var invoice = await _invoiceRepo.GetByIdAsync(dto.InvoiceId, userId);
-                if (invoice == null)
-                    return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Invoice not found" };
-            }
+                string invoiceId = dto.InvoiceId;
 
-            var paymentLink = _mapper.Map<PaymentLink>(dto);
-            paymentLink.CreatedAt = DateTime.UtcNow;
-            paymentLink.UpdatedAt = DateTime.UtcNow;
-
-            if (dto.Image != null)
-            {
-                paymentLink.Image = await _fileService.UploadImageAsync(dto.Image, "paymentlinks");
-            }
-
-            if (dto.GenerateGatewayLink && dto.Value > 0)
-            {
-                var paymentDto = new PaymentCreateDTO
+                if (string.IsNullOrEmpty(dto.InvoiceId))
                 {
-                    Name = dto.Description ?? "Custom Payment",
-                    Currency = dto.Currency ?? "USD",
-                    Cost = dto.Value,
-                    Description = dto.Message,
-                    Metadata = new Dictionary<string, string>
+                    var invoiceDto = new InvoiceCreateDTO
+                    {
+                        StoreId = dto.StoreId,
+                        ClientId = dto.ClientId,
+                        LanguageId = dto.LanguageId,
+                        InvoiceType = InvoiceType.Detailed,
+                        TermsConditions = "Auto-generated invoice for Payment Link",
+                        Tax = (bool)dto.Tax,
+                        DiscountType = dto.DiscountType,
+                        DiscountValue = dto.DiscountValue,
+                        InvoiceItems = new List<InvoiceItemCreateDTO>
+                        {
+                            new InvoiceItemCreateDTO
+                            {
+                                ProductId = null,
+                                Quantity = 1,
+                            }
+                        }
+                    };
+
+                    var newInvoice = _mapper.Map<Invoice>(invoiceDto);
+                    var invoiceResponse = await _invoiceRepo.AddAsync(newInvoice);
+                    if (!invoiceResponse.Success)
+                    {
+                        await transaction.RollbackAsync();
+                        return new GeneralResponse<PaymentLinkReadDTO>(false, $"Failed to auto-generate invoice: {invoiceResponse.Message}");
+                    }
+
+                    invoiceId = invoiceResponse.Data.Id;
+                }
+                else
+                {
+                    var invoice = await _invoiceRepo.GetByIdAsync(dto.InvoiceId, userId);
+                    if (invoice == null)
+                        return new GeneralResponse<PaymentLinkReadDTO>(false, "Invoice not found");
+                }
+
+                var paymentLink = _mapper.Map<PaymentLink>(dto);
+                paymentLink.InvoiceId = invoiceId;
+                paymentLink.CreatedAt = DateTime.UtcNow;
+                paymentLink.UpdatedAt = DateTime.UtcNow;
+
+                if (dto.Image != null)
+                {
+                    paymentLink.Image = await _fileService.UploadImageAsync(dto.Image, "paymentlinks");
+                }
+
+                if (dto.GenerateGatewayLink && dto.Value > 0)
+                {
+                    var paymentDto = new PaymentCreateDTO
+                    {
+                        Name = dto.Description ?? "Custom Payment",
+                        Currency = dto.Currency ?? "USD",
+                        Cost = dto.Value,
+                        Description = dto.Message,
+                        InvoiceId = invoiceId,
+                        Metadata = new Dictionary<string, string>
                 {
                     { "payment_link_id", paymentLink.Id },
                     { "purpose", dto.Purpose ?? "custom_payment" }
                 }
-                };
+                    };
 
-                var gatewayResponse = await _gatewayService.CreatePaymentSessionAsync(paymentDto, PaymentType.Stripe);
-
-                if (gatewayResponse.Success)
-                {
-                    paymentLink.Link = gatewayResponse.Data.PaymentUrl;
-                    paymentLink.GatewaySessionId = gatewayResponse.Data.SessionId;
+                    var gatewayResponse = await _gatewayService.CreatePaymentSessionAsync(paymentDto, PaymentType.Stripe);
+                    if (gatewayResponse.Success)
+                    {
+                        paymentLink.Link = gatewayResponse.Data.PaymentUrl;
+                        paymentLink.GatewaySessionId = gatewayResponse.Data.SessionId;
+                    }
                 }
+
+                var response = await _paymentLinkRepo.AddAsync(paymentLink);
+                if (!response.Success)
+                {
+                    await transaction.RollbackAsync();
+                    return new GeneralResponse<PaymentLinkReadDTO>(false, "Failed to create payment link");
+                }
+
+                await transaction.CommitAsync();
+
+                return new GeneralResponse<PaymentLinkReadDTO>(
+                    true,
+                    "Payment link created successfully with auto-generated invoice",
+                    _mapper.Map<PaymentLinkReadDTO>(response.Data)
+                );
             }
-
-            var response = await _paymentLinkRepo.AddAsync(paymentLink);
-            if (!response.Success)
-                return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Failed to create payment link" };
-
-            return new GeneralResponse<PaymentLinkReadDTO>
+            catch (Exception ex)
             {
-                Success = true,
-                Message = "Payment link created successfully",
-                Data = _mapper.Map<PaymentLinkReadDTO>(response.Data)
-            };
+                await transaction.RollbackAsync();
+                return new GeneralResponse<PaymentLinkReadDTO>(false, $"Failed to create PaymentLink and Invoice: {ex.Message}");
+            }
         }
+
 
         public async Task<GeneralResponse<PaymentLinkReadDTO>> CreateCustomPaymentLinkAsync(CustomPaymentLinkCreateDTO dto, string userId)
         {
             if (dto == null)
-                return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Payment link data is required" };
+                return new GeneralResponse<PaymentLinkReadDTO>(false, "Payment link data is required");
 
             if (dto.Value <= 0)
-                return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Payment value must be greater than zero" };
+                return new GeneralResponse<PaymentLinkReadDTO>(false, "Payment value must be greater than zero");
 
-            var paymentLink = new PaymentLink
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
             {
-                Purpose = dto.Purpose,
-                Value = dto.Value,
-                Currency = dto.Currency ?? "USD",
-                Description = dto.Description ?? $"Payment for {dto.Purpose}",
-                Message = dto.Message,
-                IsActive = true,
-                ExpiresAt = dto.ExpiresAt,
-                MaxUsageCount = dto.MaxUsageCount,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+                var invoiceDto = new InvoiceCreateDTO
+                {
+                    ClientId = dto.ClientId,
+                    InvoiceType = InvoiceType.Detailed,
+                    TermsConditions = "Auto-generated invoice for Custom Payment Link",
+                    InvoiceItems = new List<InvoiceItemCreateDTO>
+                    {
+                        new InvoiceItemCreateDTO
+                        {
+                            ProductId = null,
+                            Quantity = 1,
+                        }
+                    }
+                };
+                var newInvoice = _mapper.Map<Invoice>(invoiceDto);
+                var invoiceResponse = await _invoiceRepo.AddAsync(newInvoice);
+                if (!invoiceResponse.Success)
+                {
+                    await transaction.RollbackAsync();
+                    return new GeneralResponse<PaymentLinkReadDTO>(false, $"Failed to auto-generate invoice: {invoiceResponse.Message}");
+                }
 
-            if (dto.Image != null)
-            {
-                paymentLink.Image = await _fileService.UploadImageAsync(dto.Image, "paymentlinks");
-            }
+                var paymentLink = new PaymentLink
+                {
+                    Purpose = dto.Purpose,
+                    Value = dto.Value,
+                    Currency = dto.Currency ?? "USD",
+                    Description = dto.Description ?? $"Payment for {dto.Purpose}",
+                    Message = dto.Message,
+                    IsActive = true,
+                    ExpiresAt = dto.ExpiresAt,
+                    MaxUsageCount = dto.MaxUsageCount,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    InvoiceId = invoiceResponse.Data.Id
+                };
 
-            var paymentDto = new PaymentCreateDTO
-            {
-                Name = dto.Description ?? $"Payment - {dto.Purpose}",
-                Currency = dto.Currency ?? "USD",
-                Cost = dto.Value,
-                Description = dto.Message,
-                Metadata = new Dictionary<string, string>
+                if (dto.Image != null)
+                {
+                    paymentLink.Image = await _fileService.UploadImageAsync(dto.Image, "paymentlinks");
+                }
+
+                var paymentDto = new PaymentCreateDTO
+                {
+                    Name = dto.Description ?? $"Payment - {dto.Purpose}",
+                    Currency = dto.Currency ?? "USD",
+                    Cost = dto.Value,
+                    Description = dto.Message,
+                    InvoiceId = invoiceResponse.Data.Id,
+                    Metadata = new Dictionary<string, string>
             {
                 { "purpose", dto.Purpose },
                 { "custom_payment", "true" },
                 { "created_by", userId }
             }
-            };
+                };
 
-            var gatewayResponse = await _gatewayService.CreatePaymentSessionAsync(paymentDto, dto.PaymentType);
-            if (!gatewayResponse.Success)
-                return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Failed to create payment gateway session" };
+                var gatewayResponse = await _gatewayService.CreatePaymentSessionAsync(paymentDto, dto.PaymentType);
+                if (!gatewayResponse.Success)
+                {
+                    await transaction.RollbackAsync();
+                    return new GeneralResponse<PaymentLinkReadDTO>(false, "Failed to create payment gateway session");
+                }
 
-            paymentLink.Link = gatewayResponse.Data.PaymentUrl;
-            paymentLink.GatewaySessionId = gatewayResponse.Data.SessionId;
+                paymentLink.Link = gatewayResponse.Data.PaymentUrl;
+                paymentLink.GatewaySessionId = gatewayResponse.Data.SessionId;
 
-            var response = await _paymentLinkRepo.AddAsync(paymentLink);
-            if (!response.Success)
-                return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Failed to create payment link" };
+                var response = await _paymentLinkRepo.AddAsync(paymentLink);
+                if (!response.Success)
+                {
+                    await transaction.RollbackAsync();
+                    return new GeneralResponse<PaymentLinkReadDTO>(false, "Failed to create payment link");
+                }
 
-            return new GeneralResponse<PaymentLinkReadDTO>
+                await transaction.CommitAsync();
+
+                return new GeneralResponse<PaymentLinkReadDTO>(
+                    true,
+                    "Custom payment link created successfully with auto-generated invoice",
+                    _mapper.Map<PaymentLinkReadDTO>(response.Data)
+                );
+            }
+            catch (Exception ex)
             {
-                Success = true,
-                Message = "Custom payment link created successfully",
-                Data = _mapper.Map<PaymentLinkReadDTO>(response.Data)
-            };
+                await transaction.RollbackAsync();
+                return new GeneralResponse<PaymentLinkReadDTO>(false, $"Failed to create Custom PaymentLink and Invoice: {ex.Message}");
+            }
         }
+
 
         public async Task<GeneralResponse<PaymentLinkReadDTO>> UpdateAsync(string id, PaymentLinkUpdateDTO dto, string userId)
         {

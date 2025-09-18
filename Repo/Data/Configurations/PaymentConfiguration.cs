@@ -20,10 +20,6 @@ namespace invoice.Repo.Data.Configurations
                    .IsRequired()
                    .HasColumnType("decimal(18,2)");
 
-            builder.Property(p => p.Date)
-                   .IsRequired()
-                   .HasDefaultValueSql("GETUTCDATE()");
-
             builder.HasOne(p => p.User)
                    .WithMany(u => u.Payments)
                    .HasForeignKey(p => p.UserId)
