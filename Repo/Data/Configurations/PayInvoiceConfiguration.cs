@@ -1,6 +1,7 @@
-﻿using invoice.Core.Entites;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using invoice.Core.Entites;
+using invoice.Core.Enums;
 
 namespace invoice.Repo.Data.Configurations
 {
@@ -20,7 +21,8 @@ namespace invoice.Repo.Data.Configurations
                    .HasColumnType("decimal(18,2)");
 
             builder.Property(p => p.PaidAt)
-                   .HasDefaultValueSql("GETUTCDATE()");
+                   .HasDefaultValueSql("GETUTCDATE()")
+                   .IsRequired();
 
             builder.Property(p => p.Currency)
                    .IsRequired()
@@ -31,6 +33,10 @@ namespace invoice.Repo.Data.Configurations
 
             builder.Property(p => p.PaymentGatewayResponse)
                    .HasColumnType("nvarchar(max)");
+
+            builder.Property(p => p.Status)
+                   .HasDefaultValue(PaymentStatus.Pending)
+                   .IsRequired();
 
             builder.HasOne(p => p.PaymentMethod)
                    .WithMany(pm => pm.PayInvoices)

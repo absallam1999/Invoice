@@ -6,6 +6,7 @@
   "confirmPassword": "Mm12345!"
 }
 
+
 // Login
 {
   "email": "absallam1999@test.com",
@@ -13,13 +14,13 @@
   "rememberMe": true
 }
 
-Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZDZkMGIzMi1hMjFkLTQ5YmYtOTZkYi0xNTRiODM5ZGM4YTMiLCJqdGkiOiI0YTJlZmU2Ni1jZWQ2LTQ3YzgtYWUxOS05YWViZTI5MGExOTgiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImVkNmQwYjMyLWEyMWQtNDliZi05NmRiLTE1NGI4MzlkYzhhMyIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJhYnNhbGxhbSIsImV4cCI6MTc1ODAzMjA5MywiaXNzIjoiSW52b2ljZSIsImF1ZCI6Ikludm9pY2VfYXVkaWVuY2UifQ.IQ2ZoNwLvb4BDP96UhSDBJF1br2au185XRZO8OmX7fg
 
 // Create New Category
 {
   "name": "New Category",
   "description": "New Category Description"
 }
+
 
 // Create New Client
 {
@@ -29,23 +30,6 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZDZkMGIzMi1hMjFkLTQ5YmYt
   "address": "Cairo, Egypt"
 }
 
-// Update Range Clients
-[
-  {
-      "id": "MF8G3K6Y",
-      "name": "New Client",
-      "email": "new@client.com",
-      "phoneNumber": "12344321",
-      "address": "New Cairo"
-  },
- {
-       "id": "MF8G4CQX",
-      "name": "New Client2",
-      "email": "new@client2.com",
-      "phoneNumber": "12344321",
-      "address": "New Cairo"
- }
-]
 
 // Create New Invoice
 {
@@ -53,16 +37,15 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZDZkMGIzMi1hMjFkLTQ5YmYt
   "currency": "USD",
   "discountType": "Amount",
   "discountValue": 0,
-  "finalValue": 100,
-  "invoiceType": "Active",
+  "invoiceType": "online",
   "termsConditions": "Invoice Terms",
-  "storeId": "MFITZQER",
-  "clientId": "MFITWLEN",
-  "languageId": "ar_i",
+  "storeId": "MFR3I22N",
+  "clientId": "MFR3FGW9",
+  "languageId": "AR_I",
   "invoiceItems": [
     {
-      "quantity": 2,
-      "productId": "MFIU266S"
+      "quantity": 1,
+      "productId": "MFR3K62C"
     }
   ]
 }
@@ -73,16 +56,50 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZDZkMGIzMi1hMjFkLTQ5YmYt
   "name": "New Store",
   "description": "New Store Description",
   "tax": true,
-  "paymentMethods": 1,
+  "paymentMethod": "cash",
   "languageId": "AR_S",
-  "userId": "d1e6bb24-d51a-4831-8c73-7d70a23c8ff7"
+  "userId": "03347c41-69e9-437e-8963-69d7ab904153"
+}
+
+
+// Create New Order
+{
+  "currency": "USD",
+  "storeId": "MFR3I22N",
+  "clientId": "MFR3FGW9",
+  "languageId": "AR_I",
+  "tax": true,
+  "discountType": "Amount",
+  "discountValue": 0,
+  "orderItems": [
+    {
+      "productId": "MFQWAVOA",
+      "quantity": 2
+    }
+  ]
+}
+
+
+// Create New Payment
+{
+  "name": "New Payment",
+  "currency": "USD",
+  "cost": 200,
+  "maxUsageCount": 1,
+  "invoiceId": "MFRB4W25",
+  "description": "New Payment Description",
+  "clientId": "MFR3FGW9",
+  "clientEmail": "client@example.com",
+  "paymentMethodId": "st",
+  "metadata": {
+    "invoice_code": "INV-638939114876833275"
+  }
 }
 
 
 // Strip Secret Key [appsettings.json]
-"Stripe": 
-{
+  "Stripe": {
     "SecretKey": "sk_test_51RqUuWByun3VvENhtD9lsr4ep5elIoe00beRvbVvFGmcaioKCEXckeVoXiiM3k6U9IB9PQKXyh1tuOOjSU6ciMv800GWkjFoqO",
     "PublishableKey": "pk_test_51RqUuWByun3VvENhRxap2Se1EaSVovUfKZhg73ev1COZY86QRBu7HQUbO98ubJwI4aeYNI7F5pIjnRIKAUMGEDDA00icnZPzYP",
     "WebhookSecret": "whsec_StXeiXoDiJ074yRXjlA98bSeS9CKH4j9"
-}
+  }

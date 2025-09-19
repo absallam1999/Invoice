@@ -1,5 +1,4 @@
 ﻿using invoice.Core.Entites;
-using invoice.Models.Entites.utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

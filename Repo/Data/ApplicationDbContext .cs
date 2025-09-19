@@ -31,10 +31,8 @@ namespace invoice.Repo.Data
         {
             base.OnModelCreating(builder);
 
-            // Apply configurations from separate IEntityTypeConfiguration classes
             builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
-            // Global query filter for soft delete
             foreach (var entityType in builder.Model.GetEntityTypes())
             {
                 if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
@@ -48,7 +46,6 @@ namespace invoice.Repo.Data
                 }
             }
 
-            // Enum properties stored as strings (not ints)
             builder.Entity<Language>()
                 .Property(l => l.Name)
                 .HasConversion<string>();
@@ -61,11 +58,9 @@ namespace invoice.Repo.Data
                 .Property(pm => pm.Name)
                 .HasConversion<string>();
 
-            // Indexing for lookup tables
             builder.Entity<Language>().HasIndex(l => l.Id).IsUnique();
             builder.Entity<PaymentMethod>().HasIndex(pm => pm.Id).IsUnique();
 
-            // Seed languages
             builder.Entity<Language>().HasData(
                 new Language { Id = "ar_p", Name = LanguageName.Arabic, Target = LanguageTarget.Page },
                 new Language { Id = "en_p", Name = LanguageName.English, Target = LanguageTarget.Page },
@@ -75,7 +70,6 @@ namespace invoice.Repo.Data
                 new Language { Id = "en_i", Name = LanguageName.English, Target = LanguageTarget.Invoice }
             );
 
-            // Seed payment methods
             builder.Entity<PaymentMethod>().HasData(
                 new PaymentMethod { Id = "ca", Name = PaymentType.Cash },
                 new PaymentMethod { Id = "cc", Name = PaymentType.CreditCard },

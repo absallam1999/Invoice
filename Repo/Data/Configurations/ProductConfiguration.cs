@@ -16,6 +16,13 @@ namespace invoice.Repo.Data.Configurations
                    .IsRequired()
                    .HasMaxLength(200);
 
+            builder.Property(p => p.Code)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.HasIndex(i => i.Code)
+                   .IsUnique();
+
             builder.Property(p => p.Description)
                    .HasMaxLength(500);
 
@@ -40,9 +47,6 @@ namespace invoice.Repo.Data.Configurations
 
             builder.Property(p => p.InStore)
                    .HasDefaultValue(true);
-
-            builder.Property(p => p.Url)
-                   .HasMaxLength(500);
 
             builder.HasOne(p => p.User)
                    .WithMany(u => u.Products)

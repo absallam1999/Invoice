@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using invoice.Core.DTO;
+﻿using invoice.Core.DTO;
 using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentResponse;
 using invoice.Core.Entites;
@@ -17,7 +16,6 @@ namespace invoice.Services
         private readonly ApplicationDbContext _dbContext;
         private readonly IPaymentGatewayService _paymentGatewayService;
         private readonly IPaymentMethodService _paymentMethodService;
-        private readonly IRepository<PaymentLink> _paymentLinkRepo;
         private readonly IRepository<PayInvoice> _payInvoiceRepo;
         private readonly IRepository<Payment> _paymentRepo;
         private readonly IRepository<Invoice> _invoiceRepo;
@@ -27,7 +25,6 @@ namespace invoice.Services
             ApplicationDbContext dbContext,
             IPaymentGatewayService paymentGatewayService,
             IPaymentMethodService paymentMethodService,
-            IRepository<PaymentLink> paymentLinkRepo,
             IRepository<PayInvoice> payInvoiceRepo,
             IRepository<Payment> paymentRepo,
             IRepository<Invoice> invoiceRepo,
@@ -35,7 +32,6 @@ namespace invoice.Services
         {
             _paymentGatewayService = paymentGatewayService;
             _paymentMethodService = paymentMethodService;
-            _paymentLinkRepo = paymentLinkRepo;
             _payInvoiceRepo = payInvoiceRepo;
             _invoiceService = invoiceService;
             _invoiceRepo = invoiceRepo;
@@ -45,12 +41,7 @@ namespace invoice.Services
 
         private static bool IsEmpty(string value) => string.IsNullOrWhiteSpace(value);
 
-        private static void StampNew(PayInvoice invoice)
-        {
-            var now = DateTime.UtcNow;
-            invoice.CreatedAt = now;
-            invoice.UpdatedAt = now;
-        }
+        private static void StampNew(PayInvoice invoice) => invoice.UpdatedAt = DateTime.UtcNow;
 
         private static void StampUpdate(PayInvoice invoice) =>
             invoice.UpdatedAt = DateTime.UtcNow;
@@ -90,11 +81,9 @@ namespace invoice.Services
             if (string.IsNullOrWhiteSpace(invoiceId))
                 return new GeneralResponse<PaymentSessionResponse>(false, "Invoice ID is required");
 
-            var invoiceResponse = await _invoiceRepo.GetByIdAsync(invoiceId, userId);
-            if (invoiceResponse == null)
+            var invoice = await _invoiceRepo.GetByIdAsync(invoiceId, userId);
+            if (invoice == null)
                 return new GeneralResponse<PaymentSessionResponse>(false, "Invoice not found or access denied");
-
-            var invoice = invoiceResponse;
 
             if (invoice.InvoiceStatus == InvoiceStatus.Paid)
                 return new GeneralResponse<PaymentSessionResponse>(false, "Invoice already paid");
@@ -133,92 +122,79 @@ namespace invoice.Services
 
             var methodId = await _paymentMethodService.GetIdFromTypeAsync(paymentType);
 
-            using var tx = await _dbContext.Database.BeginTransactionAsync();
-            try
+            var strategy = _dbContext.Database.CreateExecutionStrategy();
+
+            return await strategy.ExecuteAsync(async () =>
             {
-                var paymentLink = new PaymentLink
+                await using var tx = await _dbContext.Database.BeginTransactionAsync();
+                try
                 {
-                    Link = sessionResponse.Data.PaymentUrl,
-                    GatewaySessionId = sessionId,
-                    Value = invoice.FinalValue,
-                    Currency = invoice.Currency ?? "USD",
-                    Purpose = $"Payment for invoice {invoice.Code}",
-                    PaymentsNumber = "1",
-                    Description = $"Invoice {invoice.Code} payment",
-                    Message = "Please complete your payment",
-                    Image = string.Empty,
-                    Terms = "Standard terms",
-                    CreatedBy = userId,
-                    InvoiceId = invoice.Id,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                    var payment = new Payment
+                    {
+                        Name = $"Invoice Payment - {invoice.Code}",
+                        Link = sessionResponse.Data.PaymentUrl,
+                        Currency = invoice.Currency ?? "USD",
+                        GatewaySessionId = sessionId,
+                        Cost = invoice.FinalValue,
+                        ExpiresAt = DateTime.UtcNow.AddDays(3),
+                        Status = PaymentStatus.Pending,
+                        UserId = userId,
+                        InvoiceId = invoice.Id,
+                        PaymentMethodId = methodId,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
 
-                var linkResult = await _paymentLinkRepo.AddAsync(paymentLink);
-                if (!linkResult.Success)
+                    var paymentResult = await _paymentRepo.AddAsync(payment);
+                    if (!paymentResult.Success)
+                    {
+                        await tx.RollbackAsync();
+                        return new GeneralResponse<PaymentSessionResponse>(false, "Failed to create payment record");
+                    }
+
+                    invoice.Payments ??= new();
+                    invoice.Payments.Add(payment);
+
+                    var invoiceUpdate = await _invoiceRepo.UpdateAsync(invoice);
+                    if (!invoiceUpdate.Success)
+                    {
+                        await tx.RollbackAsync();
+                        return new GeneralResponse<PaymentSessionResponse>(false, "Failed to update invoice with new payment");
+                    }
+
+                    var payInvoice = new PayInvoice
+                    {
+                        InvoiceId = invoice.Id,
+                        PaymentMethodId = methodId,
+                        Status = PaymentStatus.Pending,
+                        PaymentSessionId = sessionId,
+                        PaymentGatewayType = paymentType,
+                        PaymentGatewayResponse = sessionResponse.Data?.RawResponse ?? "{}",
+                        Amount = invoice.FinalValue,
+                        Currency = invoice.Currency ?? "USD"
+                    };
+
+                    StampNew(payInvoice);
+                    var payInvoiceResult = await _payInvoiceRepo.AddAsync(payInvoice);
+                    if (!payInvoiceResult.Success)
+                    {
+                        await tx.RollbackAsync();
+                        return new GeneralResponse<PaymentSessionResponse>(false, "Failed to create gateway payment record");
+                    }
+
+                    await tx.CommitAsync();
+                    return sessionResponse;
+                }
+                catch (Exception ex)
                 {
                     await tx.RollbackAsync();
-                    return new GeneralResponse<PaymentSessionResponse>(false, "Failed to create payment link");
+
+                    return new GeneralResponse<PaymentSessionResponse>(
+                        false,
+                        $"Error creating payment session: {ex.Message}"
+                    );
                 }
-
-                var payment = new Payment
-                {
-                    Name = $"Invoice Payment - {invoice.Code}",
-                    Cost = invoice.FinalValue,
-                    Status = PaymentStatus.Pending,
-                    UserId = userId,
-                    InvoiceId = invoice.Id,
-                    PaymentMethodId = methodId,
-                    PaymentLink = paymentLink,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                var paymentResult = await _paymentRepo.AddAsync(payment);
-                if (!paymentResult.Success)
-                {
-                    await tx.RollbackAsync();
-                    return new GeneralResponse<PaymentSessionResponse>(false, "Failed to create payment record");
-                }
-
-                invoice.Payments ??= new();
-                invoice.Payments.Add(payment);
-
-                var invoiceUpdate = await _invoiceRepo.UpdateAsync(invoice);
-                if (!invoiceUpdate.Success)
-                {
-                    await tx.RollbackAsync();
-                    return new GeneralResponse<PaymentSessionResponse>(false, "Failed to update invoice with new payment");
-                }
-
-                var payInvoice = new PayInvoice
-                {
-                    InvoiceId = invoice.Id,
-                    PaymentMethodId = methodId,
-                    Status = PaymentStatus.Pending,
-                    PaymentSessionId = sessionId,
-                    PaymentGatewayType = paymentType,
-                    PaymentGatewayResponse = sessionResponse.Data?.RawResponse ?? "{}",
-                    Amount = invoice.FinalValue,
-                    Currency = invoice.Currency ?? "USD"
-                };
-
-                StampNew(payInvoice);
-                var payInvoiceResult = await _payInvoiceRepo.AddAsync(payInvoice);
-                if (!payInvoiceResult.Success)
-                {
-                    await tx.RollbackAsync();
-                    return new GeneralResponse<PaymentSessionResponse>(false, "Failed to create gateway payment record");
-                }
-
-                await tx.CommitAsync();
-                return sessionResponse;
-            }
-            catch (Exception ex)
-            {
-                await tx.RollbackAsync();
-                return new GeneralResponse<PaymentSessionResponse>(false, $"Error creating payment session: {ex.Message}");
-            }
+            });
         }
 
         public async Task<GeneralResponse<bool>> ProcessPaymentCallbackAsync(string paymentSessionId, PaymentType paymentType, bool isSuccess, string callbackData = null)
@@ -382,6 +358,17 @@ namespace invoice.Services
             return await _payInvoiceRepo.UpdateAsync(existing);
         }
 
+        public async Task<GeneralResponse<IEnumerable<PayInvoice>>> UpdateRangeAsync(IEnumerable<PayInvoice> payInvoices)
+        {
+            if (payInvoices == null || !payInvoices.Any())
+                return new GeneralResponse<IEnumerable<PayInvoice>>(false, "No payments provided");
+
+            foreach (var invoice in payInvoices)
+                StampUpdate(invoice);
+
+            return await _payInvoiceRepo.UpdateRangeAsync(payInvoices);
+        }
+
         public async Task<GeneralResponse<PayInvoice>> UpdateStatusAsync(string id, PaymentStatus status, string callbackData = null)
         {
             if (IsEmpty(id))
@@ -401,17 +388,6 @@ namespace invoice.Services
             return await _payInvoiceRepo.UpdateAsync(existing);
         }
 
-        public async Task<GeneralResponse<IEnumerable<PayInvoice>>> UpdateRangeAsync(IEnumerable<PayInvoice> payInvoices)
-        {
-            if (payInvoices == null || !payInvoices.Any())
-                return new GeneralResponse<IEnumerable<PayInvoice>>(false, "No payments provided");
-
-            foreach (var invoice in payInvoices)
-                StampUpdate(invoice);
-
-            return await _payInvoiceRepo.UpdateRangeAsync(payInvoices);
-        }
-
         public async Task<GeneralResponse<bool>> DeleteAsync(string id)
         {
             if (IsEmpty(id))
@@ -422,19 +398,6 @@ namespace invoice.Services
                 return new GeneralResponse<bool>(false, "Payment not found");
 
             var result = await _payInvoiceRepo.DeleteAsync(existing.Id);
-            return new GeneralResponse<bool>(result.Success, result.Message, result.Success);
-        }
-
-        public async Task<GeneralResponse<bool>> DeleteBySessionIdAsync(string sessionId)
-        {
-            if (IsEmpty(sessionId))
-                return new GeneralResponse<bool>(false, "Session ID is required");
-
-            var payInvoice = await QueryFirstOrDefaultAsync(p => p.PaymentSessionId == sessionId);
-            if (payInvoice == null)
-                return new GeneralResponse<bool>(false, "Payment not found");
-
-            var result = await _payInvoiceRepo.DeleteAsync(payInvoice.Id);
             return new GeneralResponse<bool>(result.Success, result.Message, result.Success);
         }
 
@@ -452,6 +415,19 @@ namespace invoice.Services
                 Ids.Add(invoice.Id);
             }
             var result = await _payInvoiceRepo.DeleteRangeAsync(Ids);
+            return new GeneralResponse<bool>(result.Success, result.Message, result.Success);
+        }
+
+        public async Task<GeneralResponse<bool>> DeleteBySessionIdAsync(string sessionId)
+        {
+            if (IsEmpty(sessionId))
+                return new GeneralResponse<bool>(false, "Session ID is required");
+
+            var payInvoice = await QueryFirstOrDefaultAsync(p => p.PaymentSessionId == sessionId);
+            if (payInvoice == null)
+                return new GeneralResponse<bool>(false, "Payment not found");
+
+            var result = await _payInvoiceRepo.DeleteAsync(payInvoice.Id);
             return new GeneralResponse<bool>(result.Success, result.Message, result.Success);
         }
 
@@ -561,6 +537,20 @@ namespace invoice.Services
 
             var payments = await _payInvoiceRepo.QueryAsync(p => p.PaymentMethodId == paymentMethodId && (string.IsNullOrEmpty(userId) || p.Invoice.UserId == userId));
             return new GeneralResponse<IEnumerable<PayInvoice>>(true, null, payments);
+        }
+        public async Task<GeneralResponse<PayInvoice>> GetByPaymentIdAsync(string paymentId, string userId = null)
+        {
+            if (string.IsNullOrWhiteSpace(paymentId))
+                return new GeneralResponse<PayInvoice>(false, "Payment ID is required");
+
+            var payInvoice = await _payInvoiceRepo.GetQueryable()
+                .Include(p => p.Invoice).ThenInclude(i => i.Payments)
+                .FirstOrDefaultAsync(p => p.Id == paymentId && (userId == null || p.Invoice.UserId == userId));
+
+            if (payInvoice == null)
+                return new GeneralResponse<PayInvoice>(false, "PayInvoice not found");
+
+            return new GeneralResponse<PayInvoice>(true, "PayInvoice retrieved successfully", payInvoice);
         }
 
         public async Task<GeneralResponse<IEnumerable<PayInvoice>>> GetByStatusAsync(PaymentStatus status, string userId = null)

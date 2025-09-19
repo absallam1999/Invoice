@@ -2,7 +2,6 @@
 using invoice.Core.DTO.Invoice;
 using invoice.Core.DTO.PayInvoice;
 using invoice.Core.DTO.Payment;
-using invoice.Core.DTO.PaymentLink;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -26,7 +25,7 @@ namespace invoice.Controllers
         private string GetUserId() =>
             User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
             var response = await _invoiceService.GetAllAsync(GetUserId());
@@ -124,13 +123,6 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpPost("payment-links")]
-        public async Task<IActionResult> GeneratePaymentLink([FromBody] PaymentLinkCreateDTO dto)
-        {
-            var response = await _invoiceService.GeneratePaymentLinkAsync(dto, GetUserId());
-            return Ok(response);
-        }
-
         [HttpPost("{invoiceId}/mark-paid")]
         public async Task<IActionResult> MarkAsPaid(string invoiceId)
         {
@@ -173,13 +165,6 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpGet("count")]
-        public async Task<IActionResult> Count()
-        {
-            var count = await _invoiceService.CountAsync(GetUserId());
-            return Ok(new { count });
-        }
-
         [HttpGet("total-value")]
         public async Task<IActionResult> GetTotalValue()
         {
@@ -208,11 +193,25 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpGet("{invoiceId}/payment-links")]
+        [HttpGet("{invoiceId}/payment-link")]
         public async Task<IActionResult> GetPaymentLinks(string invoiceId)
         {
-            var response = await _invoiceService.GetInvoicePaymentLinksAsync(invoiceId, GetUserId());
+            var response = await _invoiceService.GetInvoicePaymentLinkAsync(invoiceId, GetUserId());
             return Ok(response);
+        }
+
+        [HttpGet("exists/{id}")]
+        public async Task<IActionResult> Exists(string id)
+        {
+            var exists = await _invoiceService.ExistsAsync(id, GetUserId());
+            return Ok(new { Success = true, Exist = exists });
+        }
+
+        [HttpGet("count")]
+        public async Task<IActionResult> Count()
+        {
+            var count = await _invoiceService.CountAsync(GetUserId());
+            return Ok(new { Success = true, Count = count });
         }
     }
 }

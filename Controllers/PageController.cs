@@ -2,7 +2,6 @@
 using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace invoice.Controllers
 {
@@ -18,7 +17,7 @@ namespace invoice.Controllers
             _pageService = pageService;
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll([FromQuery] string storeId = null, [FromQuery] string languageId = null)
         {
             var response = await _pageService.GetAllAsync(storeId, languageId);

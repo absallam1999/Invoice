@@ -7,11 +7,10 @@ namespace invoice.Core.DTO.Payment
         public string Id { get; set; }
         public string Name { get; set; }
         public decimal Cost { get; set; }
+        public string Currency { get; set; }
         public PaymentStatus Status { get; set; }
-        public DateTime Date { get; set; } = DateTime.UtcNow;
 
         public string InvoiceId { get; set; }
         public string PaymentMethodId { get; set; }
-        public string? PaymentLinkId { get; set; }
     }
 }

@@ -17,6 +17,7 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<PayInvoice>>> GetAllAsync(string userId = null);
         Task<GeneralResponse<PayInvoice>> GetByIdAsync(string id, string userId = null);
         Task<GeneralResponse<PayInvoice>> GetBySessionIdAsync(string sessionId, string userId = null);
+        Task<GeneralResponse<PayInvoice>> GetByPaymentIdAsync(string paymentId, string userId = null);
         Task<GeneralResponse<IEnumerable<PayInvoice>>> GetByInvoiceIdAsync(string invoiceId, string userId = null);
         Task<GeneralResponse<IEnumerable<PayInvoice>>> GetByPaymentMethodIdAsync(string paymentMethodId, string userId = null);
         Task<GeneralResponse<IEnumerable<PayInvoice>>> GetByStatusAsync(PaymentStatus status, string userId = null);

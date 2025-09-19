@@ -1,5 +1,6 @@
 ﻿using invoice.Models.Entites.utils;
 using invoice.Core.Enums;
+using invoice.Core.Entites.utils;
 
 namespace invoice.Core.Entites
 {

@@ -114,77 +114,86 @@ namespace invoice.Services
             if (dto.OrderItems == null || !dto.OrderItems.Any())
                 return new GeneralResponse<OrderReadDTO>(false, "At least one order item is required.");
 
-            using var transaction = await _dbContext.Database.BeginTransactionAsync();
-            try
+            var strategy = _dbContext.Database.CreateExecutionStrategy();
+
+            return await strategy.ExecuteAsync(async () =>
             {
-                var order = _mapper.Map<Order>(dto);
-                order.ClientId = dto.ClientId;
-                order.OrderStatus = OrderStatus.Pending;
-                order.Code = $"ORD-{DateTime.UtcNow.Ticks}";
-                order.CreatedAt = DateTime.UtcNow;
-                order.OrderItems = new List<OrderItem>();
-                decimal totalAmount = 0;
-
-                foreach (var itemDto in dto.OrderItems)
+                await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+                try
                 {
-                    var product = await _productRepo.GetByIdAsync(itemDto.ProductId, userId);
-                    if (product == null)
-                        return new GeneralResponse<OrderReadDTO>(false, $"Product {itemDto.ProductId} not found");
+                    var order = _mapper.Map<Order>(dto);
+                    order.ClientId = dto.ClientId;
+                    order.OrderStatus = OrderStatus.Pending;
+                    order.Code = $"ORD-{DateTime.UtcNow.Ticks}";
+                    order.CreatedAt = DateTime.UtcNow;
+                    order.OrderItems = new List<OrderItem>();
+                    decimal totalAmount = 0;
 
-                    var orderItem = new OrderItem
+                    foreach (var itemDto in dto.OrderItems)
                     {
-                        ProductId = product.Id,
-                        Quantity = itemDto.Quantity,
-                        UnitPrice = product.Price,
+                        var product = await _productRepo.GetByIdAsync(itemDto.ProductId, userId);
+                        if (product == null)
+                            return new GeneralResponse<OrderReadDTO>(false, $"Product {itemDto.ProductId} not found");
+
+                        var orderItem = new OrderItem
+                        {
+                            ProductId = product.Id,
+                            Quantity = itemDto.Quantity,
+                            UnitPrice = product.Price,
+                        };
+
+                        order.OrderItems.Add(orderItem);
+                        totalAmount += orderItem.UnitPrice * orderItem.Quantity;
+                    }
+                    order.TotalAmount = totalAmount;
+
+                    var invoiceDto = new InvoiceCreateDTO
+                    {
+                        StoreId = dto.StoreId,
+                        ClientId = dto.ClientId,
+                        Currency = dto.Currency,
+                        LanguageId = dto.LanguageId,
+                        InvoiceType = InvoiceType.Detailed,
+                        TermsConditions = "Auto-generated invoice for order",
+                        Tax = dto.Tax,
+                        DiscountType = dto.DiscountType,
+                        DiscountValue = dto.DiscountValue,
+                        InvoiceItems = dto.OrderItems.Select(o => new InvoiceItemCreateDTO
+                        {
+                            ProductId = o.ProductId,
+                            Quantity = o.Quantity
+                        }).ToList()
                     };
 
-                    order.OrderItems.Add(orderItem);
-                    totalAmount += orderItem.UnitPrice * orderItem.Quantity;
-                }
-
-                order.TotalAmount = totalAmount;
-                await _orderRepo.AddAsync(order);
-
-                var invoiceDto = new InvoiceCreateDTO
-                {
-                    StoreId = dto.StoreId,
-                    ClientId = dto.ClientId,
-                    LanguageId = dto.LanguageId,
-                    InvoiceType = InvoiceType.Detailed,
-                    TermsConditions = "Auto-generated invoice for order",
-                    Tax = dto.Tax,
-                    DiscountType = dto.DiscountType,
-                    DiscountValue = dto.DiscountValue,
-                    InvoiceItems = dto.OrderItems.Select(o => new InvoiceItemCreateDTO
+                    var invoiceResponse = await _invoiceService.CreateAsync(invoiceDto, userId);
+                    if (!invoiceResponse.Success)
                     {
-                        ProductId = o.ProductId,
-                        Quantity = o.Quantity
-                    }).ToList()
-                };
+                        await transaction.RollbackAsync();
+                        return new GeneralResponse<OrderReadDTO>(false, $"Invoice failed: {invoiceResponse.Message}");
+                    }
 
-                var invoiceResponse = await _invoiceService.CreateAsync(invoiceDto, userId);
-                if (!invoiceResponse.Success)
+                    order.InvoiceId = invoiceResponse.Data.Id;
+                    await _orderRepo.AddAsync(order);
+
+                    await transaction.CommitAsync();
+
+                    return new GeneralResponse<OrderReadDTO>(
+                        true,
+                        "Order created successfully with new Invoice.",
+                        _mapper.Map<OrderReadDTO>(order)
+                    );
+                }
+                catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    return new GeneralResponse<OrderReadDTO>(false, $"Order created but invoice failed: {invoiceResponse.Message}");
+
+                    var errorMessage = ex.InnerException?.Message ?? ex.Message;
+                    return new GeneralResponse<OrderReadDTO>(
+                        false,
+                        $"Failed to create Order and Invoice: {errorMessage}"
+                    );
                 }
-
-                order.InvoiceId = invoiceResponse.Data.Id;
-                await _orderRepo.UpdateAsync(order);
-
-                await transaction.CommitAsync();
-
-                return new GeneralResponse<OrderReadDTO>(
-                    true,
-                    "Order created successfully with new Invoice.",
-                    _mapper.Map<OrderReadDTO>(order)
-                );
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return new GeneralResponse<OrderReadDTO>(false, $"Failed to create Order and Invoice: {ex.Message}");
-            }
+            });
         }
 
         public async Task<GeneralResponse<OrderReadDTO>> UpdateAsync(string id, OrderUpdateDTO dto, string userId)

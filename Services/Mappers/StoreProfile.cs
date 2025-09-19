@@ -3,6 +3,7 @@ using invoice.Core.DTO.Shipping;
 using invoice.Core.DTO.Store;
 using invoice.Core.DTO.StoreSettings;
 using invoice.Core.Entites;
+using invoice.Core.Entites.utils;
 using invoice.Models.Entites.utils;
 
 namespace invoice.Services.Mappers

@@ -16,12 +16,23 @@ namespace invoice.Repo.Data.Configurations
                 .IsRequired()
                 .HasMaxLength(150);
 
-            builder.Property(c => c.Email).HasMaxLength(150);
-            builder.Property(c => c.PhoneNumber).HasMaxLength(50);
-            builder.Property(c => c.Address).HasMaxLength(250);
-          
+            builder.Property(c => c.Email)
+                .HasMaxLength(150);
 
-            builder.Property(c => c.UserId).IsRequired();
+            builder.Property(c => c.PhoneNumber)
+                .HasMaxLength(50);
+
+            builder.Property(c => c.Address)
+                .HasMaxLength(250);
+
+            builder.Property(c => c.UserId)
+                .IsRequired();
+
+            builder.HasIndex(c => c.Email)
+                .IsUnique();
+
+            builder.HasIndex(c => c.PhoneNumber)
+                .IsUnique();
 
             builder.HasOne(c => c.User)
                 .WithMany(u => u.Clients)

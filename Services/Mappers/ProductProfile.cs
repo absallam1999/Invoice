@@ -11,7 +11,7 @@ namespace invoice.Services.Mappers
         {
             CreateMap<ProductCreateDTO, Product>();
             CreateMap<ProductUpdateDTO, Product>()
-                    .ForMember(dest => dest.Url, opt => opt.Ignore());
+                    .ForMember(dest => dest.Code, opt => opt.Ignore());
 
             CreateMap<Product, ProductReadDTO>()
                 .ForMember(dest => dest.CategoryName,

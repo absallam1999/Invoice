@@ -15,7 +15,10 @@ namespace invoice.Core.DTO.Payment
         [Range(0.01, double.MaxValue, ErrorMessage = "Cost must be greater than 0")]
         public decimal Cost { get; set; }
 
-        public DateTime Date { get; private set; } = DateTime.UtcNow;
+        [Range(1, int.MaxValue, ErrorMessage = "Max usage must be at least 1")]
+        public int? MaxUsageCount { get; set; }
+
+        public DateTime? ExpiresAt { get; private set; } = DateTime.UtcNow.AddDays(3);
 
         [Required(ErrorMessage = "Invoice ID is required")]
         public string InvoiceId { get; set; }

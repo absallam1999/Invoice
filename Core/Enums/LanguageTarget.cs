@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using Newtonsoft.Json.Linq;
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
 namespace invoice.Core.Enums

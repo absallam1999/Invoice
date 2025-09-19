@@ -23,8 +23,11 @@ namespace invoice.Core.Enums
 
         [EnumMember(Value = "cancelled")]
         Cancelled = 5,
+        
+        [EnumMember(Value = "expired")]
+        Expired = 6,
 
         [EnumMember(Value = "not_required")]
-        NotRequired = 6
+        NotRequired = 7
     }
 }

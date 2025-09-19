@@ -5,6 +5,8 @@ namespace invoice.Core.DTO.Order
     public class OrderReadDTO
     {
         public string Id { get; set; }
+        public string Code { get; set; }
+
         public OrderStatus OrderStatus { get; set; }
         public decimal TotalAmount { get; set; }
 

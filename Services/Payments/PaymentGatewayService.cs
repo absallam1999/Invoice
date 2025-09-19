@@ -43,19 +43,12 @@ namespace invoice.Services
             }
             catch (NotSupportedException ex)
             {
-                return new GeneralResponse<PaymentSessionResponse>
-                {
-                    Success = false,
-                    Message = ex.Message
-                };
+                return new GeneralResponse<PaymentSessionResponse>(false, $"Unsupported gateway: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<PaymentSessionResponse>
-                {
-                    Success = false,
-                    Message = $"Failed to create payment session: {ex.Message}"
-                };
+                return new GeneralResponse<PaymentSessionResponse>(false,
+                    $"Gateway error while creating session: {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 

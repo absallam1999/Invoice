@@ -1,4 +1,5 @@
 ﻿using invoice.Core.Enums;
+using Stripe;
 
 namespace invoice.Core.Entites
 {
@@ -6,8 +7,8 @@ namespace invoice.Core.Entites
     {
         public bool Tax { get; set; } = false;
         public string Code { get; set; }
-        public string Currency { get; set; }
         public decimal Value { get; set; }
+        public string Currency { get; set; }
 
         public DiscountType? DiscountType { get; set; }
         public decimal? DiscountValue { get; set; }
@@ -29,12 +30,14 @@ namespace invoice.Core.Entites
         public string? OrderId { get; set; }
         public Order? Order { get; set; }
 
+        public string? PaymentLinkId { get; set; }
+        public PaymentLink? PaymentLink { get; set; }
+
         public string LanguageId { get; set; }
         public Language Language { get; set; }
 
         public PayInvoice? PayInvoice { get; set; }
         public List<Payment> Payments { get; set; } = new();
         public List<InvoiceItem> InvoiceItems { get; set; } = new();
-        public List<PaymentLink> PaymentLinks { get; set; } = new();
     }
 }

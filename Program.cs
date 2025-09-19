@@ -1,18 +1,18 @@
-﻿using System.Text;
-using invoice.Core.Entites;
-using invoice.Helpers;
-using invoice.Repo;
-using invoice.Repo.Data;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
-using Repo;
+using invoice.Core.Entites;
+using invoice.Repo.Data;
+using invoice.Helpers;
+using System.Text;
+using invoice.Repo;
 using Stripe;
+using Repo;
 
 namespace invoice
 {
@@ -275,7 +275,7 @@ namespace invoice
                 {
                     options.SwaggerEndpoint("/swagger/v1/swagger.json", "Invoice API v1");
                     options.RoutePrefix = "swagger";
-                    options.DocumentTitle = "Invoice API Documentation";
+                    options.DocumentTitle = "Invoice - New ASP.NET WEB API";
                 });
                 app.UseDeveloperExceptionPage();
 

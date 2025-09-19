@@ -6,8 +6,8 @@ using System.Security.Claims;
 
 namespace invoice.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -18,35 +18,55 @@ namespace invoice.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDTO dto) =>
-            Ok(await _authService.RegisterAsync(dto));
+        public async Task<IActionResult> Register([FromBody] RegisterDTO dto)
+        {
+            var result = await _authService.RegisterAsync(dto);
+            if (!result.Success) return BadRequest(result);
+            return Ok(result);
+        }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDTO dto) =>
-            Ok(await _authService.LoginAsync(dto));
+        public async Task<IActionResult> Login([FromBody] LoginDTO dto)
+        {
+            var result = await _authService.LoginAsync(dto);
+            if (!result.Success) return Unauthorized(result);
+            return Ok(result);
+        }
 
         [Authorize]
         [HttpPut("update")]
         public async Task<IActionResult> Update([FromBody] UpdateUserDTO dto)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return Ok(await _authService.UpdateUserAsync(dto, currentUserId));
+            var result = await _authService.UpdateUserAsync(dto, currentUserId);
+            if (!result.Success) return BadRequest(result);
+            return Ok(result);
         }
 
         [HttpPost("forget")]
-        public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordDTO dto) =>
-            Ok(await _authService.ForgetPasswordAsync(dto));
+        public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordDTO dto)
+        {
+            var result = await _authService.ForgetPasswordAsync(dto);
+            if (!result.Success) return BadRequest(result);
+            return Ok(result);
+        }
 
         [HttpPost("reset")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto) =>
-            Ok(await _authService.ResetPasswordAsync(dto));
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto)
+        {
+            var result = await _authService.ResetPasswordAsync(dto);
+            if (!result.Success) return BadRequest(result);
+            return Ok(result);
+        }
 
         [Authorize]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO dto)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return Ok(await _authService.ChangePasswordAsync(dto, currentUserId));
+            var result = await _authService.ChangePasswordAsync(dto, currentUserId);
+            if (!result.Success) return BadRequest(result);
+            return Ok(result);
         }
 
         [Authorize]
@@ -54,7 +74,9 @@ namespace invoice.Controllers
         public async Task<IActionResult> DeleteAccount(string id)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return Ok(await _authService.DeleteAccountAsync(id, currentUserId));
+            var result = await _authService.DeleteAccountAsync(id, currentUserId);
+            if (!result.Success) return NotFound(result);
+            return Ok(result);
         }
     }
 }

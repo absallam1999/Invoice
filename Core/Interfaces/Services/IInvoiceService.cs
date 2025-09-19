@@ -4,7 +4,6 @@ using invoice.Core.DTO.PaymentLink;
 using invoice.Core.DTO;
 using invoice.Core.Enums;
 using invoice.Core.DTO.PayInvoice;
-using invoice.Core.Entites;
 
 namespace invoice.Core.Interfaces.Services
 {
@@ -28,9 +27,6 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<bool>> DeleteAsync(string id, string userId);
         Task<GeneralResponse<bool>> DeleteRangeAsync(IEnumerable<string> ids, string userId);
 
-        Task<bool> ExistsAsync(string id, string userId);
-        Task<int> CountAsync(string userId);
-
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByClientAsync(string clientId, string userId);
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByStoreAsync(string storeId, string userId);
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByStatusAsync(InvoiceStatus status, string userId);
@@ -40,15 +36,15 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<decimal>> GetTotalFinalValueAsync(string userId);
 
         Task<GeneralResponse<bool>> AddPaymentAsync(string invoiceId, PaymentCreateDTO paymentDto, string userId);
-        Task<GeneralResponse<bool>> GeneratePaymentLinkAsync(PaymentLinkCreateDTO dto, string userId);
 
         Task<GeneralResponse<bool>> MarkAsPaidAsync(string invoiceId, string userId);
         Task<GeneralResponse<bool>> CancelAsync(string invoiceId, string userId);
 
+        Task<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>> GetInvoicePaymentLinkAsync(string invoiceId, string userId);
         Task<GeneralResponse<InvoiceReadDTO>> RecalculateInvoiceTotalsAsync(string invoiceId, string userId);
-        Task<GeneralResponse<PaymentLinkReadDTO>> GeneratePaymentLinkAsync(string invoiceId, decimal value, string userId);
-        Task<GeneralResponse<bool>> AttachPaymentToLinkAsync(string paymentLinkId, Payment payment, string userId);
         Task<GeneralResponse<decimal>> GetInvoiceRevenueAsync(string invoiceId, string userId);
-        Task<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>> GetInvoicePaymentLinksAsync(string invoiceId, string userId);
+
+        Task<bool> ExistsAsync(string id, string userId);
+        Task<int> CountAsync(string userId);
     }
 }

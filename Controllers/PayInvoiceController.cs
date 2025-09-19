@@ -93,7 +93,7 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
             var response = await _payInvoiceService.GetAllAsync(GetUserId());
@@ -119,6 +119,13 @@ namespace invoice.Controllers
         {
             var response = await _payInvoiceService.GetByInvoiceIdAsync(invoiceId, GetUserId());
             return Ok(response);
+        }
+
+        [HttpGet("payment/{paymentId}")]
+        public async Task<IActionResult> GetByPaymentId(string paymentId)
+        {
+            var result = await _payInvoiceService.GetByPaymentIdAsync(paymentId, GetUserId());
+            return Ok(result.Data);
         }
 
         [HttpGet("paymentmethod/{paymentMethodId}")]
@@ -184,40 +191,39 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-
-        [HttpGet("exists/{id}")]
-        public async Task<IActionResult> Exists(string id)
-        {
-            var response = await _payInvoiceService.ExistsAsync(id);
-            return Ok(response);
-        }
-
         [HttpGet("exists/session/{sessionId}")]
         public async Task<IActionResult> ExistsBySession(string sessionId)
         {
             var response = await _payInvoiceService.ExistsBySessionAsync(sessionId);
-            return Ok(response);
-        }
-
-        [HttpGet("count")]
-        public async Task<IActionResult> Count([FromQuery] string? invoiceId = null)
-        {
-            var response = await _payInvoiceService.CountAsync(invoiceId);
-            return Ok(response);
+            return Ok(new { Sucess = true, Exists = response });
         }
 
         [HttpGet("count/status")]
         public async Task<IActionResult> CountByStatus([FromQuery] PaymentStatus status, [FromQuery] string? invoiceId = null)
         {
             var response = await _payInvoiceService.CountByStatusAsync(status, invoiceId);
-            return Ok(response);
+            return Ok(new { Success = true, Count = response });
         }
 
         [HttpGet("totalpaid/{invoiceId}")]
         public async Task<IActionResult> GetTotalPaidAmount(string invoiceId)
         {
             var response = await _payInvoiceService.GetTotalPaidAmountAsync(invoiceId);
-            return Ok(response);
+            return Ok(new { Success = true, TotalPaid = response});
+        }
+
+        [HttpGet("exists/{id}")]
+        public async Task<IActionResult> Exists(string id)
+        {
+            var response = await _payInvoiceService.ExistsAsync(id);
+            return Ok(new { Sucess = true, Exists = response });
+        }
+
+        [HttpGet("count")]
+        public async Task<IActionResult> Count([FromQuery] string? invoiceId = null)
+        {
+            var response = await _payInvoiceService.CountAsync(invoiceId);
+            return Ok(new { Sucess = true, Count = response });
         }
     }
 }

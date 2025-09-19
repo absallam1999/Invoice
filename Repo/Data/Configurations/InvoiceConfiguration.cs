@@ -14,7 +14,7 @@ namespace invoice.Repo.Data.Configurations
 
             builder.Property(i => i.Code)
                    .IsRequired()
-                   .HasMaxLength(100);
+                   .HasMaxLength(50);
 
             builder.HasIndex(i => i.Code)
                    .IsUnique();
@@ -24,12 +24,14 @@ namespace invoice.Repo.Data.Configurations
                    .HasMaxLength(10);
 
             builder.Property(i => i.Value)
+                   .IsRequired()
                    .HasColumnType("decimal(18,2)");
 
             builder.Property(i => i.DiscountValue)
                    .HasColumnType("decimal(18,2)");
 
             builder.Property(i => i.FinalValue)
+                   .IsRequired()
                    .HasColumnType("decimal(18,2)");
 
             builder.Property(i => i.Tax)
@@ -37,6 +39,12 @@ namespace invoice.Repo.Data.Configurations
 
             builder.Property(i => i.TermsConditions)
                    .HasMaxLength(2000);
+
+            builder.Property(i => i.InvoiceStatus)
+                   .IsRequired();
+
+            builder.Property(i => i.InvoiceType)
+                   .IsRequired();
 
             builder.HasOne(i => i.User)
                    .WithMany(u => u.Invoices)
@@ -68,14 +76,14 @@ namespace invoice.Repo.Data.Configurations
                    .HasForeignKey<Invoice>(i => i.OrderId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne(i => i.PaymentLink)
+                   .WithOne(pl => pl.Invoice)
+                   .HasForeignKey<Invoice>(i => i.PaymentLinkId)
+                   .OnDelete(DeleteBehavior.SetNull);
+
             builder.HasMany(i => i.Payments)
                    .WithOne(p => p.Invoice)
                    .HasForeignKey(p => p.InvoiceId)
-                   .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasMany(i => i.PaymentLinks)
-                   .WithOne(pl => pl.Invoice)
-                   .HasForeignKey(pl => pl.InvoiceId)
                    .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(i => i.InvoiceItems)

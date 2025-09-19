@@ -52,20 +52,6 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpGet("exists/{id}")]
-        public async Task<IActionResult> Exists(string id)
-        {
-            var exists = await _clientService.ExistsAsync(id, GetUserId());
-            return Ok(new { Exists = exists });
-        }
-
-        [HttpGet("count")]
-        public async Task<IActionResult> Count()
-        {
-            var count = await _clientService.CountAsync(GetUserId());
-            return Ok(new { Count = count });
-        }
-
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ClientCreateDTO dto)
         {
@@ -122,6 +108,20 @@ namespace invoice.Controllers
             var response = await _clientService.DeleteRangeAsync(ids, GetUserId());
             if (!response.Success) return BadRequest(response);
             return Ok(response);
+        }
+
+        [HttpGet("exists/{id}")]
+        public async Task<IActionResult> Exists(string id)
+        {
+            var exists = await _clientService.ExistsAsync(id, GetUserId());
+            return Ok(new { Success = true, Exists = exists });
+        }
+
+        [HttpGet("count")]
+        public async Task<IActionResult> Count()
+        {
+            var count = await _clientService.CountAsync(GetUserId());
+            return Ok(new { Success = true, Count = count });
         }
     }
 }

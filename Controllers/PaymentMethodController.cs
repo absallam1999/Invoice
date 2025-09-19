@@ -21,14 +21,14 @@ namespace invoice.Controllers
         public async Task<IActionResult> GetAll()
         {
             var response = await _paymentMethodService.GetAllAsync();
-            return Ok(response);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
             var response = await _paymentMethodService.GetByIdAsync(id);
-            return Ok(response);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
         [HttpGet("get-id-from-type/{paymentType}")]
@@ -42,21 +42,21 @@ namespace invoice.Controllers
         public async Task<IActionResult> Create([FromQuery] PaymentType type)
         {
             var response = await _paymentMethodService.CreateAsync(type);
-            return Ok(response);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromQuery] PaymentType type)
         {
             var response = await _paymentMethodService.UpdateAsync(id, type);
-            return Ok(response);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
             var response = await _paymentMethodService.DeleteAsync(id);
-            return Ok(response);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
     }
 }

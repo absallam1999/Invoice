@@ -1,6 +1,6 @@
-﻿using invoice.Core.Entites;
+﻿using invoice.Models.Entites.utils;
 
-namespace invoice.Models.Entites.utils
+namespace invoice.Core.Entites.utils
 {
     public class StoreSettings
     {

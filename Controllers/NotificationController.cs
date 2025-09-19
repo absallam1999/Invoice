@@ -18,71 +18,67 @@ namespace invoice.Controllers
             _notificationService = notificationService;
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _notificationService.GetAllAsync();
-            return Ok(result);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
             var result = await _notificationService.GetByIdAsync(id);
-            if (!result.Success) return NotFound(result);
-            return Ok(result);
+            return result.Success ? Ok(result) : NotFound(result);
         }
 
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetByUser(string userId)
         {
             var result = await _notificationService.GetByUserAsync(userId);
-            return Ok(result);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] NotificationCreateDTO dto)
         {
-            var notification = await _notificationService.CreateAsync(
-                new Notification
-                {
-                    Title = dto.Title,
-                    Message = dto.Message,
-                    Type = dto.Type,
-                    UserId = dto.UserId
-                });
-            return Ok(notification);
+            var result = await _notificationService.CreateAsync(new Notification
+            {
+                Title = dto.Title,
+                Message = dto.Message,
+                Type = dto.Type,
+                UserId = dto.UserId
+            });
+
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] NotificationUpdateDTO dto)
         {
-            var notification = await _notificationService.UpdateAsync(id,
-                new Notification
-                {
-                    Id = dto.Id,
-                    Title = dto.Title,
-                    Type = dto.Type,
-                    Message = dto.Message
-                });
+            var result = await _notificationService.UpdateAsync(id, new Notification
+            {
+                Id = dto.Id,
+                Title = dto.Title,
+                Type = dto.Type,
+                Message = dto.Message
+            });
 
-            if (!notification.Success) return NotFound(notification);
-            return Ok(notification);
+            return result.Success ? Ok(result) : NotFound(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
             var result = await _notificationService.DeleteAsync(id);
-            if (!result.Success) return NotFound(result);
-            return Ok(result);
+            return result.Success ? Ok(result) : NotFound(result);
         }
 
         [HttpDelete]
         public async Task<IActionResult> DeleteRange([FromBody] IEnumerable<string> ids)
         {
             var result = await _notificationService.DeleteRangeAsync(ids);
-            return Ok(result);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
     }
 }

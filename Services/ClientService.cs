@@ -70,8 +70,8 @@ namespace invoice.Services
                 return new GeneralResponse<ClientReadDTO>(false, "Email already exists");
 
            
-            var nameExists = await _clientRepo.ExistsAsync(c => c.PhoneNumber == dto.PhoneNumber && c.UserId == userId);
-            if (nameExists)
+            var phoneExists = await _clientRepo.ExistsAsync(c => c.PhoneNumber == dto.PhoneNumber && c.UserId == userId);
+            if (phoneExists)
                 return new GeneralResponse<ClientReadDTO>(false, "Phone number already exists");
 
             
@@ -88,11 +88,43 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<IEnumerable<ClientReadDTO>>> CreateRangeAsync(IEnumerable<ClientCreateDTO> dtos, string userId)
         {
-            var entities = _mapper.Map<IEnumerable<Client>>(dtos).ToList();
+            if (dtos == null || !dtos.Any())
+                return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, "Invalid payload");
+
+            var emails = dtos.Where(d => !string.IsNullOrEmpty(d.Email))
+                             .Select(d => d.Email.Trim().ToLower())
+                             .ToList();
+
+            var phones = dtos.Where(d => !string.IsNullOrEmpty(d.PhoneNumber))
+                             .Select(d => d.PhoneNumber.Trim())
+                             .ToList();
+
+            if (emails.Any())
+            {
+                var emailExists = await _clientRepo.ExistsAsync(c => emails.Contains(c.Email) && c.UserId == userId);
+                if (emailExists)
+                    return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, "One or more emails already exist");
+            }
+
+            if (phones.Any())
+            {
+                var phoneExists = await _clientRepo.ExistsAsync(c => phones.Contains(c.PhoneNumber) && c.UserId == userId);
+                if (phoneExists)
+                    return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, "One or more phone numbers already exist");
+            }
+
+            if (emails.GroupBy(e => e).Any(g => g.Count() > 1))
+                return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, "Duplicate emails found in the request");
+
+            if (phones.GroupBy(p => p).Any(g => g.Count() > 1))
+                return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, "Duplicate phone numbers found in the request");
+
+            var entities = _mapper.Map<List<Client>>(dtos);
             entities.ForEach(c => c.UserId = userId);
 
             var result = await _clientRepo.AddRangeAsync(entities);
-            if (!result.Success) return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, result.Message);
+            if (!result.Success)
+                return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, result.Message);
 
             var dtoList = _mapper.Map<IEnumerable<ClientReadDTO>>(result.Data);
             return new GeneralResponse<IEnumerable<ClientReadDTO>>(true, "Clients created successfully", dtoList);
@@ -100,19 +132,19 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<ClientReadDTO>> UpdateAsync(string id, ClientUpdateDTO dto, string userId)
         {
-            var existing = await _clientRepo.GetByIdAsync(id, userId, q => q
+            var response = await _clientRepo.GetByIdAsync(id, userId, q => q
             .Include(c => c.Invoices)
             );
-            if (existing == null) return new GeneralResponse<ClientReadDTO>(false, "Client not found");
+            if (response == null) return new GeneralResponse<ClientReadDTO>(false, "Client not found");
 
-            _mapper.Map(dto, existing);
+            _mapper.Map(dto, response);
 
-            var result = await _clientRepo.UpdateAsync(existing);
+            var result = await _clientRepo.UpdateAsync(response);
             if (!result.Success) return new GeneralResponse<ClientReadDTO>(false, result.Message);
 
             var dtoResult = _mapper.Map<ClientReadDTO>(result.Data);
-            dtoResult.InvoiceCount = existing.Invoices.Count;
-            dtoResult.InvoiceTotal = existing.Invoices.Sum(i => i.FinalValue);
+            dtoResult.InvoiceCount = response.Invoices.Count;
+            dtoResult.InvoiceTotal = response.Invoices.Sum(i => i.FinalValue);
             return new GeneralResponse<ClientReadDTO>(true, "Client updated successfully", dtoResult);
         }
 

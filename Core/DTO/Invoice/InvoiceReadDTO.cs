@@ -12,6 +12,7 @@ namespace invoice.Core.DTO.Invoice
         public string Id { get; set; }
         public string Code { get; set; }
         public string Currency { get; set; }
+
         public bool Tax { get; set; } 
         public decimal Value { get; set; }
 

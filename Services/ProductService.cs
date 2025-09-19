@@ -28,19 +28,19 @@ namespace invoice.Services
             var galleryPaths = new List<string>();
 
             if (request.MainImage != null && request.MainImage.Length > 0)
-                mainImagePath = await _fileService.UploadImageAsync(request.MainImage, "Product");
+                mainImagePath = await _fileService.UploadImageAsync(request.MainImage, "Products");
 
             if (request.Images != null && request.Images.Any())
             {
                 foreach (var img in request.Images)
-                    galleryPaths.Add(await _fileService.UploadImageAsync(img, "Product"));
+                    galleryPaths.Add(await _fileService.UploadImageAsync(img, "Products"));
             }
 
             var dto = new ProductCreateDTO
             {
                 Name = request.Name,
                 Description = request.Description,
-                Url = $"PRO-{DateTime.UtcNow.Ticks}",
+                Code = $"PRO-{DateTime.UtcNow.Ticks}",
                 MainImage = mainImagePath,
                 Images = galleryPaths,
                 Price = request.Price,
@@ -69,12 +69,12 @@ namespace invoice.Services
             var galleryPaths = new List<string>();
 
             if (request.MainImage != null && request.MainImage.Length > 0)
-                mainImagePath = await _fileService.UploadImageAsync(request.MainImage, "Product");
+                mainImagePath = await _fileService.UploadImageAsync(request.MainImage, "Products");
 
             if (request.Images != null && request.Images.Any())
             {
                 foreach (var img in request.Images)
-                    galleryPaths.Add(await _fileService.UploadImageAsync(img, "Product"));
+                    galleryPaths.Add(await _fileService.UploadImageAsync(img, "Products"));
             }
 
             var dto = new ProductUpdateDTO
@@ -175,13 +175,13 @@ namespace invoice.Services
                 return new GeneralResponse<bool>(false, "Product not found");
 
             if (request.MainImage != null && request.MainImage.Length > 0)
-                product.MainImage = await _fileService.UploadImageAsync(request.MainImage, "Product");
+                product.MainImage = await _fileService.UploadImageAsync(request.MainImage, "Products");
 
             if (request.GalleryImages != null && request.GalleryImages.Any())
             {
                 product.Images = new List<string>();
                 foreach (var file in request.GalleryImages)
-                    product.Images.Add(await _fileService.UploadImageAsync(file, "Product"));
+                    product.Images.Add(await _fileService.UploadImageAsync(file, "Products"));
             }
 
             await _productRepo.UpdateAsync(product);
@@ -249,7 +249,7 @@ namespace invoice.Services
                 {
                     Name = req.Name,
                     Description = req.Description,
-                    Url = $"PRO-{DateTime.UtcNow.Ticks}",
+                    Code = $"PRO-{DateTime.UtcNow.Ticks}",
                     MainImage = mainImagePath,
                     Images = galleryPaths,
                     Price = req.Price,

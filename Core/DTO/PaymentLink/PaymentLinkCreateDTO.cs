@@ -1,6 +1,4 @@
 ﻿using invoice.Core.Enums;
-using Microsoft.AspNetCore.Http;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace invoice.Core.DTO.PaymentLink
@@ -31,19 +29,6 @@ namespace invoice.Core.DTO.PaymentLink
 
         [StringLength(2000, ErrorMessage = "Terms cannot exceed 2000 characters")]
         public string Terms { get; set; }
-
-        public bool GenerateGatewayLink { get; set; } = true;
-
-        public DateTime? ExpiresAt { get; set; } = DateTime.UtcNow.AddDays(3);
-
-        [Range(1, int.MaxValue, ErrorMessage = "Max usage must be at least 1")]
-        public int? MaxUsageCount { get; set; }
-
-        public string? InvoiceId { get; set; }
-
-        public string? StoreId { get; set; }
-
-        public string? ClientId { get; set; }
 
         [Required(ErrorMessage = "LanguageId is required")]
         public string LanguageId { get; set; }

@@ -29,11 +29,5 @@ namespace invoice.Core.DTO.PaymentLink
 
         [StringLength(2000, ErrorMessage = "Terms cannot exceed 2000 characters")]
         public string Terms { get; set; }
-
-        public bool? IsActive { get; set; }
-        public DateTime? ExpiresAt { get; set; }
-
-        [Range(1, int.MaxValue, ErrorMessage = "Max usage must be at least 1")]
-        public int? MaxUsageCount { get; set; }
     }
 }

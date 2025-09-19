@@ -5,6 +5,7 @@ namespace invoice.Core.DTO.Order
 {
     public class OrderCreateDTO
     {
+        [Required] public string Currency { get; set; }
         [Required] public string StoreId { get; set; }
         [Required] public string ClientId { get; set; }
 

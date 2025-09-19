@@ -21,7 +21,8 @@ namespace invoice.Controllers
         private string GetUserId() =>
         User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
-        [HttpGet]
+        
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
             var response = await _contactInfoService.GetAllAsync(GetUserId());
@@ -102,14 +103,14 @@ namespace invoice.Controllers
         public async Task<IActionResult> Exists(string id)
         {
             var exists = await _contactInfoService.ExistsAsync(id, GetUserId());
-            return Ok(new { Exists = exists });
+            return Ok(new { Success = true, Exists = exists });
         }
 
         [HttpGet("count")]
         public async Task<IActionResult> Count()
         {
             var count = await _contactInfoService.CountAsync(GetUserId());
-            return Ok(new { Count = count });
+            return Ok(new { Success = true, Count = count });
         }
     }
 }

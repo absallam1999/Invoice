@@ -16,7 +16,7 @@ namespace invoice.Controllers
             _languageService = languageService;
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _languageService.GetAllAsync();
@@ -106,14 +106,14 @@ namespace invoice.Controllers
         public async Task<IActionResult> Exists(string id)
         {
             var exists = await _languageService.ExistsAsync(id);
-            return Ok(new { Exists = exists });
+            return Ok(new { Success = true, Exists = exists });
         }
 
         [HttpGet("count")]
         public async Task<IActionResult> Count()
         {
             var count = await _languageService.CountAsync();
-            return Ok(new { Count = count });
+            return Ok(new { Success = true, Count = count });
         }
     }
 }

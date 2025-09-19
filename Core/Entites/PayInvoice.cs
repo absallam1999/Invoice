@@ -7,19 +7,19 @@ namespace invoice.Core.Entites
         public DateTime PaidAt { get; set; }
         public decimal Amount { get; set; }
         public string Currency { get; set; } = "USD";
+        public string PaymentSessionId { get; set; }
+        public string PaymentGatewayResponse { get; set; }
+
+        public PaymentType PaymentGatewayType { get; set; }
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
 
-        public string PaymentMethodId { get; set; } = "cash";
+        public decimal? RefundAmount { get; set; }
+        public DateTime? RefundedAt { get; set; }
+
+        public string PaymentMethodId { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
 
         public string InvoiceId { get; set; }
         public Invoice Invoice { get; set; }
-
-        public PaymentType PaymentGatewayType { get; set; }
-        public string PaymentSessionId { get; set; }
-        public string PaymentGatewayResponse { get; set; }
-
-        public decimal? RefundAmount { get; set; }
-        public DateTime? RefundedAt { get; set; }
     }
 }

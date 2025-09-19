@@ -12,7 +12,18 @@ namespace invoice.Repo.Data.Configurations
 
             builder.ToTable("Orders");
 
+            builder.Property(o => o.Code)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.HasIndex(o => o.Code)
+                   .IsUnique();
+
             builder.Property(o => o.OrderStatus)
+                   .IsRequired();
+
+            builder.Property(o => o.TotalAmount)
+                   .HasColumnType("decimal(18,2)")
                    .IsRequired();
 
             builder.HasOne(o => o.Store)

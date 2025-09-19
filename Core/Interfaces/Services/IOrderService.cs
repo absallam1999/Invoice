@@ -20,8 +20,8 @@ namespace invoice.Core.Interfaces.Services
 
         Task<GeneralResponse<decimal>> GetTotalRevenueAsync(string userId);
 
-        Task<bool> ExistsAsync(string id, string userId);
         Task<int> CountAsync(string userId);
+        Task<bool> ExistsAsync(string id, string userId);
         Task<int> CountByStatusAsync(OrderStatus status, string userId);
     }
 }
