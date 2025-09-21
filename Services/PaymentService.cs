@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO;
 using invoice.Core.DTO.Payment;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
 using invoice.Repo;

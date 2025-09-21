@@ -1,5 +1,6 @@
-﻿using invoice.Core.Entites;
+﻿using invoice.Core.Entities;
 using invoice.Core.Enums;
+using invoice.Models.Entities.utils;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -26,6 +27,12 @@ namespace invoice.Repo.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Store> Stores { get; set; }
         public DbSet<Tax> Taxes { get; set; }
+        public DbSet<Currency> Currencies { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        //public DbSet<Shipping> Shippings { get; set; }
+        //public DbSet<ShippingRegion> ShippingRegions { get; set; }
+
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -75,6 +82,20 @@ namespace invoice.Repo.Data
                 }
                 );
 
+            builder.Entity<Store>(store =>
+            {
+                store.OwnsOne(s => s.PaymentOptions, po =>
+                {
+                    po.Property(p => p.Cash).HasDefaultValue(true);
+                    po.Property(p => p.BankTransfer).HasDefaultValue(false);
+                    po.Property(p => p.PayPal).HasDefaultValue(false);
+                    po.Property(p => p.Tax).HasDefaultValue(false);
+                });
+
+                //store.OwnsOne(s => s.Shipping);
+                //store.OwnsOne(s => s.StoreSettings);
+                //store.OwnsOne(s => s.ContactInformations);
+            });
 
 
 

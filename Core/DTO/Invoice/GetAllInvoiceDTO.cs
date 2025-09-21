@@ -10,6 +10,8 @@ namespace invoice.Core.DTO.Invoice
         public decimal FinalValue { get; set; }
 
         public InvoiceStatus InvoiceStatus { get; set; }
+        public OrderStatus? OrderStatus { get; set; }
+
         public InvoiceType InvoiceType { get; set; }
 
         public string? ClientId { get; set; }

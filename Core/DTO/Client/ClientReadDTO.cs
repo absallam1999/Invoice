@@ -1,6 +1,6 @@
 ﻿using invoice.Core.DTO.Invoice;
 using invoice.Core.DTO.Store;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 
 namespace invoice.Core.DTO.Client
 {

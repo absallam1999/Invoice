@@ -4,11 +4,13 @@ using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentLink;
 using invoice.Core.Interfaces.Services;
 using invoice.Core.DTO;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.Enums;
 using invoice.Repo;
 using Microsoft.EntityFrameworkCore;
 using invoice.Core.DTO.PayInvoice;
+using System.Linq;
+using invoice.Core.DTO.Store;
 
 namespace invoice.Services
 {
@@ -67,6 +69,23 @@ namespace invoice.Services
                 Data = _mapper.Map<IEnumerable<GetAllInvoiceDTO>>(invoices)
             };
         }
+        public async Task<GeneralResponse<IEnumerable<GetAllInvoiceDTO>>> GetAllForStoreAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                return new GeneralResponse<IEnumerable<GetAllInvoiceDTO>> { Success = false, Message = "UserId is required.", Data = Enumerable.Empty<GetAllInvoiceDTO>() };
+
+            var invoices = await _invoiceRepo.QueryAsync(i=>i.UserId==userId&& i.InvoiceType== 0 && !i.IsDeleted , x => x.Client, o=>o.Order);
+
+            if (!invoices.Any())
+                return new GeneralResponse<IEnumerable<GetAllInvoiceDTO>> { Success = false, Message = "No invoices found.", Data = Enumerable.Empty<GetAllInvoiceDTO>() };
+
+            return new GeneralResponse<IEnumerable<GetAllInvoiceDTO>>
+            {
+                Success = true,
+                Message = "Invoices retrieved successfully.",
+                Data = _mapper.Map<IEnumerable<GetAllInvoiceDTO>>(invoices)
+            };
+        }
 
         public async Task<GeneralResponse<InvoiceReadDTO>> GetByIdAsync(string id, string userId)
         {
@@ -80,7 +99,8 @@ namespace invoice.Services
                 .Include(x => x.User).ThenInclude(u => u.Tax)
                 .Include(x => x.PaymentLinks)
                 .Include(x => x.Payments)
-                .Include(x => x.Language)
+                .Include(x => x.Language) 
+                .Include(x => x.Order)
                 
                 );
 
@@ -93,13 +113,40 @@ namespace invoice.Services
                 Data = _mapper.Map<InvoiceReadDTO>(invoice)
             };
         }
+     public async Task<GeneralResponse<InvoicewithUserDTO>> GetByIdWithUserAsync(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id) )
+                return new GeneralResponse<InvoicewithUserDTO> { Success = false, Message = "Id and UserId are required." };
+
+            var invoice = await _invoiceRepo.GetByIdAsync(id, null, q => q
+                .Include(x => x.Client)
+                .Include(x => x.InvoiceItems).ThenInclude(i=>i.Product).ThenInclude(p=>p.Category)
+                .Include(x => x.PayInvoice).ThenInclude(p=>p.PaymentMethod)
+                .Include(x => x.User).ThenInclude(u => u.Tax)
+                .Include(x => x.PaymentLinks)
+                .Include(x => x.Payments)
+                .Include(x => x.Language) 
+                .Include(x => x.Order) 
+                .Include(x => x.User)
+                
+                );
+
+            if (invoice == null)
+                return new GeneralResponse<InvoicewithUserDTO> { Success = false, Message = $"Invoice with Id '{id}' not found." };
+            return new GeneralResponse<InvoicewithUserDTO>
+            {
+                Success = true,
+                Message = "Invoice retrieved successfully.",
+                Data = _mapper.Map<InvoicewithUserDTO>(invoice)
+            };
+        }
 
         public async Task<GeneralResponse<InvoiceReadDTO>> GetByCodeAsync(string code, string userId)
         {
             if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(userId))
                 return new GeneralResponse<InvoiceReadDTO> { Success = false, Message = "Code and UserId are required." };
 
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.Store, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
             var invoice = invoices.FirstOrDefault(i => i.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
 
             if (invoice == null)
@@ -118,12 +165,11 @@ namespace invoice.Services
             if (string.IsNullOrWhiteSpace(userId))
                 return new GeneralResponse<IEnumerable<InvoiceReadDTO>> { Success = false, Message = "UserId is required.", Data = Enumerable.Empty<InvoiceReadDTO>() };
 
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.Store, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
 
             var filtered = invoices.Where(i =>
                 (!string.IsNullOrWhiteSpace(i.Code) && i.Code.Contains(keyword ?? "", StringComparison.OrdinalIgnoreCase)) ||
-                (i.Client != null && i.Client.Name.Contains(keyword ?? "", StringComparison.OrdinalIgnoreCase)) ||
-                (i.Store != null && i.Store.Name.Contains(keyword ?? "", StringComparison.OrdinalIgnoreCase))
+                (i.Client != null && i.Client.Name.Contains(keyword ?? "", StringComparison.OrdinalIgnoreCase)) 
             );
 
             return new GeneralResponse<IEnumerable<InvoiceReadDTO>>
@@ -225,9 +271,7 @@ namespace invoice.Services
                 var client = string.IsNullOrWhiteSpace(dto.ClientId) ? null : await _clientRepo.GetByIdAsync(dto.ClientId, userId);
                 if (!string.IsNullOrWhiteSpace(dto.ClientId) && client == null) continue;
 
-                var store = string.IsNullOrWhiteSpace(dto.StoreId) ? null : await _storeRepo.GetByIdAsync(dto.StoreId, userId);
-                if (!string.IsNullOrWhiteSpace(dto.StoreId) && store == null) continue;
-
+               
                 var invoice = _mapper.Map<Invoice>(dto);
                 invoice.UserId = userId;
                 invoice.Code = $"INV-{DateTime.UtcNow.Ticks}";
@@ -263,8 +307,7 @@ namespace invoice.Services
 
             var invoice = await _invoiceRepo.GetByIdAsync(id, userId, q => q
                 .Include(x => x.Client)
-               .Include(x => x.InvoiceItems).ThenInclude(i => i.Product).ThenInclude(p => p.Category)
-                //.Include(x => x.Payments)
+                .Include(x => x.InvoiceItems).ThenInclude(i => i.Product).ThenInclude(p => p.Category)
                 .Include(x=>x.User).ThenInclude(u=>u.Tax)
                 .Include(x => x.Language)
                 .Include(x => x.PayInvoice).ThenInclude(p => p.PaymentMethod)
@@ -470,7 +513,7 @@ namespace invoice.Services
             };
         }
 
-
+        
         public async Task<GeneralResponse<bool>> DeleteAsync(string id, string userId)
         {
             var invoice = await _invoiceRepo.GetByIdAsync(id, userId);
@@ -530,7 +573,7 @@ namespace invoice.Services
             };
         }
 
-        public async Task<GeneralResponse<bool>> PayAsync(string id, PayInvoiceCreateDTO dto, string userId)
+        public async Task<GeneralResponse<bool>> PayAsync(string id, string userId, PayInvoiceCreateDTO dto = null)
         {
             var invoice = await _invoiceRepo.GetByIdAsync(id, userId);
 
@@ -548,9 +591,9 @@ namespace invoice.Services
 
             PayInvoice Payinvoice = new PayInvoice
             {
-                PaidAt = dto.PayAt ?? DateTime.UtcNow,
-                PaymentMethodId = dto.PaymentMethodId,
                 InvoiceId = id,
+                PaidAt = dto?.PayAt ?? DateTime.UtcNow,
+                PaymentMethodId = dto?.PaymentMethodId ?? "ca"
             };
 
             await _invoiceRepo.UpdateAsync(invoice);
@@ -560,6 +603,40 @@ namespace invoice.Services
             {
                 Success = true,
                 Message = "Invoice paid successfully.",
+                Data = true
+            };
+        }
+        public async Task<GeneralResponse<bool>> ChangeOrderStatus(string id, ChangeOrderStatusDTO dto, string userId)
+        {
+            var invoice = await _invoiceRepo.GetByIdAsync(id, userId,
+                i => i.Include(o => o.Order) );
+
+            if (invoice == null)
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = $"Invoice with Id '{id}' not found.",
+                    Data = false
+                };
+            }
+            if (invoice.Order == null)
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "This invoice has no associated order.",
+                    Data = false
+                };
+            }
+            invoice.Order.OrderStatus = dto.OrderStatus;
+           
+            await _invoiceRepo.UpdateAsync(invoice);
+
+            return new GeneralResponse<bool>
+            {
+                Success = true,
+                Message = "order status changed  successfully.",
                 Data = true
             };
         }
@@ -610,7 +687,7 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByClientAsync(string clientId, string userId)
         {
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.Store, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId,x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
             var filtered = invoices.Where(i => i.ClientId == clientId);
 
             return new GeneralResponse<IEnumerable<InvoiceReadDTO>>
@@ -621,22 +698,11 @@ namespace invoice.Services
             };
         }
 
-        public async Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByStoreAsync(string storeId, string userId)
-        {
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.Store, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
-            var filtered = invoices.Where(i => i.StoreId == storeId);
-
-            return new GeneralResponse<IEnumerable<InvoiceReadDTO>>
-            {
-                Success = filtered.Any(),
-                Message = filtered.Any() ? "Invoices retrieved." : "No invoices found for this store.",
-                Data = _mapper.Map<IEnumerable<InvoiceReadDTO>>(filtered)
-            };
-        }
+      
 
         public async Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByStatusAsync(InvoiceStatus status, string userId)
         {
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.Store, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client,  x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
             var filtered = invoices.Where(i => i.InvoiceStatus == status);
 
             return new GeneralResponse<IEnumerable<InvoiceReadDTO>>
@@ -647,12 +713,12 @@ namespace invoice.Services
             };
         }
       
-        public async Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByTypeAsync(InvoiceType type, string userId)
+        public async Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetForPOSAsync(InvoiceType type, string userId)
         {
             var today = DateTime.Today;
             var tomorrow = today.AddDays(1);
 
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.Store, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinks, x => x.PayInvoice);
             var filtered = invoices.Where(i => i.InvoiceType == type
             && (i.CreatedAt >= today && i.CreatedAt < tomorrow)
             );
@@ -808,5 +874,7 @@ namespace invoice.Services
                 }
                 : invoice.Value;
         }
+
+       
     }
 }

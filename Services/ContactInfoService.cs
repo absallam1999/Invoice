@@ -2,7 +2,7 @@
 using invoice.Core.DTO.ContactInformation;
 using invoice.Core.Interfaces.Services;
 using invoice.Core.DTO;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Repo;
 
 namespace invoice.Services
@@ -164,12 +164,12 @@ namespace invoice.Services
 
             foreach (var dto in dtos)
             {
-                var entity = await _contactInfoRepo.GetByIdAsync(dto.Id, userId);
-                if (entity != null)
-                {
-                    _mapper.Map(dto, entity);
-                    entities.Add(entity);
-                }
+              //  var entity = await _contactInfoRepo.GetByIdAsync(dto.Id, userId);
+                //if (entity != null)
+                //{
+                //    _mapper.Map(dto, entity);
+                //    entities.Add(entity);
+                //}
             }
 
             var response = await _contactInfoRepo.UpdateRangeAsync(entities);

@@ -4,7 +4,7 @@ using invoice.Core.DTO.Product;
 using invoice.Core.DTO.Tax;
 using invoice.Core.Interfaces.Services;
 using invoice.Repo;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 
 
 namespace invoice.Services

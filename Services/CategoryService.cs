@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using invoice.Repo;
 using invoice.Core.DTO;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.DTO.Category;
 using Microsoft.EntityFrameworkCore;
 using invoice.Core.Interfaces.Services;

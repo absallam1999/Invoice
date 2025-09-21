@@ -155,7 +155,7 @@ namespace invoice.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.ApplicationUser", b =>
+            modelBuilder.Entity("invoice.Core.Entities.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -236,7 +236,7 @@ namespace invoice.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Category", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Category", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(8)
@@ -279,7 +279,7 @@ namespace invoice.Migrations
                     b.ToTable("Categories", (string)null);
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Client", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Client", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(8)
@@ -329,7 +329,7 @@ namespace invoice.Migrations
                     b.ToTable("Clients", (string)null);
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.ContactInfo", b =>
+            modelBuilder.Entity("invoice.Core.Entities.ContactInfo", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(8)
@@ -382,12 +382,51 @@ namespace invoice.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StoreId");
+                    b.HasIndex("StoreId")
+                        .IsUnique()
+                        .HasFilter("[StoreId] IS NOT NULL");
 
                     b.ToTable("ContactInformation", (string)null);
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Invoice", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Currency", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CurrencyCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Currencies");
+                });
+
+            modelBuilder.Entity("invoice.Core.Entities.Invoice", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(8)
@@ -433,9 +472,6 @@ namespace invoice.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(8)");
 
-                    b.Property<string>("StoreId")
-                        .HasColumnType("nvarchar(8)");
-
                     b.Property<bool>("Tax")
                         .HasColumnType("bit");
 
@@ -459,14 +495,12 @@ namespace invoice.Migrations
 
                     b.HasIndex("LanguageId");
 
-                    b.HasIndex("StoreId");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("Invoices", (string)null);
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.InvoiceItem", b =>
+            modelBuilder.Entity("invoice.Core.Entities.InvoiceItem", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(8)
@@ -516,7 +550,7 @@ namespace invoice.Migrations
                     b.ToTable("InvoiceItems", (string)null);
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Language", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Language", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(8)
@@ -559,7 +593,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ar",
-                            CreatedAt = new DateTime(2025, 8, 29, 21, 50, 44, 700, DateTimeKind.Utc).AddTicks(5460),
+                            CreatedAt = new DateTime(2025, 9, 18, 6, 18, 32, 5, DateTimeKind.Utc).AddTicks(3029),
                             IsDeleted = false,
                             Name = "Arabic",
                             Target = "Page"
@@ -567,14 +601,14 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "en",
-                            CreatedAt = new DateTime(2025, 8, 29, 21, 50, 44, 700, DateTimeKind.Utc).AddTicks(5472),
+                            CreatedAt = new DateTime(2025, 9, 18, 6, 18, 32, 5, DateTimeKind.Utc).AddTicks(3046),
                             IsDeleted = false,
                             Name = "English",
                             Target = "Page"
                         });
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Notification", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Notification", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(8)
@@ -622,7 +656,51 @@ namespace invoice.Migrations
                     b.ToTable("Notifications", (string)null);
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Page", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Order", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("DeliveryCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("InvoiceId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("OrderStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ShippingMethod")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId")
+                        .IsUnique();
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("invoice.Core.Entities.Page", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(8)
@@ -641,7 +719,6 @@ namespace invoice.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Image")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -660,10 +737,6 @@ namespace invoice.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("LanguageId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(8)");
-
                     b.Property<string>("StoreId")
                         .IsRequired()
                         .HasColumnType("nvarchar(8)");
@@ -678,14 +751,12 @@ namespace invoice.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LanguageId");
-
                     b.HasIndex("StoreId");
 
                     b.ToTable("Pages", (string)null);
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.PayInvoice", b =>
+            modelBuilder.Entity("invoice.Core.Entities.PayInvoice", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(8)
@@ -730,7 +801,7 @@ namespace invoice.Migrations
                     b.ToTable("PayInvoices", (string)null);
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Payment", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Payment", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(8)
@@ -793,7 +864,7 @@ namespace invoice.Migrations
                     b.ToTable("Payments", (string)null);
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.PaymentLink", b =>
+            modelBuilder.Entity("invoice.Core.Entities.PaymentLink", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(8)
@@ -859,7 +930,7 @@ namespace invoice.Migrations
                     b.ToTable("PaymentLinks", (string)null);
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.PaymentMethod", b =>
+            modelBuilder.Entity("invoice.Core.Entities.PaymentMethod", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(8)
@@ -894,20 +965,20 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ca",
-                            CreatedAt = new DateTime(2025, 8, 29, 21, 50, 44, 700, DateTimeKind.Utc).AddTicks(5712),
+                            CreatedAt = new DateTime(2025, 9, 18, 6, 18, 32, 5, DateTimeKind.Utc).AddTicks(3365),
                             IsDeleted = false,
                             Name = "Cash"
                         },
                         new
                         {
                             Id = "bt",
-                            CreatedAt = new DateTime(2025, 8, 29, 21, 50, 44, 700, DateTimeKind.Utc).AddTicks(5736),
+                            CreatedAt = new DateTime(2025, 9, 18, 6, 18, 32, 5, DateTimeKind.Utc).AddTicks(3399),
                             IsDeleted = false,
                             Name = "BankTransfer"
                         });
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Product", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Product", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(8)
@@ -967,10 +1038,6 @@ namespace invoice.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Url")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -986,7 +1053,7 @@ namespace invoice.Migrations
                     b.ToTable("Products", (string)null);
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Store", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Store", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(8)
@@ -1014,22 +1081,17 @@ namespace invoice.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("LanguageId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(8)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int>("PaymentMethod")
+                    b.Property<int>("ParallelMergeOptions")
                         .HasColumnType("int");
 
-                    b.Property<bool>("Tax")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -1040,14 +1102,13 @@ namespace invoice.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LanguageId");
-
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Stores", (string)null);
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Tax", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Tax", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -1098,7 +1159,7 @@ namespace invoice.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.ApplicationUser", null)
+                    b.HasOne("invoice.Core.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1107,7 +1168,7 @@ namespace invoice.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.ApplicationUser", null)
+                    b.HasOne("invoice.Core.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1122,7 +1183,7 @@ namespace invoice.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("invoice.Core.Entites.ApplicationUser", null)
+                    b.HasOne("invoice.Core.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1131,16 +1192,16 @@ namespace invoice.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.ApplicationUser", null)
+                    b.HasOne("invoice.Core.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Category", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Category", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.ApplicationUser", "User")
+                    b.HasOne("invoice.Core.Entities.ApplicationUser", "User")
                         .WithMany("Categories")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1149,9 +1210,9 @@ namespace invoice.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Client", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Client", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.ApplicationUser", "User")
+                    b.HasOne("invoice.Core.Entities.ApplicationUser", "User")
                         .WithMany("Clients")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1160,35 +1221,41 @@ namespace invoice.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.ContactInfo", b =>
+            modelBuilder.Entity("invoice.Core.Entities.ContactInfo", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.Store", "Store")
-                        .WithMany("ContactInformations")
-                        .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                    b.HasOne("invoice.Core.Entities.Store", "Store")
+                        .WithOne("ContactInformations")
+                        .HasForeignKey("invoice.Core.Entities.ContactInfo", "StoreId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Store");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Invoice", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Currency", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.Client", "Client")
+                    b.HasOne("invoice.Core.Entities.ApplicationUser", "User")
+                        .WithOne("Currency")
+                        .HasForeignKey("invoice.Core.Entities.Currency", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("invoice.Core.Entities.Invoice", b =>
+                {
+                    b.HasOne("invoice.Core.Entities.Client", "Client")
                         .WithMany("Invoices")
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("invoice.Core.Entites.Language", "Language")
+                    b.HasOne("invoice.Core.Entities.Language", "Language")
                         .WithMany("Invoices")
                         .HasForeignKey("LanguageId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("invoice.Core.Entites.Store", "Store")
-                        .WithMany("Invoices")
-                        .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("invoice.Core.Entites.ApplicationUser", "User")
+                    b.HasOne("invoice.Core.Entities.ApplicationUser", "User")
                         .WithMany("Invoices")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1198,20 +1265,18 @@ namespace invoice.Migrations
 
                     b.Navigation("Language");
 
-                    b.Navigation("Store");
-
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.InvoiceItem", b =>
+            modelBuilder.Entity("invoice.Core.Entities.InvoiceItem", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.Invoice", "Invoice")
+                    b.HasOne("invoice.Core.Entities.Invoice", "Invoice")
                         .WithMany("InvoiceItems")
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("invoice.Core.Entites.Product", "Product")
+                    b.HasOne("invoice.Core.Entities.Product", "Product")
                         .WithMany("InvoiceItems")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1222,9 +1287,9 @@ namespace invoice.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Notification", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Notification", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.ApplicationUser", "User")
+                    b.HasOne("invoice.Core.Entities.ApplicationUser", "User")
                         .WithMany("Notifications")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1233,34 +1298,37 @@ namespace invoice.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Page", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Order", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.Language", "Language")
-                        .WithMany("Pages")
-                        .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("invoice.Core.Entities.Invoice", "Invoice")
+                        .WithOne("Order")
+                        .HasForeignKey("invoice.Core.Entities.Order", "InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("invoice.Core.Entites.Store", "Store")
+                    b.Navigation("Invoice");
+                });
+
+            modelBuilder.Entity("invoice.Core.Entities.Page", b =>
+                {
+                    b.HasOne("invoice.Core.Entities.Store", "Store")
                         .WithMany("Pages")
                         .HasForeignKey("StoreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Language");
-
                     b.Navigation("Store");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.PayInvoice", b =>
+            modelBuilder.Entity("invoice.Core.Entities.PayInvoice", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.Invoice", "Invoice")
+                    b.HasOne("invoice.Core.Entities.Invoice", "Invoice")
                         .WithOne("PayInvoice")
-                        .HasForeignKey("invoice.Core.Entites.PayInvoice", "InvoiceId")
+                        .HasForeignKey("invoice.Core.Entities.PayInvoice", "InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("invoice.Core.Entites.PaymentMethod", "PaymentMethod")
+                    b.HasOne("invoice.Core.Entities.PaymentMethod", "PaymentMethod")
                         .WithMany("PayInvoices")
                         .HasForeignKey("PaymentMethodId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1271,26 +1339,26 @@ namespace invoice.Migrations
                     b.Navigation("PaymentMethod");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Payment", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Payment", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.Invoice", "Invoice")
+                    b.HasOne("invoice.Core.Entities.Invoice", "Invoice")
                         .WithMany("Payments")
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("invoice.Core.Entites.PaymentLink", "PaymentLink")
+                    b.HasOne("invoice.Core.Entities.PaymentLink", "PaymentLink")
                         .WithMany("Payments")
                         .HasForeignKey("PaymentLinkId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("invoice.Core.Entites.PaymentMethod", "PaymentMethod")
+                    b.HasOne("invoice.Core.Entities.PaymentMethod", "PaymentMethod")
                         .WithMany("Payments")
                         .HasForeignKey("PaymentMethodId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("invoice.Core.Entites.ApplicationUser", "User")
+                    b.HasOne("invoice.Core.Entities.ApplicationUser", "User")
                         .WithMany("Payments")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1305,9 +1373,9 @@ namespace invoice.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.PaymentLink", b =>
+            modelBuilder.Entity("invoice.Core.Entities.PaymentLink", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.Invoice", "Invoice")
+                    b.HasOne("invoice.Core.Entities.Invoice", "Invoice")
                         .WithMany("PaymentLinks")
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1316,18 +1384,18 @@ namespace invoice.Migrations
                     b.Navigation("Invoice");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Product", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Product", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.Category", "Category")
+                    b.HasOne("invoice.Core.Entities.Category", "Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("invoice.Core.Entites.Store", null)
+                    b.HasOne("invoice.Core.Entities.Store", null)
                         .WithMany("Products")
                         .HasForeignKey("StoreId");
 
-                    b.HasOne("invoice.Core.Entites.ApplicationUser", "User")
+                    b.HasOne("invoice.Core.Entities.ApplicationUser", "User")
                         .WithMany("Products")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1338,32 +1406,38 @@ namespace invoice.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Store", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Store", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.Language", "Language")
-                        .WithMany("Stores")
-                        .HasForeignKey("LanguageId")
+                    b.HasOne("invoice.Core.Entities.ApplicationUser", "User")
+                        .WithOne("Store")
+                        .HasForeignKey("invoice.Core.Entities.Store", "UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("invoice.Core.Entites.ApplicationUser", "User")
-                        .WithMany("Stores")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.OwnsOne("invoice.Models.Entites.utils.Shipping", "Shipping", b1 =>
+                    b.OwnsOne("invoice.Core.Entities.utils.PaymentOptions", "PaymentOptions", b1 =>
                         {
                             b1.Property<string>("StoreId")
                                 .HasColumnType("nvarchar(8)");
 
-                            b1.Property<bool>("FromStore")
+                            b1.Property<bool>("BankTransfer")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false);
+
+                            b1.Property<bool>("Cash")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("bit")
                                 .HasDefaultValue(true);
 
-                            b1.Property<int>("PaymentType")
-                                .HasColumnType("int");
+                            b1.Property<bool>("PayPal")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false);
+
+                            b1.Property<bool>("Tax")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false);
 
                             b1.HasKey("StoreId");
 
@@ -1373,7 +1447,34 @@ namespace invoice.Migrations
                                 .HasForeignKey("StoreId");
                         });
 
-                    b.OwnsOne("invoice.Models.Entites.utils.StoreSettings", "StoreSettings", b1 =>
+                    b.OwnsOne("invoice.Models.Entities.utils.Shipping", "Shipping", b1 =>
+                        {
+                            b1.Property<string>("StoreId")
+                                .HasColumnType("nvarchar(8)");
+
+                            b1.Property<bool>("Delivery")
+                                .HasColumnType("bit");
+
+                            b1.Property<decimal?>("DeliveryFee")
+                                .HasColumnType("decimal(18,2)");
+
+                            b1.Property<bool>("FromStore")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(true);
+
+                            b1.Property<string>("Region")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("StoreId");
+
+                            b1.ToTable("Stores");
+
+                            b1.WithOwner()
+                                .HasForeignKey("StoreId");
+                        });
+
+                    b.OwnsOne("invoice.Models.Entities.utils.StoreSettings", "StoreSettings", b1 =>
                         {
                             b1.Property<string>("StoreId")
                                 .HasColumnType("nvarchar(8)");
@@ -1384,6 +1485,10 @@ namespace invoice.Migrations
                                 .HasMaxLength(20)
                                 .HasColumnType("nvarchar(20)")
                                 .HasDefaultValue("#FFFFFF");
+
+                            b1.Property<string>("Country")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
 
                             b1.Property<string>("CoverImage")
                                 .HasMaxLength(500)
@@ -1400,11 +1505,6 @@ namespace invoice.Migrations
                                 .HasMaxLength(500)
                                 .HasColumnType("nvarchar(500)");
 
-                            b1.Property<string>("Url")
-                                .IsRequired()
-                                .HasMaxLength(200)
-                                .HasColumnType("nvarchar(200)");
-
                             b1.HasKey("StoreId");
 
                             b1.ToTable("Stores");
@@ -1412,10 +1512,13 @@ namespace invoice.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("StoreId");
 
-                            b1.OwnsOne("invoice.Models.Entites.utils.PurchaseCompletionOptions", "purchaseOptions", b2 =>
+                            b1.OwnsOne("invoice.Models.Entities.utils.PurchaseCompletionOptions", "purchaseOptions", b2 =>
                                 {
                                     b2.Property<string>("StoreSettingsStoreId")
                                         .HasColumnType("nvarchar(8)");
+
+                                    b2.Property<bool>("Address")
+                                        .HasColumnType("bit");
 
                                     b2.Property<bool>("Email")
                                         .ValueGeneratedOnAdd()
@@ -1448,7 +1551,8 @@ namespace invoice.Migrations
                                 .IsRequired();
                         });
 
-                    b.Navigation("Language");
+                    b.Navigation("PaymentOptions")
+                        .IsRequired();
 
                     b.Navigation("Shipping")
                         .IsRequired();
@@ -1459,22 +1563,25 @@ namespace invoice.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Tax", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Tax", b =>
                 {
-                    b.HasOne("invoice.Core.Entites.ApplicationUser", "User")
+                    b.HasOne("invoice.Core.Entities.ApplicationUser", "User")
                         .WithOne("Tax")
-                        .HasForeignKey("invoice.Core.Entites.Tax", "UserId")
+                        .HasForeignKey("invoice.Core.Entities.Tax", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.ApplicationUser", b =>
+            modelBuilder.Entity("invoice.Core.Entities.ApplicationUser", b =>
                 {
                     b.Navigation("Categories");
 
                     b.Navigation("Clients");
+
+                    b.Navigation("Currency")
+                        .IsRequired();
 
                     b.Navigation("Invoices");
 
@@ -1484,65 +1591,62 @@ namespace invoice.Migrations
 
                     b.Navigation("Products");
 
-                    b.Navigation("Stores");
+                    b.Navigation("Store")
+                        .IsRequired();
 
                     b.Navigation("Tax")
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Category", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Category", b =>
                 {
                     b.Navigation("Products");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Client", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Client", b =>
                 {
                     b.Navigation("Invoices");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Invoice", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Invoice", b =>
                 {
                     b.Navigation("InvoiceItems");
 
-                    b.Navigation("PayInvoice")
-                        .IsRequired();
+                    b.Navigation("Order");
+
+                    b.Navigation("PayInvoice");
 
                     b.Navigation("PaymentLinks");
 
                     b.Navigation("Payments");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Language", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Language", b =>
                 {
                     b.Navigation("Invoices");
-
-                    b.Navigation("Pages");
-
-                    b.Navigation("Stores");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.PaymentLink", b =>
+            modelBuilder.Entity("invoice.Core.Entities.PaymentLink", b =>
                 {
                     b.Navigation("Payments");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.PaymentMethod", b =>
+            modelBuilder.Entity("invoice.Core.Entities.PaymentMethod", b =>
                 {
                     b.Navigation("PayInvoices");
 
                     b.Navigation("Payments");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Product", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Product", b =>
                 {
                     b.Navigation("InvoiceItems");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entites.Store", b =>
+            modelBuilder.Entity("invoice.Core.Entities.Store", b =>
                 {
-                    b.Navigation("ContactInformations");
-
-                    b.Navigation("Invoices");
+                    b.Navigation("ContactInformations")
+                        .IsRequired();
 
                     b.Navigation("Pages");
 

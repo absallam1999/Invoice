@@ -1,4 +1,4 @@
-﻿using invoice.Models.Entites.utils;
+﻿using invoice.Models.Entities.utils;
 using System.ComponentModel.DataAnnotations;
 
 namespace invoice.Core.DTO.StoreSettings

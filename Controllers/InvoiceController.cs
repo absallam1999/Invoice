@@ -1,8 +1,8 @@
-﻿using invoice.Core.DTO;
-using invoice.Core.DTO.Invoice;
+﻿using invoice.Core.DTO.Invoice;
 using invoice.Core.DTO.PayInvoice;
 using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentLink;
+using invoice.Core.DTO.Store;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -33,10 +33,18 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
+        [HttpGet("StoreInvoice")]
+        public async Task<IActionResult> StoreInvoice()
+        {
+            var response = await _invoiceService.GetAllForStoreAsync(GetUserId());
+            return Ok(response);
+        }
+
+
         [HttpGet("POSInvoice")]
         public async Task<IActionResult> POSInvoice()
         {
-            var response = await _invoiceService.GetByTypeAsync(InvoiceType.Cashier, GetUserId());
+            var response = await _invoiceService.GetForPOSAsync(InvoiceType.Cashier, GetUserId());
             return Ok(response);
         }
 
@@ -44,6 +52,14 @@ namespace invoice.Controllers
         public async Task<IActionResult> GetById(string id)
         {
             var response = await _invoiceService.GetByIdAsync(id, GetUserId());
+            return Ok(response);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("GetWithUser/{id}")]
+        public async Task<IActionResult> GetByIdWithUser(string id)
+        {
+            var response = await _invoiceService.GetByIdWithUserAsync(id);
             return Ok(response);
         }
 
@@ -68,6 +84,22 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
+
+        [HttpPost("CreateByPOS")]
+        public async Task<IActionResult> CreateByPOS([FromBody] InvoiceCreateDTO dto)
+        {
+            var response = await _invoiceService.CreateAsync(dto, GetUserId());
+            if (response?.Data != null)
+            {
+                var response2 = await _invoiceService.PayAsync(response.Data.Id, GetUserId());
+                var response3 = await _invoiceService.GetByIdAsync(response.Data.Id, GetUserId());
+                return Ok(response3);
+
+
+            }
+            return Ok(response);
+        }
+
         [HttpPost("range")]
         public async Task<IActionResult> CreateRange([FromBody] IEnumerable<InvoiceCreateDTO> dtos)
         {
@@ -85,7 +117,7 @@ namespace invoice.Controllers
         [HttpPut("pay/{id}")]
         public async Task<IActionResult> Pay(string id, [FromBody] PayInvoiceCreateDTO dto)
         {
-            var response = await _invoiceService.PayAsync(id, dto, GetUserId());
+            var response = await _invoiceService.PayAsync(id, GetUserId(), dto);
             return Ok(response);
         }
 
@@ -93,6 +125,13 @@ namespace invoice.Controllers
         public async Task<IActionResult> Refund(string id)
         {
             var response = await _invoiceService.RefundAsync(id, GetUserId());
+            return Ok(response);
+        }
+        
+        [HttpPut("ChangeOrderStatus/{id}")]
+        public async Task<IActionResult> ChangeOrderStatus(string id, [FromBody] ChangeOrderStatusDTO dto)
+        {
+            var response = await _invoiceService.ChangeOrderStatus(id, dto ,GetUserId());
             return Ok(response);
         }
 
@@ -124,12 +163,7 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpGet("store/{storeId}")]
-        public async Task<IActionResult> GetByStore(string storeId)
-        {
-            var response = await _invoiceService.GetByStoreAsync(storeId, GetUserId());
-            return Ok(response);
-        }
+       
 
         [HttpGet("status/{status}")]
         public async Task<IActionResult> GetByStatus(InvoiceStatus status)
@@ -138,12 +172,7 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpGet("type/{type}")]
-        public async Task<IActionResult> GetByType(InvoiceType type)
-        {
-            var response = await _invoiceService.GetByTypeAsync(type, GetUserId());
-            return Ok(response);
-        }
+      
 
         [HttpGet("count")]
         public async Task<IActionResult> Count()

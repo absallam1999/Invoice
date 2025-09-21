@@ -42,11 +42,19 @@ namespace invoice.Controllers
             var response = await _productService.DeleteAsync(id, GetUserId());
             return Ok(response);
         }
-
+      
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var response = await _productService.GetByIdAsync(id, GetUserId());
+            var response = await _productService.GetByIdWithInvoicesAsync(id, GetUserId());
+            return Ok(response);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("storeproduct/{productid}/{userid}")]
+        public async Task<IActionResult> GetByIdForStore(string productid, string userid )
+        {
+            var response = await _productService.GetByIdAsync(productid, userid);
             return Ok(response);
         }
 
@@ -65,12 +73,7 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpGet("store/{storeId}")]
-        public async Task<IActionResult> GetByStore(string storeId)
-        {
-            var response = await _productService.GetByStoreAsync(storeId, GetUserId());
-            return Ok(response);
-        }
+     
 
         [HttpGet("available/pos")]
         public async Task<IActionResult> GetAvailableForPOS()
@@ -86,14 +89,30 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
+        [AllowAnonymous]
+        [HttpGet("storeproducts/{userid}")]
+        public async Task<IActionResult> GetStoreProdect(string userid)
+        {
+            var response = await _productService.GetAvailableForStoreAsync(userid);
+            return Ok(response);
+        }
+
         [HttpGet("list")]
         public async Task<IActionResult> GetProductList()
         {
-            var response = await _productService.GetProductListAsync(GetUserId());
+            var response = await _productService.ProductsavailableAsync(GetUserId());
             return Ok(response);
         }
 
 
+
+
+        [HttpGet("store/{storeId}")]
+        public async Task<IActionResult> GetByStore(string storeId)
+        {
+            var response = await _productService.GetByStoreAsync(storeId, GetUserId());
+            return Ok(response);
+        }
         [HttpPut("{id}/quantity/{quantity}")]
         public async Task<IActionResult> UpdateQuantity(string id, int quantity)
         {

@@ -2,7 +2,7 @@
 using Azure.Core.GeoJson;
 using invoice.Core.DTO;
 using invoice.Core.DTO.Client;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.Interfaces.Services;
 using invoice.Repo;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +42,7 @@ namespace invoice.Services
             dto.InvoiceTotal = client.Invoices.Sum(i => i.FinalValue);
             return new GeneralResponse<ClientReadDTO>(true, "Client retrieved successfully", dto);
         }
+       
 
         public async Task<GeneralResponse<IEnumerable<ClientReadDTO>>> GetByNameAsync(string name, string userId)
         {
@@ -49,8 +50,8 @@ namespace invoice.Services
             
             var dtos = _mapper.Map<IEnumerable<ClientReadDTO>>(clients);
             return new GeneralResponse<IEnumerable<ClientReadDTO>>(true, "Clients retrieved By Name successfully", dtos);
-        }
-
+        } 
+        
         public async Task<GeneralResponse<IEnumerable<ClientReadDTO>>> SearchAsync(string keyword, string userId)
         {
             var clients = await _clientRepo.QueryAsync(

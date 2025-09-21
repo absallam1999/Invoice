@@ -1,12 +1,16 @@
-﻿namespace invoice.Core.DTO.Product
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace invoice.Core.DTO.Product
 {
     public class ProductUpdateDTO
     {
-       // public string Id { get; set; }
+        // public string Id { get; set; }
+        [Required]
         public string Name { get; set; }
         public string? Image { get; set; }
+        [Required]
         public decimal Price { get; set; }
-        public int Quantity { get; set; }
+        public int? Quantity { get; set; } = null;
 
        // public bool InProductList { get; set; }
         public bool InPOS { get; set; }
@@ -14,6 +18,6 @@
 
         public string? CategoryId { get; set; }
        // public string? StoreId { get; set; }
-        public string? Url { get; set; }
+       // public string? Url { get; set; }
     }
 }

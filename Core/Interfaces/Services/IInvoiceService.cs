@@ -4,6 +4,7 @@ using invoice.Core.DTO.PaymentLink;
 using invoice.Core.DTO;
 using invoice.Core.Enums;
 using invoice.Core.DTO.PayInvoice;
+using invoice.Core.DTO.Store;
 
 namespace invoice.Core.Interfaces.Services
 {
@@ -11,6 +12,7 @@ namespace invoice.Core.Interfaces.Services
     {
         Task<GeneralResponse<IEnumerable<GetAllInvoiceDTO>>> GetAllAsync(string userId);
         Task<GeneralResponse<InvoiceReadDTO>> GetByIdAsync(string id, string userId);
+        Task<GeneralResponse<InvoicewithUserDTO>> GetByIdWithUserAsync(string id);
         Task<GeneralResponse<InvoiceReadDTO>> GetByCodeAsync(string code, string userId);
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> SearchAsync(string keyword, string userId);
 
@@ -18,8 +20,10 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> CreateRangeAsync(IEnumerable<InvoiceCreateDTO> dtos, string userId);
 
         Task<GeneralResponse<InvoiceReadDTO>> UpdateAsync(string id, InvoiceUpdateDTO dto, string userId);
-        Task<GeneralResponse<bool>>PayAsync(string id, PayInvoiceCreateDTO dto, string userId);
+        Task<GeneralResponse<bool>>PayAsync(string id, string userId, PayInvoiceCreateDTO dto=null);
         Task<GeneralResponse<bool>> RefundAsync(string id, string userId);
+        Task<GeneralResponse<bool>> ChangeOrderStatus(string id, ChangeOrderStatusDTO dto, string userId);
+
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> UpdateRangeAsync(IEnumerable<InvoiceUpdateDTO> dtos, string userId);
 
         Task<GeneralResponse<bool>> DeleteAsync(string id, string userId);
@@ -29,9 +33,9 @@ namespace invoice.Core.Interfaces.Services
         Task<int> CountAsync(string userId);
 
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByClientAsync(string clientId, string userId);
-        Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByStoreAsync(string storeId, string userId);
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByStatusAsync(InvoiceStatus status, string userId);
-        Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByTypeAsync(InvoiceType type, string userId);
+        Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetForPOSAsync(InvoiceType type, string userId);
+        Task<GeneralResponse<IEnumerable<GetAllInvoiceDTO>>> GetAllForStoreAsync( string userId);
 
         Task<GeneralResponse<decimal>> GetTotalValueAsync(string userId);
         Task<GeneralResponse<decimal>> GetTotalFinalValueAsync(string userId);

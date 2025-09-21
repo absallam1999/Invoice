@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
-
 using invoice.Core.DTO;
 using invoice.Core.DTO.Invoice;
 using invoice.Core.DTO.PaymentLink;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
 using invoice.Repo;

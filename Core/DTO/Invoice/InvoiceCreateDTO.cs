@@ -6,7 +6,6 @@ namespace invoice.Core.DTO.Invoice
 {
     public class InvoiceCreateDTO
     {
-       // public decimal Value { get; set; }
 
         public bool Tax { get; set; } = false;
         public DiscountType? DiscountType { get; set; }
@@ -16,11 +15,10 @@ namespace invoice.Core.DTO.Invoice
         public InvoiceType InvoiceType { get; set; }
         public string? TermsConditions { get; set; }
 
-        public string? StoreId { get; set; }
         public string? ClientId { get; set; }
         public string? LanguageId { get; set; }
 
-        //public IEnumerable<PaymentCreateDTO>? Payments { get; set; }
         public IEnumerable<InvoiceItemCreateDTO>? InvoiceItems { get; set; }
+
     }
 }

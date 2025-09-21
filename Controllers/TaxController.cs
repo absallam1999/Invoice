@@ -37,6 +37,14 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
+        [AllowAnonymous]
+        [HttpGet("{userid}")]
+        public async Task<IActionResult> GetTax( string userid)
+        {
+            var response = await _taxService.GetByUserIdAsync(userid);
+            return Ok(response);
+        }
+
         [HttpPut()]
         public async Task<IActionResult> Update( TaxReadDTO dto)
         {

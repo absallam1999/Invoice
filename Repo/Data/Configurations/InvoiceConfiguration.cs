@@ -1,4 +1,4 @@
-﻿using invoice.Core.Entites;
+﻿using invoice.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -33,10 +33,7 @@ namespace invoice.Repo.Data.Configurations
                 .HasForeignKey(i => i.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(i => i.Store)
-                   .WithMany(s => s.Invoices)
-                   .HasForeignKey(i => i.StoreId)
-                   .OnDelete(DeleteBehavior.SetNull);
+          
 
             builder.HasOne(i => i.Client)
                 .WithMany(c => c.Invoices)

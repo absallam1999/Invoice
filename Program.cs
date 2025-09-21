@@ -1,4 +1,4 @@
-﻿using invoice.Core.Entites;
+﻿using invoice.Core.Entities;
 using invoice.Helpers;
 using invoice.Repo;
 using invoice.Repo.Data;

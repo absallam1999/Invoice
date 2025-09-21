@@ -1,6 +1,6 @@
 ﻿using invoice.Core.Interfaces.Services;
 using invoice.Core.DTO;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Repo;
 
 namespace invoice.Services

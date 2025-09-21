@@ -1,7 +1,7 @@
 ﻿using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.DTO;
 
 namespace invoice.Controllers

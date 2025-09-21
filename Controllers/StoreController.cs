@@ -1,11 +1,12 @@
 ﻿using invoice.Core.DTO.Store;
 using invoice.Core.DTO.StoreSettings;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
+using System.Security.Claims;
 
 namespace invoice.Controllers
 {
@@ -20,20 +21,57 @@ namespace invoice.Controllers
         {
             _storeService = storeService;
         }
+        private string GetUserId() =>
+            User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromForm]StoreCreateDTO dto)
+        {
+            var result = await _storeService.CreateAsync(dto, GetUserId());
+            return Ok(result);
+        }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] string userId)
+        public async Task<IActionResult> GetAll()
         {
-            var result = await _storeService.GetAllAsync(userId);
+            var result = await _storeService.GetAsync(GetUserId());
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(string id, [FromQuery] string userId)
+        public async Task<IActionResult> GetById(string id)
         {
-            var result = await _storeService.GetByIdAsync(id, userId);
+            var result = await _storeService.GetByIdAsync(id, GetUserId());
             return Ok(result);
         }
+
+
+        [HttpPut("{id}/{userId}")]
+        public async Task<IActionResult> Update(string id, [FromForm] StoreUpdateDTO dto,string userId)
+        {
+            var result = await _storeService.UpdateAsync(id, dto, userId);
+            return Ok(result);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("slug/{slug}")]
+        public async Task<IActionResult> GetBySlug(string slug)
+        {
+            var result = await _storeService.GetBySlug(slug);
+            return Ok(result);
+        }
+        
+        
+        [AllowAnonymous]
+        [HttpPost("CreateOrder/{userid}")]
+        public async Task<IActionResult> CreateOrder(string userid, [FromBody] CreateOrderDTO dto)
+        {
+            var result = await _storeService.CreateOrderAsync( dto,userid);
+            return Ok(result);
+        }
+
+
 
         [HttpGet("by-user")]
         public async Task<IActionResult> GetByUser([FromQuery] string userId)
@@ -42,12 +80,7 @@ namespace invoice.Controllers
             return Ok(result);
         }
 
-        [HttpGet("by-language/{languageId}")]
-        public async Task<IActionResult> GetByLanguage(string languageId, [FromQuery] string userId)
-        {
-            var result = await _storeService.GetByLanguageAsync(languageId, userId);
-            return Ok(result);
-        }
+       
 
         [HttpGet("active")]
         public async Task<IActionResult> GetActiveStores([FromQuery] string userId)
@@ -63,12 +96,7 @@ namespace invoice.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] StoreCreateDTO dto, [FromQuery] string userId)
-        {
-            var result = await _storeService.CreateAsync(dto, userId);
-            return Ok(result);
-        }
+       
 
         [HttpPost("range")]
         public async Task<IActionResult> AddRange([FromBody] IEnumerable<StoreCreateDTO> dtos, [FromQuery] string userId)
@@ -77,12 +105,7 @@ namespace invoice.Controllers
             return Ok(result);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] StoreUpdateDTO dto, [FromQuery] string userId)
-        {
-            var result = await _storeService.UpdateAsync(id, dto, userId);
-            return Ok(result);
-        }
+      
 
         [HttpPut("range")]
         public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<StoreUpdateDTO> dtos, [FromQuery] string userId)
@@ -105,19 +128,19 @@ namespace invoice.Controllers
             return Ok(result);
         }
 
-        [HttpPatch("{id}/activate")]
-        public async Task<IActionResult> ActivateStore(string id, [FromQuery] string userId)
+        [HttpPut("activate")]
+        public async Task<IActionResult> ActivateStore()
         {
-            var result = await _storeService.ActivateStoreAsync(id, userId);
+            var result = await _storeService.ActivateStoreAsync( GetUserId());
             return Ok(result);
         }
-
-        [HttpPatch("{id}/deactivate")]
-        public async Task<IActionResult> DeactivateStore(string id, [FromQuery] string userId)
-        {
-            var result = await _storeService.DeactivateStoreAsync(id, userId);
-            return Ok(result);
-        }
+        
+        //[HttpPatch("{id}/deactivate")]
+        //public async Task<IActionResult> DeactivateStore(string id, [FromQuery] string userId)
+        //{
+        //    var result = await _storeService.DeactivateStoreAsync(id, userId);
+        //    return Ok(result);
+        //}
 
         [HttpGet("{storeId}/settings")]
         public async Task<IActionResult> GetSettings(string storeId, [FromQuery] string userId)

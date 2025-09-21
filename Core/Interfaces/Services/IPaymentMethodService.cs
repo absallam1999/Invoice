@@ -1,7 +1,7 @@
 ﻿using invoice.Core.DTO;
 using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentMethod;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.Enums;
 
 namespace invoice.Core.Interfaces.Services

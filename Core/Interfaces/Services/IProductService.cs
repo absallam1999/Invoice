@@ -1,7 +1,7 @@
 ﻿using invoice.Core.DTO;
 using System.Linq.Expressions;
 using invoice.Core.DTO.Product;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 
 namespace Core.Interfaces.Services
 {
@@ -10,6 +10,7 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<ProductReadDTO>> CreateAsync(ProductCreateDTO dto, string userId);
         Task<GeneralResponse<ProductReadDTO>> UpdateAsync(string id, ProductUpdateDTO dto, string userId);
         Task<GeneralResponse<bool>> DeleteAsync(string id, string userId);
+        Task<GeneralResponse<ProductWithInvoicesReadDTO>> GetByIdWithInvoicesAsync(string id, string userId);
         Task<GeneralResponse<ProductReadDTO>> GetByIdAsync(string id, string userId);
 
         Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetAllAsync(string userId);
@@ -19,8 +20,7 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<ProductReadDTO>>> GetByStoreAsync(string storeId, string userId);
         Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetAvailableForPOSAsync(string userId);
         Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetAvailableForStoreAsync(string userId);
-        Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> GetProductListAsync(string userId);
-
+        Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> ProductsavailableAsync(string userId);
         Task<GeneralResponse<bool>> UpdateQuantityAsync(string id, int quantity, string userId);
         Task<GeneralResponse<bool>> IncrementQuantityAsync(string id, int amount, string userId);
         Task<GeneralResponse<bool>> DecrementQuantityAsync(string id, int amount, string userId);

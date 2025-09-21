@@ -1,4 +1,4 @@
-﻿using invoice.Core.Entites;
+﻿using invoice.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -35,8 +35,7 @@ namespace invoice.Repo.Data.Configurations
             builder.Property(p => p.InStore)
                    .HasDefaultValue(true);
 
-            builder.Property(p => p.Url)
-                   .HasMaxLength(500);
+         
 
             builder.HasOne(p => p.User)
                    .WithMany(u => u.Products)

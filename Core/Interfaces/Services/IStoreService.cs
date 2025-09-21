@@ -1,7 +1,7 @@
 ﻿using invoice.Core.DTO;
 using invoice.Core.DTO.Store;
 using invoice.Core.DTO.StoreSettings;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.Enums;
 using System.Linq.Expressions;
 
@@ -13,17 +13,17 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<StoreReadDTO>> UpdateAsync(string id, StoreUpdateDTO dto, string userId);
         Task<GeneralResponse<bool>> DeleteAsync(string id, string userId);
         Task<GeneralResponse<StoreReadDTO>> GetByIdAsync(string id, string userId);
+        Task<GeneralResponse<StoreReadDTO>> GetBySlug(string slug);
+        Task<GeneralResponse<string>> CreateOrderAsync(CreateOrderDTO dto, string userId);
 
-        Task<GeneralResponse<IEnumerable<StoreReadDTO>>> GetAllAsync(string userId);
+        Task<GeneralResponse<StoreReadDTO>> GetAsync(string userId);
         Task<GeneralResponse<IEnumerable<StoreReadDTO>>> QueryAsync(Expression<Func<Store, bool>> predicate, string userId);
 
-        Task<GeneralResponse<IEnumerable<StoreReadDTO>>> GetByUserAsync(string userId);
-        Task<GeneralResponse<IEnumerable<StoreReadDTO>>> GetByLanguageAsync(string languageId, string userId);
+        Task<GeneralResponse<StoreReadDTO>> GetByUserAsync(string userId);
         Task<GeneralResponse<IEnumerable<StoreReadDTO>>> GetActiveStoresAsync(string userId);
         Task<GeneralResponse<IEnumerable<StoreReadDTO>>> GetInactiveStoresAsync(string userId);
 
-        Task<GeneralResponse<bool>> ActivateStoreAsync(string id, string userId);
-        Task<GeneralResponse<bool>> DeactivateStoreAsync(string id, string userId);
+        Task<GeneralResponse<bool>> ActivateStoreAsync(string userId);
 
         Task<GeneralResponse<StoreSettingsReadDTO>> GetSettingsAsync(string storeId, string userId);
         Task<GeneralResponse<bool>> UpdateSettingsAsync(string storeId, StoreSettingsReadDTO settingsDto, string userId);

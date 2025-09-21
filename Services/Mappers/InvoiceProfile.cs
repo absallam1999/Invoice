@@ -6,7 +6,7 @@ using invoice.Core.DTO.Language;
 using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentLink;
 using invoice.Core.DTO.Store;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 
 namespace invoice.Services.Mappers
 {
@@ -15,29 +15,30 @@ namespace invoice.Services.Mappers
         public InvoiceProfile()
         {
             CreateMap<Invoice, InvoiceReadDTO>()
-                //.ForMember(dest => dest.Store, opt => opt.MapFrom(src => src.Store))
                 .ForMember(dest => dest.Client, opt => opt.MapFrom(src => src.Client))
                 .ForMember(dest => dest.PayAt, opt => opt.MapFrom(src => src.PayInvoice.PaidAt))
                 .ForMember(dest => dest.Language, opt => opt.MapFrom(src => src.Language))
                 .ForMember(dest => dest.InvoiceItems, opt => opt.MapFrom(src => src.InvoiceItems))
-                //.ForMember(dest => dest.Payments, opt => opt.MapFrom(src => src.Payments))
-                //.ForMember(dest => dest.PaymentLinks, opt => opt.MapFrom(src => src.PaymentLinks))
                 .ForMember(dest => dest.Taxinfo, opt => opt.MapFrom(src => src.User.Tax))
                 .ForMember(dest => dest.payMethodId, opt => opt.MapFrom(src => src.PayInvoice != null ? src.PayInvoice.PaymentMethodId : null))
                 .ForMember(dest => dest.payMethod, opt => opt.MapFrom(src => src.PayInvoice != null ? src.PayInvoice.PaymentMethod.Name : 0))
+                .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src.Order))
                 .ReverseMap();
-            
 
-                CreateMap<Invoice, GetAllInvoiceDTO>()
+
+            CreateMap<Invoice, InvoicewithUserDTO>().ReverseMap();
+
+
+            CreateMap<Invoice, GetAllInvoiceDTO>()
 
                     .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.Client.Id))
-                    .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.Client.Name));
-
+                    .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.Client.Name))
+                    .ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(src => src.Order.OrderStatus));
+                    
                
 
             CreateMap<InvoiceCreateDTO, Invoice>()
                 .ForMember(dest => dest.InvoiceItems, opt => opt.MapFrom(src => src.InvoiceItems))
-                //.ForMember(dest => dest.Payments, opt => opt.MapFrom(src => src.Payments))
                 .ReverseMap();
 
             CreateMap<InvoiceUpdateDTO, Invoice>()

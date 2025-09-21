@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO;
-using invoice.Core.Entites;
+using invoice.Core.DTO.Page;
+using invoice.Core.DTO.Product;
+using invoice.Core.Entities;
 using invoice.Core.Interfaces.Services;
 using invoice.Repo;
 using Microsoft.EntityFrameworkCore;
@@ -18,40 +20,72 @@ namespace invoice.Services
             _mapper = mapper;
         }
 
-        public async Task<GeneralResponse<IEnumerable<Page>>> GetAllAsync(string storeId = null, string languageId = null)
+        public async Task<GeneralResponse<IEnumerable<GetAllPagesDTO>>> GetAllAsync(string userId)
         {
-            var pages = await _pageRepo.QueryAsync(
-                p => (storeId == null || p.StoreId == storeId) &&
-                     (languageId == null || p.LanguageId == languageId),
-                p => p.Store,
-                p => p.Language
-            );
+           
+            var pages = await _pageRepo.GetAllAsync(userId);
+            var dtos = _mapper.Map<IEnumerable<GetAllPagesDTO>>(pages);
 
-            return new GeneralResponse<IEnumerable<Page>>()
-            {
-                Success = true,
-                Message = pages.Any() ? "Pages retrieved successfully." : "No pages found.",
-                Data = pages
-            };
+            return new GeneralResponse<IEnumerable<GetAllPagesDTO>>(true, "Pages retrieved successfully", dtos);
+            
+        }
+        
+
+        public async Task<GeneralResponse<PageReadDTO>> GetByIdAsync(string id)
+        {
+            var page = await _pageRepo.GetByIdAsync(id);
+            if (page == null)
+                return new GeneralResponse<PageReadDTO>() { Success = false, Message = "Page not found." };
+            var readDto = _mapper.Map<PageReadDTO>(page);
+
+            return new GeneralResponse<PageReadDTO>() { Success = true, Data = readDto, Message = "Page retrieved successfully." };
         }
 
-        public async Task<GeneralResponse<Page>> GetByIdAsync(string id)
+        public async Task<GeneralResponse<PageReadDTO>> CreateAsync(PageCreateDTO dto,string StoreId)
         {
-            var page = await _pageRepo.GetByIdAsync(id, include: q => q.Include(p => p.Store).Include(p => p.Language));
-            if (page == null)
-                return new GeneralResponse<Page>() { Success = false, Message = "Page not found." };
+            var page = _mapper.Map<Page>(dto);
+            page.StoreId = StoreId;
 
-            return new GeneralResponse<Page>() { Success = true, Data = page, Message = "Page retrieved successfully." };
+            var response = await _pageRepo.AddAsync(page);
+           // var readDto = _mapper.Map<PageReadDTO>(response);
+            var readDto = _mapper.Map<PageReadDTO>(response.Data);
+
+
+            return response.Success
+                ? new GeneralResponse<PageReadDTO>() { Success = true, Message = "Page created successfully.", Data = readDto }
+                : new GeneralResponse<PageReadDTO>() { Success = false, Message = response.Message };
+        }
+
+        public async Task<GeneralResponse<PageReadDTO>> UpdateAsync(string id, PageUpdateDTO dto)
+        {
+            var existing = await _pageRepo.GetByIdAsync(id);
+            if (existing == null)
+                return new GeneralResponse<PageReadDTO>() { Success = false, Message = "Page not found." };
+            _mapper.Map(dto, existing);
+            var response = await _pageRepo.UpdateAsync(existing);
+            var readDto = _mapper.Map<PageReadDTO>(response);
+
+            return response.Success
+                ? new GeneralResponse<PageReadDTO>() { Success = true, Message = "Page updated successfully.", Data = readDto }
+                : new GeneralResponse<PageReadDTO>() { Success = false, Message = response.Message };
+        }
+
+         public async Task<GeneralResponse<bool>> DeleteAsync(string id)
+        {
+            var existing = await _pageRepo.GetByIdAsync(id);
+            if (existing == null)
+                return new GeneralResponse<bool>() { Success = false, Message = "Page not found.", Data = false };
+
+            var response = await _pageRepo.DeleteAsync(id);
+            return new GeneralResponse<bool>() { Success = response.Success, Message = response.Message, Data = response.Success };
         }
 
         public async Task<GeneralResponse<Page>> GetByTitleAsync(string title, string storeId = null, string languageId = null)
         {
             var page = (await _pageRepo.QueryAsync(
                 p => p.Title.Contains(title) &&
-                     (storeId == null || p.StoreId == storeId) &&
-                     (languageId == null || p.LanguageId == languageId),
-                p => p.Store,
-                p => p.Language
+                     (storeId == null || p.StoreId == storeId) ,
+                      p => p.Store                
             )).FirstOrDefault();
 
             if (page == null)
@@ -64,10 +98,9 @@ namespace invoice.Services
         {
             var pages = await _pageRepo.QueryAsync(
                 p => (p.Title.Contains(keyword) || p.Content.Contains(keyword)) &&
-                     (storeId == null || p.StoreId == storeId) &&
-                     (languageId == null || p.LanguageId == languageId),
-                p => p.Store,
-                p => p.Language
+                     (storeId == null || p.StoreId == storeId) ,
+                    
+                p => p.Store             
             );
 
             return new GeneralResponse<IEnumerable<Page>>()
@@ -78,14 +111,6 @@ namespace invoice.Services
             };
         }
 
-        public async Task<GeneralResponse<Page>> CreateAsync(Page page)
-        {
-            var response = await _pageRepo.AddAsync(page);
-            return response.Success
-                ? new GeneralResponse<Page>() { Success = true, Message = "Page created successfully.", Data = response.Data }
-                : new GeneralResponse<Page>() { Success = false, Message = response.Message };
-        }
-
         public async Task<GeneralResponse<IEnumerable<Page>>> CreateRangeAsync(IEnumerable<Page> pages)
         {
             var response = await _pageRepo.AddRangeAsync(pages);
@@ -94,20 +119,7 @@ namespace invoice.Services
                 : new GeneralResponse<IEnumerable<Page>>() { Success = false, Message = response.Message };
         }
 
-        public async Task<GeneralResponse<Page>> UpdateAsync(string id, Page page)
-        {
-            var existing = await _pageRepo.GetByIdAsync(id);
-            if (existing == null)
-                return new GeneralResponse<Page>() { Success = false, Message = "Page not found." };
-
-            _mapper.Map(page, existing);
-            var response = await _pageRepo.UpdateAsync(existing);
-
-            return response.Success
-                ? new GeneralResponse<Page>() { Success = true, Message = "Page updated successfully.", Data = response.Data }
-                : new GeneralResponse<Page>() { Success = false, Message = response.Message };
-        }
-
+        
         public async Task<GeneralResponse<IEnumerable<Page>>> UpdateRangeAsync(IEnumerable<Page> pages)
         {
             var existingPages = new List<Page>();
@@ -127,15 +139,6 @@ namespace invoice.Services
                 : new GeneralResponse<IEnumerable<Page>>() { Success = false, Message = response.Message };
         }
 
-        public async Task<GeneralResponse<bool>> DeleteAsync(string id)
-        {
-            var existing = await _pageRepo.GetByIdAsync(id);
-            if (existing == null)
-                return new GeneralResponse<bool>() { Success = false, Message = "Page not found.", Data = false };
-
-            var response = await _pageRepo.DeleteAsync(id);
-            return new GeneralResponse<bool>() { Success = response.Success, Message = response.Message, Data = response.Success };
-        }
 
         public async Task<GeneralResponse<bool>> DeleteRangeAsync(IEnumerable<string> ids)
         {
@@ -150,8 +153,7 @@ namespace invoice.Services
 
         public async Task<int> CountAsync(string storeId = null, string languageId = null)
         {
-            return await _pageRepo.CountAsync(p => (storeId == null || p.StoreId == storeId) &&
-                                                   (languageId == null || p.LanguageId == languageId));
+            return await _pageRepo.CountAsync(p => (storeId == null || p.StoreId == storeId));
         }
     }
 }

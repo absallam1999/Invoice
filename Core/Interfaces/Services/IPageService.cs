@@ -1,19 +1,22 @@
 ﻿using invoice.Core.DTO;
-using invoice.Core.Entites;
+using invoice.Core.DTO.Page;
+using invoice.Core.Entities;
 
 namespace invoice.Core.Interfaces.Services
 {
     public interface IPageService
     {
-        Task<GeneralResponse<IEnumerable<Page>>> GetAllAsync(string storeId = null, string languageId = null);
-        Task<GeneralResponse<Page>> GetByIdAsync(string id);
+    
+        Task<GeneralResponse<IEnumerable<GetAllPagesDTO>>> GetAllAsync( string userId);
+
+
+        Task<GeneralResponse<PageReadDTO>> GetByIdAsync(string id);
         Task<GeneralResponse<Page>> GetByTitleAsync(string title, string storeId = null, string languageId = null);
         Task<GeneralResponse<IEnumerable<Page>>> SearchAsync(string keyword, string storeId = null, string languageId = null);
-
-        Task<GeneralResponse<Page>> CreateAsync(Page page);
+        Task<GeneralResponse<PageReadDTO>> CreateAsync(PageCreateDTO dto, string StoreId);
         Task<GeneralResponse<IEnumerable<Page>>> CreateRangeAsync(IEnumerable<Page> pages);
 
-        Task<GeneralResponse<Page>> UpdateAsync(string id, Page page);
+        Task<GeneralResponse<PageReadDTO>> UpdateAsync(string id, PageUpdateDTO page);
         Task<GeneralResponse<IEnumerable<Page>>> UpdateRangeAsync(IEnumerable<Page> pages);
 
         Task<GeneralResponse<bool>> DeleteAsync(string id);

@@ -30,6 +30,7 @@ namespace invoice.Helpers
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IContactInfoService, ContactInfoService>();
             services.AddScoped<ITaxService, TexService>();
+            services.AddScoped<ICurrencyService, CurrencyService>();
 
             return services;
         }

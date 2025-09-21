@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using System.Reflection;
 using invoice.Core.DTO.Category;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 
 namespace invoice.Services.Mappers
 {

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO.Language;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 
 namespace invoice.Services.Mappers
 {

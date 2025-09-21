@@ -1,6 +1,6 @@
 ﻿using invoice.Core.DTO.Notification;
 using invoice.Core.Interfaces.Services;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

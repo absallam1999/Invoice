@@ -1,6 +1,7 @@
-﻿using invoice.Core.Entites;
+﻿using invoice.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Configuration;
 
 namespace invoice.Repo.Data.Configurations
 {
@@ -33,9 +34,9 @@ namespace invoice.Repo.Data.Configurations
                 .HasMaxLength(250);
 
             builder.HasOne(c => c.Store)
-                .WithMany(s => s.ContactInformations)
-                .HasForeignKey(c => c.StoreId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .WithOne(s => s.ContactInformations)
+                .HasForeignKey<ContactInfo>(c => c.StoreId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

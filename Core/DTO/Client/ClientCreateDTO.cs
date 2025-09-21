@@ -10,6 +10,7 @@ namespace invoice.Core.DTO.Client
 
         [EmailAddress]
         [MaxLength(100)]
+        [RegularExpression(@"^\S+$", ErrorMessage = "Email must not contain spaces")]
         public string? Email { get; set; }
 
         [MaxLength(50)]
