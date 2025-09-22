@@ -1,4 +1,8 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+﻿using invoice.Core.Entities;
+using invoice.Helpers;
+using invoice.Repo;
+using invoice.Repo.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.FileProviders;
@@ -6,11 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
-using invoice.Core.Entites;
-using invoice.Repo.Data;
-using invoice.Helpers;
 using System.Text;
-using invoice.Repo;
 using Stripe;
 using Repo;
 

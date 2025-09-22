@@ -1,7 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using invoice.Core.Entities;
 using Microsoft.EntityFrameworkCore;
-using invoice.Core.Entites;
-using invoice.Core.Enums;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace invoice.Repo.Data.Configurations
 {
@@ -13,40 +12,22 @@ namespace invoice.Repo.Data.Configurations
 
             builder.ToTable("PayInvoices");
 
-            builder.Property(p => p.Amount)
-                   .HasColumnType("decimal(18,2)")
-                   .IsRequired();
-
-            builder.Property(p => p.RefundAmount)
-                   .HasColumnType("decimal(18,2)");
-
             builder.Property(p => p.PaidAt)
-                   .HasDefaultValueSql("GETUTCDATE()")
-                   .IsRequired();
-
-            builder.Property(p => p.Currency)
                    .IsRequired()
-                   .HasMaxLength(10);
-
-            builder.Property(p => p.PaymentSessionId)
-                   .HasMaxLength(200);
-
-            builder.Property(p => p.PaymentGatewayResponse)
-                   .HasColumnType("nvarchar(max)");
-
-            builder.Property(p => p.Status)
-                   .HasDefaultValue(PaymentStatus.Pending)
-                   .IsRequired();
+                   .HasDefaultValueSql("GETUTCDATE()");
 
             builder.HasOne(p => p.PaymentMethod)
                    .WithMany(pm => pm.PayInvoices)
                    .HasForeignKey(p => p.PaymentMethodId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+
             builder.HasOne(p => p.Invoice)
-                   .WithOne(i => i.PayInvoice)
-                   .HasForeignKey<PayInvoice>(p => p.InvoiceId)
-                   .OnDelete(DeleteBehavior.Cascade);
+    .WithOne(i => i.PayInvoice)
+    .HasForeignKey<PayInvoice>(p => p.InvoiceId)
+    .OnDelete(DeleteBehavior.Cascade);
+
+
         }
     }
 }

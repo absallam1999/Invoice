@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO;
 using invoice.Core.DTO.Invoice;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
 using invoice.Repo;
@@ -65,11 +65,11 @@ namespace invoice.Services
             var invoice = new Invoice
             {
                 Code = $"INV-{DateTime.UtcNow.Ticks}",
-                StoreId = storeId,
+              //  StoreId = storeId,
                 UserId = userId,
                 InvoiceStatus = InvoiceStatus.Draft,
                 InvoiceType = InvoiceType.Cashier,
-                Currency = "USD",
+               // Currency = "USD",
                 Value = 0,
                 FinalValue = 0,
                 LanguageId = "AR_I",
@@ -224,7 +224,7 @@ namespace invoice.Services
         public async Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetPOSInvoicesAsync(string storeId, DateTime? date, string userId)
         {
             var invoices = await _invoiceRepo.QueryAsync(i =>
-                i.StoreId == storeId &&
+                //i.StoreId == storeId &&
                 i.UserId == userId &&
                 (!date.HasValue || i.CreatedAt.Date == date.Value.Date));
 
@@ -239,7 +239,7 @@ namespace invoice.Services
         public async Task<GeneralResponse<decimal>> GetDailySalesTotalAsync(string storeId, DateTime date, string userId)
         {
             var invoices = await _invoiceRepo.QueryAsync(i =>
-                i.StoreId == storeId &&
+              //  i.StoreId == storeId &&
                 i.UserId == userId &&
                 i.InvoiceStatus == InvoiceStatus.Paid &&
                 i.CreatedAt.Date == date.Date);

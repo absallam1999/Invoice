@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using invoice.Core.DTO.ContactInformation;
+using invoice.Core.DTO.PaymentOptions;
 using invoice.Core.DTO.Shipping;
 using invoice.Core.DTO.Store;
 using invoice.Core.DTO.StoreSettings;
-using invoice.Core.Entites;
-using invoice.Core.Entites.utils;
-using invoice.Models.Entites.utils;
+using invoice.Core.Entities;
+using invoice.Core.Entities.utils;
+using invoice.Models.Entities.utils;
 
 namespace invoice.Services.Mappers
 {
@@ -17,17 +19,32 @@ namespace invoice.Services.Mappers
             CreateMap<StoreUpdateDTO, Store>()
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
+            CreateMap<StoreUpdateDTO, Store>()
+              .ForMember(dest => dest.StoreSettings, opt => opt.MapFrom(src => src.StoreSettings))
+              .ForMember(dest => dest.Shipping, opt => opt.MapFrom(src => src.Shipping))
+              .ForMember(dest => dest.ContactInformations, opt => opt.MapFrom(src => src.ContactInfo))
+              .ForMember(dest => dest.PaymentOptions, opt => opt.MapFrom(src => src.PaymentOptions));
+
+            CreateMap<CreateOrderDTO, Order>();
+
             CreateMap<Store, StoreReadDTO>()
                 .ForMember(dest => dest.StoreSettings, opt => opt.MapFrom(src => src.StoreSettings))
-                .ForMember(dest => dest.Shipping, opt => opt.MapFrom(src => src.Shipping));
+                .ForMember(dest => dest.Shipping, opt => opt.MapFrom(src => src.Shipping))
+                .ForMember(dest => dest.ContactInfo, opt => opt.MapFrom(src => src.ContactInformations))
+                .ForMember(dest => dest.PaymentOptions, opt => opt.MapFrom(src => src.PaymentOptions));
 
-            CreateMap<StoreSettings, StoreSettingsReadDTO>();
-            CreateMap<Shipping, ShippingReadDTO>();
+            CreateMap<StoreSettings, StoreSettingsReadDTO>().ReverseMap();
+            CreateMap<StoreSettings, StoreSettingsUpdateDTO>().ReverseMap();
 
-            CreateMap<StoreSettingsReadDTO, StoreSettings>()
-                .ForMember(dest => dest.purchaseOptions, opt => opt.MapFrom(src => src.PurchaseOptions));
+            CreateMap<Shipping, ShippingReadDTO>().ReverseMap();
+            CreateMap<Shipping, ShippingUpdateDTO>().ReverseMap();
 
-            CreateMap<ShippingReadDTO, Shipping>();
+            CreateMap<PaymentOptions, PaymentOptionsDTO>().ReverseMap();
+
+            CreateMap<ContactInfo, ContactInfoReadDTO>().ReverseMap();
+            CreateMap<ContactInfo, ContactInfoUpdateDTO>().ReverseMap();
+
         }
     }
+
 }

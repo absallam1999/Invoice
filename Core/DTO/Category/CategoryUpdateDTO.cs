@@ -12,17 +12,4 @@ namespace invoice.Core.DTO.Category
         [MaxLength(500)]
         public string? Description { get; set; }
     }
-
-    public class CategoryUpdateRangeDTO
-    {
-
-        [Required]
-        public string Id { get; set; }
-
-        [MaxLength(150)]
-        public string Name { get; set; }
-
-        [MaxLength(500)]
-        public string? Description { get; set; }
-    }
 }

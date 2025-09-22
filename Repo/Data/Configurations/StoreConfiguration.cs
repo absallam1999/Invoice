@@ -1,4 +1,5 @@
-﻿using invoice.Core.Entites;
+using invoice.Core.Entities;
+using invoice.Models.Entities.utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -19,39 +20,39 @@ namespace invoice.Repo.Data.Configurations
             builder.Property(s => s.Description)
                    .HasMaxLength(1000);
 
-            builder.Property(s => s.Tax)
-                   .HasDefaultValue(false);
+            //builder.Property(s => s.Tax)
+            //       .HasDefaultValue(false);
 
             builder.Property(s => s.IsActivated)
                    .HasDefaultValue(true);
 
-            builder.Property(s => s.PaymentMethod)
-                   .HasConversion<int>();
+            //builder.Property(s => s.PaymentMethod)
+            //       .HasConversion<int>();
 
             builder.HasOne(s => s.User)
-                   .WithMany(u => u.Stores)
-                   .HasForeignKey(s => s.UserId)
+                   .WithOne(u => u.Store)
+                   .HasForeignKey<Store>(s => s.UserId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(s => s.Language)
-                   .WithMany(l => l.Stores)
-                   .HasForeignKey(s => s.LanguageId)
-                   .OnDelete(DeleteBehavior.Restrict);
+            //builder.HasOne(s => s.Language)
+            //       .WithMany(l => l.Stores)
+            //       .HasForeignKey(s => s.LanguageId)
+            //       .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasMany(s => s.Orders)
-               .WithOne(o => o.Store)
-               .HasForeignKey(o => o.StoreId)
-               .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasMany(s => s.Products)
+            //       .WithOne(p => p.Store)
+            //       .HasForeignKey(p => p.StoreId)
+            //       .OnDelete(DeleteBehavior.SetNull);
 
-            builder.HasMany(s => s.Invoices)
-                   .WithOne(i => i.Store)
-                   .HasForeignKey(i => i.StoreId)
-                   .OnDelete(DeleteBehavior.SetNull);
+            //builder.HasMany(s => s.Invoices)
+            //       .WithOne(i => i.Store)
+            //       .HasForeignKey(i => i.StoreId)
+            //       .OnDelete(DeleteBehavior.SetNull);
 
-            builder.HasMany(s => s.ContactInformations)
-                   .WithOne(c => c.Store)
-                   .HasForeignKey(c => c.StoreId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasMany(s => s.ContactInformations)
+            //       .WithOne(c => c.Store)
+            //       .HasForeignKey(c => c.StoreId)
+            //       .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(s => s.Pages)
                    .WithOne(p => p.Store)
@@ -64,16 +65,14 @@ namespace invoice.Repo.Data.Configurations
                 shipping.Property(sh => sh.FromStore)
                         .HasDefaultValue(true);
 
-                shipping.Property(sh => sh.PaymentType)
-                        .HasConversion<int>()
-                        .IsRequired();
+
             });
 
             builder.OwnsOne(s => s.StoreSettings, settings =>
             {
-                settings.Property(ss => ss.Url)
-                        .IsRequired()
-                        .HasMaxLength(200);
+                //settings.Property(ss => ss.Url)
+                //        .IsRequired()
+                //        .HasMaxLength(200);
 
                 settings.Property(ss => ss.Logo)
                         .HasMaxLength(500);
@@ -93,7 +92,7 @@ namespace invoice.Repo.Data.Configurations
                 {
                     options.Property(po => po.Name).HasDefaultValue(true);
                     options.Property(po => po.Email).HasDefaultValue(false);
-                    options.Property(po => po.Phone).HasDefaultValue(false);
+                    options.Property(po => po.phone).HasDefaultValue(false);
 
                     options.Property(po => po.TermsAndConditions)
                            .HasMaxLength(2000);

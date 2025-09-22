@@ -1,4 +1,4 @@
-﻿using invoice.Models.Entites.utils;
+﻿using invoice.Models.Entities.utils;
 using System.ComponentModel.DataAnnotations;
 
 namespace invoice.Core.DTO.StoreSettings
@@ -9,14 +9,14 @@ namespace invoice.Core.DTO.StoreSettings
         [Url(ErrorMessage = "Please provide a valid URL")]
         public string Url { get; set; }
 
-        public IFormFile? Logo { get; set; }
-        public IFormFile? CoverImage { get; set; }
+        public string? Logo { get; set; }
+        public string? CoverImage { get; set; }
 
         [Required]
-        public string Color { get; set; } = "#FFFFFF";
+        public string Color { get; set; } 
 
         [Required]
-        public string Currency { get; set; } = "USD";
+        public string Currency { get; set; }
 
         [Required]
         public PurchaseCompletionOptions PurchaseOptions { get; set; }

@@ -3,7 +3,7 @@ using invoice.Core.DTO;
 using invoice.Core.DTO.Invoice;
 using invoice.Core.DTO.InvoiceItem;
 using invoice.Core.DTO.PaymentLink;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
 using invoice.Repo;
@@ -39,25 +39,25 @@ namespace invoice.Services
             {
                 var invoiceDto = new InvoiceCreateDTO
                 {
-                    StoreId = null,
-                    ClientId = null,
-                    Currency = dto.Currency,
-                    LanguageId = dto.LanguageId,
-                    InvoiceType = InvoiceType.Detailed,
-                    TermsConditions = string.IsNullOrWhiteSpace(dto.Terms)
-                                        ? "Auto-generated invoice for Payment Link"
-                                        : dto.Terms,
-                    Tax = dto.Tax ?? false,
-                    DiscountType = dto.DiscountType,
-                    DiscountValue = dto.DiscountValue,
-                    InvoiceItems = new List<InvoiceItemCreateDTO>
-                    {
-                        new InvoiceItemCreateDTO
-                        {
-                            ProductId = null,
-                            Quantity = dto.PaymentsNumber > 0 ? dto.PaymentsNumber : 1,
-                        }
-                    }
+                    //    //StoreId = null,
+                    //    ClientId = null,
+                    //    //Currency = dto.Currency,
+                    //    LanguageId = dto.LanguageId,
+                    //    InvoiceType = InvoiceType.Detailed,
+                    //    TermsConditions = string.IsNullOrWhiteSpace(dto.Terms)
+                    //                        ? "Auto-generated invoice for Payment Link"
+                    //                        : dto.Terms,
+                    //    Tax = dto.Tax ?? false,
+                    //    DiscountType = dto.DiscountType,
+                    //    DiscountValue = dto.DiscountValue,
+                    //    InvoiceItems = new List<InvoiceItemCreateDTO>
+                    //            {
+                    //                new InvoiceItemCreateDTO
+                    //                {
+                    //                    ProductId = null,
+                    //                    Quantity = dto.PaymentsNumber > 0 ? dto.PaymentsNumber : 1,
+                    //                }
+                    //            }
                 };
 
                 var newInvoice = _mapper.Map<Invoice>(invoiceDto);
@@ -74,7 +74,7 @@ namespace invoice.Services
 
                 if (dto.Image != null)
                 {
-                    paymentLink.Image = await _fileService.UploadImageAsync(dto.Image, "paymentlinks");
+                  //  paymentLink.Image = await _fileService.UploadImageAsync(dto.Image, "paymentlinks");
                 }
 
                 var response = await _paymentLinkRepo.AddAsync(paymentLink);

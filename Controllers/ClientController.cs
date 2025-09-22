@@ -52,6 +52,20 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
+        [HttpGet("exists/{id}")]
+        public async Task<IActionResult> Exists(string id)
+        {
+            var exists = await _clientService.ExistsAsync(id, GetUserId());
+            return Ok(new { Exists = exists });
+        }
+
+        [HttpGet("count")]
+        public async Task<IActionResult> Count()
+        {
+            var count = await _clientService.CountAsync(GetUserId());
+            return Ok(new { Count = count });
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ClientCreateDTO dto)
         {
@@ -85,14 +99,14 @@ namespace invoice.Controllers
         }
 
         [HttpPut("range")]
-        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<ClientUpdateRangeDTO> dtos)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+        //public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<ClientUpdateDTO> dtos)
+        //{
+        //    if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var response = await _clientService.UpdateRangeAsync(dtos, GetUserId());
-            if (!response.Success) return BadRequest(response);
-            return Ok(response);
-        }
+        //    var response = await _clientService.UpdateRangeAsync(dtos, GetUserId());
+        //    if (!response.Success) return BadRequest(response);
+        //    return Ok(response);
+        //}
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
@@ -108,20 +122,6 @@ namespace invoice.Controllers
             var response = await _clientService.DeleteRangeAsync(ids, GetUserId());
             if (!response.Success) return BadRequest(response);
             return Ok(response);
-        }
-
-        [HttpGet("exists/{id}")]
-        public async Task<IActionResult> Exists(string id)
-        {
-            var exists = await _clientService.ExistsAsync(id, GetUserId());
-            return Ok(new { Success = true, Exists = exists });
-        }
-
-        [HttpGet("count")]
-        public async Task<IActionResult> Count()
-        {
-            var count = await _clientService.CountAsync(GetUserId());
-            return Ok(new { Success = true, Count = count });
         }
     }
 }

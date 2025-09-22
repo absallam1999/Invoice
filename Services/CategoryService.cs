@@ -1,20 +1,23 @@
 ﻿using AutoMapper;
 using invoice.Repo;
 using invoice.Core.DTO;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.DTO.Category;
 using Microsoft.EntityFrameworkCore;
 using invoice.Core.Interfaces.Services;
+using System.Reflection;
 
 namespace invoice.Services
 {
     public class CategoryService : ICategoryService
     {
+        private readonly IRepository<ApplicationUser> _applicationUserRepo;
         private readonly IRepository<Category> _categoryRepo;
         private readonly IMapper _mapper;
 
-        public CategoryService(IRepository<Category> categoryRepo, IMapper mapper)
+        public CategoryService(IRepository<Category> categoryRepo, IRepository<ApplicationUser> applicationUserRepo, IMapper mapper)
         {
+            _applicationUserRepo = applicationUserRepo;
             _categoryRepo = categoryRepo;
             _mapper = mapper;
         }
@@ -35,17 +38,13 @@ namespace invoice.Services
             return new GeneralResponse<CategoryReadDTO>(true, "Category retrieved successfully", _mapper.Map<CategoryReadDTO>(category));
         }
 
-        public async Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> GetByUserIdAsync(string userId)
+        public async Task<GeneralResponse<CategoryReadDTO>> GetByUserIdAsync(string userId)
         {
-            var categories = await _categoryRepo
-                .GetByUserIdAsync(userId, q => q.Include(c => c.Products));
+            var category = await _categoryRepo.GetByUserIdAsync(userId, q => q.Include(c => c.Products));
+            if (category == null)
+                return new GeneralResponse<CategoryReadDTO>(false, "No category found for user");
 
-            if (categories == null || !categories.Any())
-                return new GeneralResponse<IEnumerable<CategoryReadDTO>>(false, "No categories found for user");
-
-            var mapped = _mapper.Map<IEnumerable<CategoryReadDTO>>(categories);
-
-            return new GeneralResponse<IEnumerable<CategoryReadDTO>>(true, "Categories retrieved successfully", mapped);
+            return new GeneralResponse<CategoryReadDTO>(true, "Category retrieved successfully", _mapper.Map<CategoryReadDTO>(category));
         }
 
         public async Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> QueryAsync(string userId, string keyword)
@@ -86,6 +85,7 @@ namespace invoice.Services
             return new GeneralResponse<CategoryReadDTO>(true, "Category created successfully", readDto);
         }
 
+
         public async Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> CreateRangeAsync(IEnumerable<CategoryCreateDTO> dtos, string userId)
         {
             var entities = dtos.Select(dto =>
@@ -119,28 +119,24 @@ namespace invoice.Services
             return new GeneralResponse<CategoryReadDTO>(true, "Category updated successfully", _mapper.Map<CategoryReadDTO>(response.Data));
         }
 
-        public async Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> UpdateRangeAsync(
-            IEnumerable<CategoryUpdateRangeDTO> dtos,
-            string userId)
+        public async Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> UpdateRangeAsync(IEnumerable<CategoryUpdateDTO> dtos, string userId)
         {
-            var ids = dtos.Select(d => d.Id).ToList();
+            ////var ids = dtos.Select(d => d.Id).ToList();
+            //var categories = await _categoryRepo.QueryAsync(c => ids.Contains(c.Id) && c.UserId == userId);
 
-            var categories = await _categoryRepo.QueryAsync(c => ids.Contains(c.Id) && c.UserId == userId);
+            ////foreach (var dto in dtos)
+            ////{
+            ////    var category = categories.FirstOrDefault(c => c.Id == dto.Id);
+            ////    if (category != null)
+            ////        _mapper.Map(dto, category);
+            ////}
 
-            foreach (var dto in dtos)
-            {
-                var category = categories.FirstOrDefault(c => c.Id == dto.Id);
-                if (category != null)
-                    _mapper.Map(dto, category);
-            }
+            //var response = await _categoryRepo.UpdateRangeAsync(categories);
+            ////if (!response.Success)
+            return new GeneralResponse<IEnumerable<CategoryReadDTO>>(false, "Failed to update categories");
 
-            var response = await _categoryRepo.UpdateRangeAsync(categories);
-
-            if (!response.Success)
-                return new GeneralResponse<IEnumerable<CategoryReadDTO>>(false, "Failed to update categories");
-
-            var dtoList = _mapper.Map<IEnumerable<CategoryReadDTO>>(response.Data);
-            return new GeneralResponse<IEnumerable<CategoryReadDTO>>(true, "Categories updated successfully", dtoList);
+            //var dtoList = _mapper.Map<IEnumerable<CategoryReadDTO>>(response.Data);
+            //  return new GeneralResponse<IEnumerable<CategoryReadDTO>>(true, "Categories updated successfully", dtoList);
         }
 
         public async Task<GeneralResponse<bool>> DeleteAsync(string id, string userId)
@@ -161,6 +157,11 @@ namespace invoice.Services
 
             var response = await _categoryRepo.DeleteRangeAsync(ids);
             return new GeneralResponse<bool>(response.Success, response.Message, response.Success);
+        }
+
+        Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> ICategoryService.GetByUserIdAsync(string userId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

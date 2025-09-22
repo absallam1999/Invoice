@@ -9,6 +9,6 @@ namespace invoice.Core.DTO.Language
         public LanguageName Name { get; set; }
 
         [Required]
-        public LanguageTarget Target { get; set; }
+        public LanguageTarget? Target { get; set; }
     }
 }

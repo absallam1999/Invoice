@@ -1,6 +1,6 @@
 ﻿using invoice.Core.DTO;
 using invoice.Core.DTO.PaymentLink;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using System.Linq.Expressions;
 
 namespace invoice.Core.Interfaces.Services

@@ -1,4 +1,4 @@
-﻿using invoice.Core.Entites;
+﻿using invoice.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -46,10 +46,10 @@ namespace invoice.Repo.Data.Configurations
             builder.Property(pl => pl.IsActive)
                    .HasDefaultValue(true);
 
-            builder.HasOne(pl => pl.Invoice)
-                   .WithOne(i => i.PaymentLink)
-                   .HasForeignKey<PaymentLink>(pl => pl.InvoiceId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasOne(pl => pl.Invoice)
+            //       .WithOne(i => i.PaymentLink)
+            //       .HasForeignKey<PaymentLink>(pl => pl.InvoiceId)
+            //       .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

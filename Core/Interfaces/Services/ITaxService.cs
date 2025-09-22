@@ -9,10 +9,10 @@ namespace invoice.Core.Interfaces.Services
     {
 
         Task<GeneralResponse<TaxReadDTO>> CreateAsync(TaxReadDTO dto, string userId);
-        Task<GeneralResponse<TaxReadDTO>> UpdateAsync( TaxReadDTO dto, string userId);
+        Task<GeneralResponse<TaxReadDTO>> UpdateAsync(TaxReadDTO dto, string userId);
         Task<GeneralResponse<TaxReadDTO>> GetByUserIdAsync(string userId);
 
 
-     
+
     }
 }

@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using invoice.Core.DTO;
 using invoice.Core.DTO.PaymentLink;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.Interfaces.Services;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Authorization;

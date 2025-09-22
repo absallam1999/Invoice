@@ -1,40 +1,22 @@
-﻿using invoice.Core.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace invoice.Core.DTO.PaymentLink
 {
     public class PaymentLinkCreateDTO
     {
-        [Required(ErrorMessage = "Purpose is required")]
-        [StringLength(200, ErrorMessage = "Purpose cannot exceed 200 characters")]
-        public string Purpose { get; set; }
+        [Required]
+        public string Link { get; set; } = null!;
 
         [Range(0.01, double.MaxValue, ErrorMessage = "Value must be greater than 0")]
         public decimal Value { get; set; }
 
-        [Required(ErrorMessage = "Currency is required")]
-        [StringLength(3, MinimumLength = 3, ErrorMessage = "Currency must be a valid 3-letter ISO code")]
-        public string Currency { get; set; } = "USD";
+        public string PaymentsNumber { get; set; } = null!;
+        public string? Description { get; set; }
+        public string? Message { get; set; }
+        public string? Image { get; set; }
+        public string? Terms { get; set; }
 
-        [Range(1, int.MaxValue, ErrorMessage = "Payments number must be at least 1")]
-        public int PaymentsNumber { get; set; } = 1;
-
-        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
-        public string Description { get; set; }
-
-        [StringLength(500, ErrorMessage = "Message cannot exceed 500 characters")]
-        public string Message { get; set; }
-
-        public IFormFile Image { get; set; }
-
-        [StringLength(2000, ErrorMessage = "Terms cannot exceed 2000 characters")]
-        public string Terms { get; set; }
-
-        [Required(ErrorMessage = "LanguageId is required")]
-        public string LanguageId { get; set; }
-
-        public bool? Tax { get; set; }
-        public DiscountType? DiscountType { get; set; }
-        public decimal? DiscountValue { get; set; }
+        [Required]
+        public string InvoiceId { get; set; } = null!;
     }
 }

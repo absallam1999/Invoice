@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
-using invoice.Core.Entites;
+﻿using invoice.Core.Entities;
 using invoice.Core.Enums;
+using invoice.Migrations;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,7 +14,7 @@ namespace invoice.Repo.Data
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<Client> Clients { get; set; }
-        public DbSet<ContactInfo> ContactInfos { get; set; }
+        //public DbSet<ContactInfo> ContactInfos { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceItem> InvoiceItems { get; set; }
         public DbSet<Language> Languages { get; set; }
@@ -26,6 +27,11 @@ namespace invoice.Repo.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Store> Stores { get; set; }
         public DbSet<Tax> Taxes { get; set; }
+        public DbSet<Currency> Currencies { get; set; }
+        public DbSet<Order> Orders { get; set; }
+
+
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -46,28 +52,9 @@ namespace invoice.Repo.Data
                 }
             }
 
-            builder.Entity<Language>()
-                .Property(l => l.Name)
-                .HasConversion<string>();
-
-            builder.Entity<Language>()
-                .Property(l => l.Target)
-                .HasConversion<string>();
-
-            builder.Entity<PaymentMethod>()
-                .Property(pm => pm.Name)
-                .HasConversion<string>();
-
-            builder.Entity<Language>().HasIndex(l => l.Id).IsUnique();
-            builder.Entity<PaymentMethod>().HasIndex(pm => pm.Id).IsUnique();
-
             builder.Entity<Language>().HasData(
-                new Language { Id = "ar_p", Name = LanguageName.Arabic, Target = LanguageTarget.Page },
-                new Language { Id = "en_p", Name = LanguageName.English, Target = LanguageTarget.Page },
-                new Language { Id = "ar_s", Name = LanguageName.Arabic, Target = LanguageTarget.Store },
-                new Language { Id = "en_s", Name = LanguageName.English, Target = LanguageTarget.Store },
-                new Language { Id = "ar_i", Name = LanguageName.Arabic, Target = LanguageTarget.Invoice },
-                new Language { Id = "en_i", Name = LanguageName.English, Target = LanguageTarget.Invoice }
+                new Language { Id = "ar", Name = LanguageName.Arabic },
+                new Language { Id = "en", Name = LanguageName.English }
             );
 
             builder.Entity<PaymentMethod>().HasData(
@@ -84,6 +71,49 @@ namespace invoice.Repo.Data
                 new PaymentMethod { Id = "sa", Name = PaymentType.Sadad },
                 new PaymentMethod { Id = "dl", Name = PaymentType.Delivery }
             );
+
+            builder.Entity<Store>(store =>
+            {
+                store.OwnsOne(s => s.PaymentOptions, po =>
+                {
+                    po.Property(p => p.Cash).HasDefaultValue(true);
+                    po.Property(p => p.BankTransfer).HasDefaultValue(false);
+                    po.Property(p => p.PayPal).HasDefaultValue(false);
+                    po.Property(p => p.Tax).HasDefaultValue(false);
+                });
+
+                store.OwnsOne(s => s.ContactInformations, ci =>
+                {
+                    ci.Property(c => c.Phone)
+                      .HasMaxLength(20)
+                      .IsRequired(false);
+
+                    ci.Property(c => c.Email)
+                      .HasMaxLength(100)
+                      .IsRequired(false);
+
+                    ci.Property(c => c.Location)
+                      .HasMaxLength(200)
+                      .IsRequired(false);
+
+                    ci.Property(c => c.Facebook)
+                      .HasMaxLength(150)
+                      .IsRequired(false);
+
+                    ci.Property(c => c.WhatsApp)
+                      .HasMaxLength(20)
+                      .IsRequired(false);
+
+                    ci.Property(c => c.Instagram)
+                      .HasMaxLength(150)
+                      .IsRequired(false);
+                });
+            });
         }
+
+
+
     }
+
+
 }

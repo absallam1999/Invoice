@@ -7,8 +7,8 @@ using invoice.Core.DTO.Tax;
 namespace invoice.Controllers
 {
     [Authorize]
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class TaxController : ControllerBase
     {
 
@@ -33,14 +33,22 @@ namespace invoice.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var response = await _taxService.GetByUserIdAsync( GetUserId());
+            var response = await _taxService.GetByUserIdAsync(GetUserId());
+            return Ok(response);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("{userid}")]
+        public async Task<IActionResult> GetTax(string userid)
+        {
+            var response = await _taxService.GetByUserIdAsync(userid);
             return Ok(response);
         }
 
         [HttpPut()]
-        public async Task<IActionResult> Update( TaxReadDTO dto)
+        public async Task<IActionResult> Update(TaxReadDTO dto)
         {
-            var response = await _taxService.UpdateAsync( dto, GetUserId());
+            var response = await _taxService.UpdateAsync(dto, GetUserId());
             return Ok(response);
         }
     }

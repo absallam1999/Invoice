@@ -1,4 +1,4 @@
-﻿using invoice.Core.Entites;
+﻿using invoice.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,9 +22,9 @@ namespace invoice.Repo.Data.Configurations
 
             builder.HasQueryFilter(u => !u.IsDeleted);
 
-            builder.HasMany(u => u.Stores)
+            builder.HasOne(u => u.Store)
                    .WithOne(s => s.User)
-                   .HasForeignKey(s => s.UserId)
+                   .HasForeignKey<Store>(s => s.UserId)
                    .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(u => u.Invoices)

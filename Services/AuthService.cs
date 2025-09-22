@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using invoice.Core.DTO;
 using invoice.Core.DTO.Auth;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -23,7 +23,7 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<object>> RegisterAsync(RegisterDTO dto)
         {
-            var user = new ApplicationUser { UserName = dto.UserName, Email = dto.Email };
+            var user = new ApplicationUser { UserName = dto.UserName, Email = dto.Email ,PhoneNumber=dto.PhoneNumber };
             var userDB = await _userManager.FindByEmailAsync(dto.Email);
             if (userDB != null)
             {
@@ -67,12 +67,8 @@ namespace invoice.Services
             {
                 Success = true,
                 Message = "Login successful.",
-                Data = new LoginResultDTO
-                {
-                    Token = token,
-                    UserId = user.Id,
-                    Email = user.Email,
-                },
+
+                Data = new LoginResultDTO { Token = token, UserId = user.Id, Email = user.Email ,UserName=user.UserName,phoneNum=user.PhoneNumber}
             };
         }
 
@@ -254,7 +250,8 @@ namespace invoice.Services
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+               //expires: DateTime.Now.AddMinutes(30),
+                expires: DateTime.Now.AddDays(7),
                 signingCredentials: creds
             );
 

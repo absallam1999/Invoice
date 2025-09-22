@@ -6,12 +6,12 @@ namespace invoice.Core.DTO.Invoice
     {
         public string Id { get; set; }
         public string Code { get; set; }
-        public string Currency { get; set; }
-
         public DateTime CreatedAt { get; set; }
         public decimal FinalValue { get; set; }
 
         public InvoiceStatus InvoiceStatus { get; set; }
+        public OrderStatus? OrderStatus { get; set; }
+
         public InvoiceType InvoiceType { get; set; }
 
         public string? ClientId { get; set; }

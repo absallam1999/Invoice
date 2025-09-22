@@ -1,4 +1,5 @@
-﻿using invoice.Core.Interfaces.Services;
+﻿using Core.Interfaces.Services;
+using invoice.Core.Interfaces.Services;
 using invoice.Services;
 using invoice.Services.Payments;
 using invoice.Services.Payments.ApplePay;
@@ -25,7 +26,7 @@ namespace invoice.Helpers
             services.AddScoped<IInvoiceItemsService, InvoiceItemsService>();
             services.AddScoped<IPayInvoiceService, PayInvoiceService>();
 
-            services.AddScoped<IPaymentService, PaymentService>();
+          //  services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IPaymentLinkService, PaymentLinkService>();
             services.AddScoped<IPaymentMethodService, PaymentMethodService>();
             services.AddScoped<IPaymentGatewayService, PaymentGatewayService>();
@@ -40,9 +41,10 @@ namespace invoice.Helpers
             services.AddScoped<IPageService, PageService>();
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IOrderService, OrderService>();
-            services.AddScoped<IContactInfoService, ContactInfoService>();
+           // services.AddScoped<IContactInfoService, ContactInfoService>();
             services.AddScoped<IFileService, FileService>();
-            services.AddScoped<ITaxService, TexService>();
+            services.AddScoped<ITaxService, TaxService>();
+            services.AddScoped<ICurrencyService, CurrencyService>();
 
             return services;
         }

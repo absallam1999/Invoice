@@ -1,4 +1,5 @@
 ﻿using invoice.Core.Interfaces.Services;
+using invoice.Core.Entities;
 using invoice.Core.Enums;
 using Microsoft.AspNetCore.Mvc;
 using invoice.Core.DTO.Language;
@@ -16,7 +17,7 @@ namespace invoice.Controllers
             _languageService = languageService;
         }
 
-        [HttpGet("all")]
+        [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var result = await _languageService.GetAllAsync();
@@ -106,14 +107,14 @@ namespace invoice.Controllers
         public async Task<IActionResult> Exists(string id)
         {
             var exists = await _languageService.ExistsAsync(id);
-            return Ok(new { Success = true, Exists = exists });
+            return Ok(new { Exists = exists });
         }
 
         [HttpGet("count")]
         public async Task<IActionResult> Count()
         {
             var count = await _languageService.CountAsync();
-            return Ok(new { Success = true, Count = count });
+            return Ok(new { Count = count });
         }
     }
 }

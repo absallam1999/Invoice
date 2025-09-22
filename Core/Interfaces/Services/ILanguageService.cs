@@ -1,6 +1,6 @@
 ﻿using invoice.Core.DTO;
 using invoice.Core.DTO.Language;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.Enums;
 
 namespace invoice.Core.Interfaces.Services

@@ -1,7 +1,10 @@
 ﻿using invoice.Core.DTO.Page;
+using invoice.Core.Entities;
 using invoice.Core.Interfaces.Services;
+using invoice.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace invoice.Controllers
 {
@@ -11,16 +14,27 @@ namespace invoice.Controllers
     public class PagesController : ControllerBase
     {
         private readonly IPageService _pageService;
+        private readonly IStoreService _storeService;
 
-        public PagesController(IPageService pageService)
+        public PagesController(IPageService pageService, IStoreService storeService)
         {
             _pageService = pageService;
+            _storeService = storeService;
+        }
+        private string GetUserId() =>
+        User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+
+        private async Task<string> GetStoreIdAsync()
+        {
+            var store = await _storeService.GetByUserAsync(GetUserId());
+            return store.Data.Id;
         }
 
-        [HttpGet("all")]
-        public async Task<IActionResult> GetAll([FromQuery] string storeId = null, [FromQuery] string languageId = null)
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
-            var response = await _pageService.GetAllAsync(storeId, languageId);
+            var response = await _pageService.GetAllAsync(GetUserId());
             return Ok(response);
         }
 
@@ -39,36 +53,55 @@ namespace invoice.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] PageCreateDTO dto, [FromForm] PageImageDTO image)
+        public async Task<IActionResult> Create([FromForm] PageCreateDTO dto)
         {
-            var response = await _pageService.CreateAsync(dto, image);
+            var storeId = await GetStoreIdAsync();
+
+            var response = await _pageService.CreateAsync(dto, storeId);
             return Ok(response);
         }
 
         [HttpPost("range")]
-        public async Task<IActionResult> CreateRange([FromForm] PageCreateRangeRequest request)
+        public async Task<IActionResult> CreateRange([FromBody] IEnumerable<Page> dtos)
         {
-            if (request.Pages == null || !request.Pages.Any())
-                return BadRequest(new { Success = false, Message = "No valid DTOs provided." });
+            var entities = dtos.Select(dto => new Page
+            {
+                Title = dto.Title,
+                Content = dto.Content,
+                Image = dto.Image,
+                InFooter = dto.InFooter,
+                InHeader = dto.InHeader,
 
-            var response = await _pageService.CreateRangeAsync(request);
+            });
+            var Store = await _storeService.GetByUserAsync(GetUserId());
+            var storeId = Store.Data.Id;
+
+            var response = await _pageService.CreateRangeAsync(entities);
             return Ok(response);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Update([FromForm] PageUpdateDTO dto, [FromForm] PageImageDTO? image)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromForm] PageUpdateDTO dto)
         {
-            var response = await _pageService.UpdateAsync(dto, image);
+            var response = await _pageService.UpdateAsync(id, dto);
             return Ok(response);
         }
 
         [HttpPut("range")]
-        public async Task<IActionResult> UpdateRange([FromForm] PageUpdateRangeRequest request)
+        public async Task<IActionResult> UpdateRange([FromForm] IEnumerable<PageUpdateDTO> dtos)
         {
-            if (request.Pages == null || !request.Pages.Any())
-                return BadRequest(new { Success = false, Message = "No valid DTOs provided." });
+            var entities = dtos.Select(dto => new Page
+            {
 
-            var response = await _pageService.UpdateRangeAsync(request);
+                Title = dto.Title,
+                Content = dto.Content,
+                // Image = dto.Image,
+                InFooter = dto.InFooter,
+                InHeader = dto.InHeader,
+
+            });
+
+            var response = await _pageService.UpdateRangeAsync(entities);
             return Ok(response);
         }
 

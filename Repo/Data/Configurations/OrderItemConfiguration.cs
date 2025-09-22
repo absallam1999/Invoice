@@ -1,4 +1,4 @@
-﻿using invoice.Core.Entites;
+﻿using invoice.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -30,10 +30,10 @@ namespace invoice.Repo.Data.Configurations
                    .HasColumnType("decimal(18,2)")
                    .HasComputedColumnSql("[Quantity] * [UnitPrice]", stored: true);
 
-            builder.HasOne(oi => oi.Order)
-                   .WithMany(o => o.OrderItems)
-                   .HasForeignKey(oi => oi.OrderId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasOne(oi => oi.Order)
+            //       .WithMany(o => o.OrderItems)
+            //       .HasForeignKey(oi => oi.OrderId)
+            //       .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(oi => oi.Product)
                    .WithMany()

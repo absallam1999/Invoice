@@ -1,4 +1,4 @@
-﻿using invoice.Core.Entites;
+﻿using invoice.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -31,12 +31,12 @@ namespace invoice.Repo.Data.Configurations
             builder.HasOne(p => p.Store)
                    .WithMany(s => s.Pages)
                    .HasForeignKey(p => p.StoreId)
-                   .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasOne(p => p.Language)
-                   .WithMany(l => l.Pages)
-                   .HasForeignKey(p => p.LanguageId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            //builder.HasOne(p => p.Language)
+            //       .WithMany(l => l.Pages)
+            //       .HasForeignKey(p => p.LanguageId)
+            //       .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

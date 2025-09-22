@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
+using Azure.Core.GeoJson;
 using invoice.Core.DTO;
 using invoice.Core.DTO.Client;
-using invoice.Core.Entites;
+using invoice.Core.Entities;
 using invoice.Core.Interfaces.Services;
 using invoice.Repo;
 using Microsoft.EntityFrameworkCore;
@@ -42,10 +43,11 @@ namespace invoice.Services
             return new GeneralResponse<ClientReadDTO>(true, "Client retrieved successfully", dto);
         }
 
+
         public async Task<GeneralResponse<IEnumerable<ClientReadDTO>>> GetByNameAsync(string name, string userId)
         {
             var clients = await _clientRepo.QueryAsync(c => c.UserId == userId && (c.Name == name || c.Name.Contains(name)));
-            
+
             var dtos = _mapper.Map<IEnumerable<ClientReadDTO>>(clients);
             return new GeneralResponse<IEnumerable<ClientReadDTO>>(true, "Clients retrieved By Name successfully", dtos);
         }
@@ -69,12 +71,12 @@ namespace invoice.Services
             if (EmailExists)
                 return new GeneralResponse<ClientReadDTO>(false, "Email already exists");
 
-           
-            var phoneExists = await _clientRepo.ExistsAsync(c => c.PhoneNumber == dto.PhoneNumber && c.UserId == userId);
-            if (phoneExists)
+
+            var nameExists = await _clientRepo.ExistsAsync(c => c.PhoneNumber == dto.PhoneNumber && c.UserId == userId);
+            if (nameExists)
                 return new GeneralResponse<ClientReadDTO>(false, "Phone number already exists");
 
-            
+
             var entity = _mapper.Map<Client>(dto);
             entity.UserId = userId;
 
@@ -88,43 +90,11 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<IEnumerable<ClientReadDTO>>> CreateRangeAsync(IEnumerable<ClientCreateDTO> dtos, string userId)
         {
-            if (dtos == null || !dtos.Any())
-                return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, "Invalid payload");
-
-            var emails = dtos.Where(d => !string.IsNullOrEmpty(d.Email))
-                             .Select(d => d.Email.Trim().ToLower())
-                             .ToList();
-
-            var phones = dtos.Where(d => !string.IsNullOrEmpty(d.PhoneNumber))
-                             .Select(d => d.PhoneNumber.Trim())
-                             .ToList();
-
-            if (emails.Any())
-            {
-                var emailExists = await _clientRepo.ExistsAsync(c => emails.Contains(c.Email) && c.UserId == userId);
-                if (emailExists)
-                    return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, "One or more emails already exist");
-            }
-
-            if (phones.Any())
-            {
-                var phoneExists = await _clientRepo.ExistsAsync(c => phones.Contains(c.PhoneNumber) && c.UserId == userId);
-                if (phoneExists)
-                    return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, "One or more phone numbers already exist");
-            }
-
-            if (emails.GroupBy(e => e).Any(g => g.Count() > 1))
-                return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, "Duplicate emails found in the request");
-
-            if (phones.GroupBy(p => p).Any(g => g.Count() > 1))
-                return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, "Duplicate phone numbers found in the request");
-
-            var entities = _mapper.Map<List<Client>>(dtos);
+            var entities = _mapper.Map<IEnumerable<Client>>(dtos).ToList();
             entities.ForEach(c => c.UserId = userId);
 
             var result = await _clientRepo.AddRangeAsync(entities);
-            if (!result.Success)
-                return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, result.Message);
+            if (!result.Success) return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, result.Message);
 
             var dtoList = _mapper.Map<IEnumerable<ClientReadDTO>>(result.Data);
             return new GeneralResponse<IEnumerable<ClientReadDTO>>(true, "Clients created successfully", dtoList);
@@ -132,47 +102,28 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<ClientReadDTO>> UpdateAsync(string id, ClientUpdateDTO dto, string userId)
         {
-            var response = await _clientRepo.GetByIdAsync(id, userId, q => q
+            var existing = await _clientRepo.GetByIdAsync(id, userId, q => q
             .Include(c => c.Invoices)
             );
-            if (response == null) return new GeneralResponse<ClientReadDTO>(false, "Client not found");
+            if (existing == null) return new GeneralResponse<ClientReadDTO>(false, "Client not found");
 
-            _mapper.Map(dto, response);
+            _mapper.Map(dto, existing);
 
-            var result = await _clientRepo.UpdateAsync(response);
+            var result = await _clientRepo.UpdateAsync(existing);
             if (!result.Success) return new GeneralResponse<ClientReadDTO>(false, result.Message);
 
             var dtoResult = _mapper.Map<ClientReadDTO>(result.Data);
-            dtoResult.InvoiceCount = response.Invoices.Count;
-            dtoResult.InvoiceTotal = response.Invoices.Sum(i => i.FinalValue);
+            dtoResult.InvoiceCount = existing.Invoices.Count;
+            dtoResult.InvoiceTotal = existing.Invoices.Sum(i => i.FinalValue);
             return new GeneralResponse<ClientReadDTO>(true, "Client updated successfully", dtoResult);
         }
 
-        public async Task<GeneralResponse<IEnumerable<ClientReadDTO>>> UpdateRangeAsync(
-            IEnumerable<ClientUpdateRangeDTO> dtos,
-            string userId)
+        public async Task<GeneralResponse<IEnumerable<ClientReadDTO>>> UpdateRangeAsync(IEnumerable<ClientUpdateDTO> dtos, string userId)
         {
-            var ids = dtos.Select(d => d.Id).ToList();
+            var entities = new List<Client>();
 
-            var clients = await _clientRepo.QueryAsync(c => ids.Contains(c.Id) && c.UserId == userId);
-
-            if (clients == null || !clients.Any())
-                return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, "No clients found to update");
-
-            foreach (var dto in dtos)
-            {
-                var client = clients.FirstOrDefault(c => c.Id == dto.Id);
-                if (client == null) continue;
-
-                client.Name = dto.Name ?? client.Name;
-                client.Email = dto.Email ?? client.Email;
-                client.PhoneNumber = dto.PhoneNumber ?? client.PhoneNumber;
-                client.Address = dto.Address ?? client.Address;
-            }
-
-            var result = await _clientRepo.UpdateRangeAsync(clients);
-            if (!result.Success)
-                return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, result.Message);
+            var result = await _clientRepo.UpdateRangeAsync(entities);
+            if (!result.Success) return new GeneralResponse<IEnumerable<ClientReadDTO>>(false, result.Message);
 
             var dtoList = _mapper.Map<IEnumerable<ClientReadDTO>>(result.Data);
             return new GeneralResponse<IEnumerable<ClientReadDTO>>(true, "Clients updated successfully", dtoList);
