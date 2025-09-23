@@ -9,10 +9,13 @@ using invoice.Core.DTO.Store;
 namespace invoice.Core.Interfaces.Services
 {
     public interface IInvoiceService
+
     {
         Task<GeneralResponse<IEnumerable<GetAllInvoiceDTO>>> GetAllAsync(string userId);
         Task<GeneralResponse<InvoiceReadDTO>> GetByIdAsync(string id, string userId);
         Task<GeneralResponse<InvoicewithUserDTO>> GetByIdWithUserAsync(string id);
+        Task<GeneralResponse<IEnumerable<InvoiceSummaryDto>>> GetInvoicesSummaryAsync(string userId);
+
         Task<GeneralResponse<InvoiceReadDTO>> GetByCodeAsync(string code, string userId);
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> SearchAsync(string keyword, string userId);
 
@@ -30,7 +33,7 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<bool>> DeleteRangeAsync(IEnumerable<string> ids, string userId);
 
         Task<bool> ExistsAsync(string id, string userId);
-        Task<int> CountAsync(string userId);
+        Task<int> CountAsync(string userId, InvoiceType? invoicetype = null);
 
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByClientAsync(string clientId, string userId);
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByStatusAsync(InvoiceStatus status, string userId);

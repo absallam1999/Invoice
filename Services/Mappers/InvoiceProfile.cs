@@ -7,6 +7,7 @@ using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentLink;
 using invoice.Core.DTO.Store;
 using invoice.Core.Entities;
+using invoice.Core.Enums;
 
 namespace invoice.Services.Mappers
 {
@@ -59,6 +60,12 @@ namespace invoice.Services.Mappers
             CreateMap<Client, ClientSummaryDTO>().ReverseMap();
             CreateMap<Store, StoreReadDTO>().ReverseMap();
             CreateMap<Language, LanguageReadDTO>().ReverseMap();
+
+
+            CreateMap<IGrouping<InvoiceStatus, Invoice>, InvoiceSummaryDto>()
+            .ForMember(dest => dest.InvoiceStatus, opt => opt.MapFrom(src => src.Key.ToString()))
+            .ForMember(dest => dest.NumberOfInvoices, opt => opt.MapFrom(src => src.Count()))
+            .ForMember(dest => dest.TotalCost, opt => opt.MapFrom(src => src.Sum(i => i.FinalValue)));
         }
     }
 

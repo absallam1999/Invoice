@@ -224,11 +224,11 @@ namespace invoice.Services
             return await _productRepo.ExistsAsync(p => p.UserId == userId && predicate.Compile()(p));
         }
 
-        public async Task<int> CountAsync(Expression<Func<Product, bool>> predicate, string userId)
+        public async Task<int> CountAsync(string userId)
         {
-            return await _productRepo.CountAsync(p => p.UserId == userId && predicate.Compile()(p));
-        }
+            return await _productRepo.CountAsync(userId);
 
+        }
         public IQueryable<Product> GetQueryable()
         {
             return _productRepo.GetQueryable();

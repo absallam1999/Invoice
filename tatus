@@ -1,0 +1,224 @@
+[33mcommit f51688077406dff056c8b4919300e500ed445223[m[33m ([m[1;36mHEAD -> [m[1;32mmenna[m[33m, [m[1;31morigin/menna2[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Sun Sep 21 07:08:57 2025 +0300
+
+    store
+
+[33mcommit 08b0cd250ffa9b1b95d4e85eb6bb665619a4676a[m[33m ([m[1;31morigin/menna[m[33m)[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Sun Aug 31 02:18:46 2025 +0300
+
+    update invoice client prodect
+
+[33mcommit 0a14e4c3b266ccc67b9d6e33487ceaafb4745dec[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Tue Aug 26 13:42:56 2025 +0300
+
+    change dbcon
+
+[33mcommit 2fec6c638c104ad6f907d9fe53fed468cea511b8[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Sun Aug 24 02:35:09 2025 +0300
+
+    V1
+
+[33mcommit 593df041a46a708cd5c1caf3f280958e17455de9[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Sun Aug 24 02:32:04 2025 +0300
+
+    V1
+
+[33mcommit c4e73cf8b6bc7fcebff84a8e4de8ae06d1726f8d[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Sat Aug 16 20:49:36 2025 +0300
+
+    Stripe Payment
+
+[33mcommit 49c94c946d14adb3b537c386832fc329e63be952[m
+Merge: 518689d aaee6c2
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Sat Aug 16 18:15:47 2025 +0300
+
+    V1
+
+[33mcommit 518689dec3501b885b9ec4777a8f6225861e4de6[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Sat Aug 16 18:13:37 2025 +0300
+
+    V1
+
+[33mcommit aaee6c2c23865a8eab5cc4ecec885f7b2c3a347c[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Fri Aug 15 10:32:57 2025 +0300
+
+    add store
+
+[33mcommit 4444d721ce34b0eac4b65d4fa3c24dbdfff60b57[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Thu Aug 14 10:02:44 2025 +0300
+
+    add store
+
+[33mcommit 11b84b01252bf0c2162f5f58928e5264447a2e0d[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Thu Aug 14 00:27:18 2025 +0300
+
+    fix errors
+
+[33mcommit 11f4a973cc98d4cd225e7b330ba14816e2578ec7[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Tue Aug 5 07:06:43 2025 +0300
+
+    update pos 2
+
+[33mcommit e130ec2014a3018b6dd85eed3383864010d3a005[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Mon Aug 4 06:54:41 2025 +0300
+
+    update pos
+
+[33mcommit 03fc29d9bab1df34d577e860aac250c62af772dd[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Sun Aug 3 05:35:56 2025 +0300
+
+    add pos
+
+[33mcommit 61b1752e2ae7d9e50d44ec051cbc586aaf16feb7[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Sat Aug 2 07:49:19 2025 +0300
+
+    update invoice 2
+
+[33mcommit 1cf4537b7aeb5744976eb017a3338264c072b1e6[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Fri Aug 1 08:11:09 2025 +0300
+
+    update invoice2
+
+[33mcommit d6a174fbe023e3f0e6bd6715ef9b540750166137[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Thu Jul 31 07:44:17 2025 +0300
+
+    add invoice
+
+[33mcommit 5375a7865f07e882d0ccbe672e013231e47ff01e[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Fri Jul 18 07:55:44 2025 +0300
+
+    product updated
+
+[33mcommit 877260dae19a1008fae7383bb47a53fb2320b26c[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Thu Jul 17 19:14:28 2025 +0300
+
+    update client
+
+[33mcommit 2032630d3d1ddc7467452d323a4138bda5cbf474[m
+Author: mennaebrahimm <mennaebrahim601@gmail.com>
+Date:   Thu Jul 17 02:13:43 2025 +0300
+
+    client updated
+
+[33mcommit e941acc26a0757251a024ede04157e283ab94beb[m
+Author: Mohamed Badr <115354829+absallam1999@users.noreply.github.com>
+Date:   Tue Jul 15 13:54:34 2025 +0300
+
+    V1
+
+[33mcommit 3525afec45dbf0927b87bcdb4b068088b0177ade[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Tue Jul 15 13:42:25 2025 +0300
+
+    Modify Controllers
+
+[33mcommit a4b09efa97141087973d65cf9e72378bd6fc29c2[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Tue Jul 15 13:38:21 2025 +0300
+
+    Modify Controllers
+
+[33mcommit 8f4a409e13d00fb5e0e198b245f5f317b7e6f2c0[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Tue Jul 15 13:02:38 2025 +0300
+
+    Modify Controllers
+
+[33mcommit 93ec98ffce7bd39b703385a00b2955413b512788[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Mon Jul 14 11:40:36 2025 +0300
+
+    NewControllers, DTOs
+
+[33mcommit a821b87c9431e8b67158b7d0142894550e2fdd74[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Sat Jul 12 18:31:31 2025 +0300
+
+    CRUD Operations
+
+[33mcommit e3014e3cbbd85242782126fb190a1efd9e3a007d[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Sat Jul 12 18:21:30 2025 +0300
+
+    CRUD Operations
+
+[33mcommit bf32e8717fc5b24111334aef6d7ea8a7be3c522d[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Sat Jul 12 18:18:49 2025 +0300
+
+    CRUD Operations
+
+[33mcommit b0f86dd33807cafc4fe535c82254865dd470074d[m
+Merge: 2c45e67 a8b1f15
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Sat Jul 12 17:13:48 2025 +0300
+
+    Merge branch 'master' of https://github.com/absallam1999/Invoice
+
+[33mcommit 2c45e675ba7b36ae11e9d093aaa37b9295c0207d[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Sat Jul 12 17:13:24 2025 +0300
+
+    CRUD Operations
+
+[33mcommit a8b1f158261b2063427b1e0143f87f641b7ed9ca[m
+Author: Mohamed Badr <115354829+absallam1999@users.noreply.github.com>
+Date:   Sat Jul 12 16:25:43 2025 +0300
+
+    V1
+
+[33mcommit 1f500375cb6fe740a2fc1af33987804a8120e68a[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Sat Jul 12 16:19:09 2025 +0300
+
+    CRUD Operations
+
+[33mcommit ab22c3cf9bbd866eb8224976607b63cf2ba56418[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Sat Jul 12 16:13:09 2025 +0300
+
+    CRUD Operations
+
+[33mcommit 2645aeb4adee4dd9d41edfe21cb16e249d91245f[m
+Merge: f498ec2 924828a
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Tue Jul 8 13:26:20 2025 +0300
+
+    Merge branch 'master' of https://github.com/absallam1999/Invoice
+
+[33mcommit f498ec20ef211008ab97e66e80fc73462cdaad90[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Tue Jul 8 13:25:06 2025 +0300
+
+    Add Migration
+
+[33mcommit 924828ad3b90d3e644a092433a3d6bbf571095dd[m
+Author: Mohamed Badr <115354829+absallam1999@users.noreply.github.com>
+Date:   Tue Jul 8 00:52:23 2025 +0300
+
+    V1
+
+[33mcommit 4e35a3fda334a510f90838d1dcad26f7a8ec0144[m
+Author: absallam1999 <absallam1999@gmail.com>
+Date:   Tue Jul 8 00:48:38 2025 +0300
+
+    V1

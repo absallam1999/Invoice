@@ -151,7 +151,8 @@ namespace invoice.Services
 
         public async Task<int> CountAsync(string userId)
         {
-            return await _clientRepo.CountAsync(c => c.UserId == userId);
+            return await _clientRepo.CountAsync(userId);
+
         }
     }
 }

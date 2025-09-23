@@ -66,7 +66,8 @@ namespace invoice.Services
 
         public async Task<int> CountAsync(string userId)
         {
-            return await _categoryRepo.CountAsync(c => c.UserId == userId);
+            return await _categoryRepo.CountAsync(userId);
+
         }
 
         public async Task<GeneralResponse<CategoryReadDTO>> CreateAsync(CategoryCreateDTO dto, string userId)

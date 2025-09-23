@@ -23,6 +23,6 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<bool>> DeleteRangeAsync(IEnumerable<string> ids);
 
         Task<bool> ExistsAsync(string id);
-        Task<int> CountAsync(string storeId = null, string languageId = null);
+        Task<int> CountAsync(string userId = null,string storeId = null, string languageId = null);
     }
 }

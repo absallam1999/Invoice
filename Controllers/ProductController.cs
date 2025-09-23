@@ -166,10 +166,10 @@ namespace invoice.Controllers
         }
 
         [HttpGet("count")]
-        public async Task<IActionResult> Count([FromQuery] string categoryId)
+        public async Task<IActionResult> Count( )
         {
-            var response = await _productService.CountAsync(p => p.CategoryId == categoryId, GetUserId());
-            return Ok(response);
+            var count = await _productService.CountAsync(GetUserId());
+            return Ok(new { Count = count });
         }
     }
 }

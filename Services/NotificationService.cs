@@ -165,9 +165,10 @@ namespace invoice.Services
             return await _notificationRepo.ExistsAsync(n => n.Id == id);
         }
 
-        public async Task<int> CountAsync(string userId = null)
+        public async Task<int> CountAsync(string userId)
         {
-            return await _notificationRepo.CountAsync(n => string.IsNullOrEmpty(userId) || n.UserId == userId);
+            return await _notificationRepo.CountAsync(userId);
+
         }
     }
 }

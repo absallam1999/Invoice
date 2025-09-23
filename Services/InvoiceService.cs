@@ -17,7 +17,7 @@ namespace invoice.Services
     public class InvoiceService : IInvoiceService
     {
         private readonly IRepository<InvoiceItem> _invoiceItemRepo;
-        private readonly IRepository<Invoice> _invoiceRepo;
+        private readonly IInvoiceRepository _invoiceRepo;
         private readonly IRepository<Client> _clientRepo;
         private readonly IRepository<Store> _storeRepo;
         private readonly IRepository<Payment> _paymentRepo;
@@ -29,7 +29,7 @@ namespace invoice.Services
 
         public InvoiceService(
             IRepository<InvoiceItem> invoiceItemRepo,
-            IRepository<Invoice> invoiceRepo,
+            IInvoiceRepository invoiceRepo,
             IRepository<Client> clientRepo,
             IRepository<Store> storeRepo,
             IRepository<Payment> paymentRepo,
@@ -139,6 +139,22 @@ namespace invoice.Services
                 Message = "Invoice retrieved successfully.",
                 Data = _mapper.Map<InvoicewithUserDTO>(invoice)
             };
+        }
+
+        public async Task<GeneralResponse<IEnumerable<InvoiceSummaryDto>>> GetInvoicesSummaryAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                return new  GeneralResponse<IEnumerable<InvoiceSummaryDto>> { Success = false, Message = " UserId are required." };
+            var groupedInvoices = await _invoiceRepo.GetGroupedByStatusAsync(userId);
+            var summary = _mapper.Map<IEnumerable<InvoiceSummaryDto>>(groupedInvoices);
+
+            return new GeneralResponse<IEnumerable<InvoiceSummaryDto>>
+            {
+                Success = true,
+                Message = "invoices summary retrieved successfully.",
+                Data = summary
+            };
+
         }
 
         public async Task<GeneralResponse<InvoiceReadDTO>> GetByCodeAsync(string code, string userId)
@@ -679,10 +695,20 @@ namespace invoice.Services
             return invoice != null;
         }
 
-        public async Task<int> CountAsync(string userId)
+        public async Task<int> CountAsync(string userId, InvoiceType? invoicetype = null)
         {
-            var invoices = await _invoiceRepo.GetAllAsync(userId);
-            return invoices.Count();
+            if (invoicetype.HasValue)
+            {
+                return await _invoiceRepo.CountAsync(
+                    userId,
+                    i => i.InvoiceType == invoicetype.Value
+                );
+            }
+            else
+            {
+                return await _invoiceRepo.CountAsync(userId);
+            }
+
         }
 
         public async Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByClientAsync(string clientId, string userId)

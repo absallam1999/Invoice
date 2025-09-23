@@ -30,7 +30,7 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<bool>> DeleteRangeAsync(IEnumerable<string> ids, string userId);
 
         Task<bool> ExistsAsync(Expression<Func<Product, bool>> predicate, string userId);
-        Task<int> CountAsync(Expression<Func<Product, bool>> predicate, string userId);
+        Task<int> CountAsync(string userId = null);
 
         IQueryable<Product> GetQueryable();
     }

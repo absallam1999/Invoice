@@ -13,6 +13,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using Stripe;
 using Repo;
+using invoice.Core.Interfaces.Services;
 
 namespace invoice
 {
@@ -129,7 +130,10 @@ namespace invoice
             builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
             // Generic Repository
-            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));  
+            
+            // invoice Repository
+            builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 
             // Adding Scopes
             builder.Services.AddHttpClient();
@@ -288,7 +292,7 @@ namespace invoice
 
                 app.UseCors("AllowSpecificOrigins");
             }
-
+         
             app.UseHttpsRedirection();
 
             // Response compression

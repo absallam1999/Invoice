@@ -142,12 +142,10 @@ namespace invoice.Services
             return await _payInvoiceRepo.ExistsAsync(p => p.Id == id);
         }
 
-        public async Task<int> CountAsync(string invoiceId = null)
+        public async Task<int> CountAsync(string userId)
         {
-            if (!string.IsNullOrEmpty(invoiceId))
-                return await _payInvoiceRepo.CountAsync(p => p.InvoiceId == invoiceId);
+            return await _payInvoiceRepo.CountAsync(userId);
 
-            return await _payInvoiceRepo.CountAsync();
         }
     }
 }

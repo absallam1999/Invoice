@@ -49,7 +49,7 @@ namespace invoice.Services
             if (dto == null)
                 return new GeneralResponse<StoreReadDTO>(false, "Invalid payload");
 
-            var storeDB = await _storeRepo.GetByUserIdAsync(userId);
+            var storeDB = await _storeRepo.GetSingleByUserIdAsync(userId);
             if (storeDB != null) return new GeneralResponse<StoreReadDTO>(false, "You have store already.");
 
             var entity = _mapper.Map<Store>(dto);
@@ -132,13 +132,13 @@ namespace invoice.Services
         }
         public async Task<GeneralResponse<StoreReadDTO>> GetAsync(string userId)
         {
-            var entity = (await _storeRepo.GetByUserIdAsync(userId))?.FirstOrDefault();
+            var entity = (await _storeRepo.GetSingleByUserIdAsync(userId));
             return new GeneralResponse<StoreReadDTO>(true, "Store retrieved successfully", _mapper.Map<StoreReadDTO>(entity));
         }
 
         public async Task<GeneralResponse<bool>> ActivateStoreAsync(string userId)
         {
-            var entity = (await _storeRepo.GetByUserIdAsync(userId))?.FirstOrDefault();
+            var entity = (await _storeRepo.GetSingleByUserIdAsync(userId));
 
             if (entity == null)
                 return new GeneralResponse<bool>(false, "Store not found");

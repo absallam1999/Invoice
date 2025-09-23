@@ -97,7 +97,27 @@ namespace Repo
 
             return await query.ToListAsync();
         }
+        public async Task<T> GetSingleByUserIdAsync(
+      string userId,
+      Func<IQueryable<T>, IQueryable<T>> include = null
+  )
+        {
+            IQueryable<T> query = _dbSet;
 
+            if (include != null)
+                query = include(query);
+
+            if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
+            {
+                query = query.Where(e =>
+                    EF.Property<string>(e, "UserId") == userId
+                    && EF.Property<bool>(e, "IsDeleted") == false
+                );
+            }
+
+            // هنا تجيب عنصر واحد
+            return await query.FirstOrDefaultAsync();
+        }
 
         public async Task<IEnumerable<T>> QueryAsync(
            Expression<Func<T, bool>> predicate,
@@ -141,17 +161,37 @@ namespace Repo
 
         // ---------- Existence & Count ----------
 
-        public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
+        public async Task<bool> ExistsAsync(Expression < Func<T, bool>> predicate)
         {
             return await _dbSet.AnyAsync(predicate);
         }
 
-        public async Task<int> CountAsync(Expression<Func<T, bool>> predicate = null)
+ 
+
+
+        public async Task<int> CountAsync(string userId = null, Expression<Func<T, bool>> predicate = null)
         {
-            return predicate == null
-                ? await _dbSet.CountAsync()
-                : await _dbSet.CountAsync(predicate);
+            IQueryable<T> query = _dbSet;
+
+            if (!string.IsNullOrWhiteSpace(userId) && typeof(T).GetProperty("UserId") != null)
+            {
+                query = query.Where(e => EF.Property<string>(e, "UserId") == userId);
+            }
+
+            if (typeof(T).GetProperty("IsDeleted") != null)
+            {
+                query = query.Where(e => !EF.Property<bool>(e, "IsDeleted"));
+            }
+
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            return await query.CountAsync();
         }
+
+
 
         // ---------- Add / Update / Delete ----------
 

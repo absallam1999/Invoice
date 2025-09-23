@@ -32,6 +32,12 @@ namespace invoice.Controllers
             var response = await _invoiceService.GetAllAsync(GetUserId());
             return Ok(response);
         }
+         [HttpGet("InvoicesSummary")]
+        public async Task<IActionResult> InvoicesSummary()
+        {
+            var response = await _invoiceService.GetInvoicesSummaryAsync(GetUserId());
+            return Ok(response);
+        }
 
         [HttpGet("StoreInvoice")]
         public async Task<IActionResult> StoreInvoice()
@@ -175,9 +181,9 @@ namespace invoice.Controllers
 
 
         [HttpGet("count")]
-        public async Task<IActionResult> Count()
+        public async Task<IActionResult> Count([FromQuery] InvoiceType? invoicetype = null)
         {
-            var count = await _invoiceService.CountAsync(GetUserId());
+            var count = await _invoiceService.CountAsync(GetUserId(), invoicetype);
             return Ok(new { count });
         }
 

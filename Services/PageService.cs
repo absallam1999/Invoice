@@ -150,10 +150,13 @@ namespace invoice.Services
         {
             return await _pageRepo.ExistsAsync(p => p.Id == id);
         }
+     
 
-        public async Task<int> CountAsync(string storeId = null, string languageId = null)
+        public Task<int> CountAsync(string userId=null ,string storeId = null, string languageId = null)
         {
-            return await _pageRepo.CountAsync(p => (storeId == null || p.StoreId == storeId));
+            throw new NotImplementedException();
         }
+
+       
     }
 }
