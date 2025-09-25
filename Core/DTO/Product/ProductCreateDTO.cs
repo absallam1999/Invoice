@@ -3,7 +3,7 @@
     public class ProductCreateDTO
     {
         public string Name { get; set; }
-        public string? Image { get; set; }
+        public IFormFile? Image { get; set; }
         public decimal Price { get; set; }
         public int? Quantity { get; set; } = null;
 

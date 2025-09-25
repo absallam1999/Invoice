@@ -31,7 +31,7 @@ namespace invoice.Core.DTO.Invoice
         public string? payMethodId { get; set; }
         public PaymentType? payMethod { get; set; }
 
-        public TaxReadDTO Taxinfo { get; set; }
+        public TaxReadDTO TaxInfo { get; set; }
 
         public IEnumerable<InvoiceItemReadDTO> InvoiceItems { get; set; } = new List<InvoiceItemReadDTO>();
         public OrderDTO Order { get; set; } = new OrderDTO();

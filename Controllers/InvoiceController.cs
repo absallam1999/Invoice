@@ -37,6 +37,12 @@ namespace invoice.Controllers
         {
             var response = await _invoiceService.GetInvoicesSummaryAsync(GetUserId());
             return Ok(response);
+        }  
+        [HttpGet("InvoicesSummaryWithDate")]
+        public async Task<IActionResult> InvoicesSummaryWithDate()
+        {
+            var response = await _invoiceService.GetInvoicesSummaryWithDateAsync(GetUserId());
+            return Ok(response);
         }
 
         [HttpGet("StoreInvoice")]
@@ -208,12 +214,7 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-        [HttpPost("payment-links")]
-        public async Task<IActionResult> GeneratePaymentLink([FromBody] PaymentLinkCreateDTO dto)
-        {
-            var response = await _invoiceService.GeneratePaymentLinkAsync(dto, GetUserId());
-            return Ok(response);
-        }
+     
 
         [HttpPost("{invoiceId}/mark-paid")]
         public async Task<IActionResult> MarkAsPaid(string invoiceId)

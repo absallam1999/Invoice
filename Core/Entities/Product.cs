@@ -16,9 +16,6 @@
         public string? CategoryId { get; set; }
         public Category Category { get; set; }
 
-        //public string? StoreId { get; set; }
-        //public Store Store { get; set; }
-
         public List<InvoiceItem> InvoiceItems { get; set; } = new();
     }
 }

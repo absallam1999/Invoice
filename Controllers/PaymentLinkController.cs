@@ -29,9 +29,8 @@ namespace invoice.Controllers
         {
             var result = await _paymentLinkService.CreateAsync(dto, GetUserId());
 
-            return result.Success
-                ? CreatedAtAction(nameof(GetById), new { id = result.Data.Id }, result)
-                : BadRequest(result);
+            return Ok(result);
+
         }
 
         [HttpPut("{id}")]
@@ -83,22 +82,22 @@ namespace invoice.Controllers
         }
 
         [HttpGet("query")]
-        public async Task<ActionResult<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>>> Query(
-            [FromQuery] string purpose = null,
-            [FromQuery] decimal? minValue = null,
-            [FromQuery] decimal? maxValue = null,
-            [FromQuery] bool? isActive = null)
-        {
-            Expression<Func<PaymentLink, bool>> predicate = pl =>
-                (string.IsNullOrEmpty(purpose) || pl.Purpose.Contains(purpose)) &&
-                (!minValue.HasValue || pl.Value >= minValue.Value) &&
-                (!maxValue.HasValue || pl.Value <= maxValue.Value) &&
-                (!isActive.HasValue || pl.IsActive == isActive.Value);
+        //public async Task<ActionResult<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>>> Query(
+        //    [FromQuery] string purpose = null,
+        //    [FromQuery] decimal? minValue = null,
+        //    [FromQuery] decimal? maxValue = null,
+        //    [FromQuery] bool? isActive = null)
+        //{
+        //    Expression<Func<PaymentLink, bool>> predicate = pl =>
+        //        (string.IsNullOrEmpty(purpose) || pl.Purpose.Contains(purpose)) &&
+        //        (!minValue.HasValue || pl.Value >= minValue.Value) &&
+        //        (!maxValue.HasValue || pl.Value <= maxValue.Value) &&
+        //        (!isActive.HasValue || pl.IsActive == isActive.Value);
 
-            var result = await _paymentLinkService.QueryAsync(predicate, GetUserId());
+        //    var result = await _paymentLinkService.QueryAsync(predicate, GetUserId());
 
-            return Ok(result);
-        }
+        //    return Ok(result);
+        //}
 
         [HttpGet("exists/{id}")]
         public async Task<ActionResult<bool>> Exists(string id)
@@ -116,20 +115,6 @@ namespace invoice.Controllers
             return Ok(new { Success = true, Count = result });
         }
 
-        [HttpGet("count/active")]
-        public async Task<ActionResult<int>> CountActive()
-        {
-            var result = await _paymentLinkService.CountActiveAsync(GetUserId());
 
-            return Ok(new { Success = true, ActiveCount = result });
-        }
-
-        [HttpGet("count/invoice/{invoiceId}")]
-        public async Task<ActionResult<int>> CountByInvoice(string invoiceId)
-        {
-            var result = await _paymentLinkService.CountByInvoiceAsync(invoiceId, GetUserId());
-
-            return Ok(new { Success = true, Count = result });
-        }
     }
 }

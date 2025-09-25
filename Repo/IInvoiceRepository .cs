@@ -8,7 +8,8 @@ namespace invoice.Repo
     public interface IInvoiceRepository : IRepository<Invoice>
     {
 
-        Task<IEnumerable<IGrouping<InvoiceStatus, Invoice>>> GetGroupedByStatusAsync(string userId);
+        Task<IEnumerable<InvoiceSummaryDto>> GetGroupedByStatusAsync(string userId);
+        Task<IEnumerable<InvoiceSummaryWithDateDto>> GetGroupedByStatusAndDateAsync(string userId);
 
     }
 }

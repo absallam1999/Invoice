@@ -1,16 +1,29 @@
-﻿using invoice.Core.Enums;
+﻿using invoice.Core.DTO.Invoice;
+using invoice.Core.DTO.PaymentOptions;
+using invoice.Core.Enums;
+using invoice.Models.Entities.utils;
+using System.ComponentModel.DataAnnotations;
 
 namespace invoice.Core.DTO.Payment
 {
     public class PaymentUpdateDTO
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public decimal Cost { get; set; }
-        public string Currency { get; set; }
-        public PaymentStatus Status { get; set; }
 
-        public string InvoiceId { get; set; }
-        public string PaymentMethodId { get; set; }
+
+        [RegularExpression("^[a-zA-Z0-9_-]*$", ErrorMessage = "Slug must contain only letters, " +
+         "numbers, dashes or underscores without spaces.")]
+        public string Slug { get; set; }
+        public decimal Value { get; set; }
+        public string Currency { get; set; }
+        public int? MaxPaymentsNumber { get; set; } = null;
+        public string Description { get; set; }
+        public IFormFile? Image { get; set; }
+        public bool IsActivated { get; set; }
+
+
+        public PaymentOptionsDTO PaymentOptions { get; set; }
+        public PurchaseCompletionOptions PurchaseOptions { get; set; }
+
+       
     }
 }

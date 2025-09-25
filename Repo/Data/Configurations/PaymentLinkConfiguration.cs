@@ -20,8 +20,6 @@ namespace invoice.Repo.Data.Configurations
                    .IsRequired()
                    .HasMaxLength(10);
 
-            builder.Property(pl => pl.Purpose)
-                   .HasMaxLength(250);
 
             builder.Property(pl => pl.PaymentsNumber)
                    .IsRequired()
@@ -30,8 +28,7 @@ namespace invoice.Repo.Data.Configurations
             builder.Property(pl => pl.Description)
                    .HasMaxLength(1000);
 
-            builder.Property(pl => pl.Message)
-                   .HasMaxLength(1000);
+          
 
             builder.Property(pl => pl.Image)
                    .HasMaxLength(500);
@@ -39,17 +36,7 @@ namespace invoice.Repo.Data.Configurations
             builder.Property(pl => pl.Terms)
                    .HasMaxLength(2000);
 
-            builder.Property(pl => pl.CreatedBy)
-                   .IsRequired()
-                   .HasMaxLength(450);
-
-            builder.Property(pl => pl.IsActive)
-                   .HasDefaultValue(true);
-
-            //builder.HasOne(pl => pl.Invoice)
-            //       .WithOne(i => i.PaymentLink)
-            //       .HasForeignKey<PaymentLink>(pl => pl.InvoiceId)
-            //       .OnDelete(DeleteBehavior.Cascade);
+           
         }
     }
 }

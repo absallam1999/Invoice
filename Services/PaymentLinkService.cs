@@ -2,10 +2,14 @@
 using invoice.Core.DTO;
 using invoice.Core.DTO.Invoice;
 using invoice.Core.DTO.InvoiceItem;
+using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentLink;
+using invoice.Core.DTO.Store;
 using invoice.Core.Entities;
+using invoice.Core.Entities.utils;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
+using invoice.Models.Entities.utils;
 using invoice.Repo;
 using System.Linq.Expressions;
 
@@ -35,64 +39,35 @@ namespace invoice.Services
             if (dto == null)
                 return new GeneralResponse<PaymentLinkReadDTO>(false, "Payment link data is required");
 
-            try
+ 
+            var entity = _mapper.Map<PaymentLink>(dto);
+            entity.UserId = userId;
+
+            var exists = await _paymentLinkRepo.GetBySlugAsync(dto.Slug);
+            if (exists != null)
             {
-                var invoiceDto = new InvoiceCreateDTO
+                return new GeneralResponse<PaymentLinkReadDTO>
                 {
-                    //    //StoreId = null,
-                    //    ClientId = null,
-                    //    //Currency = dto.Currency,
-                    //    LanguageId = dto.LanguageId,
-                    //    InvoiceType = InvoiceType.Detailed,
-                    //    TermsConditions = string.IsNullOrWhiteSpace(dto.Terms)
-                    //                        ? "Auto-generated invoice for Payment Link"
-                    //                        : dto.Terms,
-                    //    Tax = dto.Tax ?? false,
-                    //    DiscountType = dto.DiscountType,
-                    //    DiscountValue = dto.DiscountValue,
-                    //    InvoiceItems = new List<InvoiceItemCreateDTO>
-                    //            {
-                    //                new InvoiceItemCreateDTO
-                    //                {
-                    //                    ProductId = null,
-                    //                    Quantity = dto.PaymentsNumber > 0 ? dto.PaymentsNumber : 1,
-                    //                }
-                    //            }
+                    Success = false,
+                    Message = "Slug already exists, please choose another name."
                 };
-
-                var newInvoice = _mapper.Map<Invoice>(invoiceDto);
-                var invoiceResponse = await _invoiceRepo.AddAsync(newInvoice);
-                if (!invoiceResponse.Success)
-                {
-                    return new GeneralResponse<PaymentLinkReadDTO>(false, $"Failed to auto-generate invoice: {invoiceResponse.Message}");
-                }
-
-                var paymentLink = _mapper.Map<PaymentLink>(dto);
-                paymentLink.InvoiceId = invoiceResponse.Data.Id;
-                paymentLink.CreatedAt = DateTime.UtcNow;
-                paymentLink.UpdatedAt = DateTime.UtcNow;
-
-                if (dto.Image != null)
-                {
-                  //  paymentLink.Image = await _fileService.UploadImageAsync(dto.Image, "paymentlinks");
-                }
-
-                var response = await _paymentLinkRepo.AddAsync(paymentLink);
-                if (!response.Success)
-                {
-                    return new GeneralResponse<PaymentLinkReadDTO>(false, "Failed to create payment link");
-                }
-
-                return new GeneralResponse<PaymentLinkReadDTO>(
-                    true,
-                    "Payment link created successfully with auto-generated invoice",
-                    _mapper.Map<PaymentLinkReadDTO>(response.Data)
-                );
             }
-            catch (Exception ex)
-            {
-                return new GeneralResponse<PaymentLinkReadDTO>(false, $"Failed to create PaymentLink and Invoice: {ex.Message}");
-            }
+
+            entity.PaymentOptions = new PaymentOptions();
+
+
+            var resp = await _paymentLinkRepo.AddAsync(entity);
+            if (!resp.Success)
+                return new GeneralResponse<PaymentLinkReadDTO>(false, resp.Message);
+
+
+            return new GeneralResponse<PaymentLinkReadDTO>(
+                true,
+                "payment link created successfully",
+                _mapper.Map<PaymentLinkReadDTO>(resp.Data)
+            );
+ 
+                    
         }
 
         public async Task<GeneralResponse<PaymentLinkReadDTO>> UpdateAsync(string id, PaymentLinkUpdateDTO dto, string userId)
@@ -110,11 +85,23 @@ namespace invoice.Services
             _mapper.Map(dto, existing);
             existing.UpdatedAt = DateTime.UtcNow;
 
+            var exists = await _paymentLinkRepo.GetBySlugAsync(dto.Slug);
+            if (exists != null)
+            {
+                return new GeneralResponse<PaymentLinkReadDTO>
+                {
+                    Success = false,
+                    Message = "Slug already exists, please choose another name."
+                };
+            }
+
+
             if (dto.Image != null)
             {
                 existing.Image = await _fileService.UpdateImageAsync(dto.Image, existing.Image, "paymentlinks");
             }
 
+         
             var result = await _paymentLinkRepo.UpdateAsync(existing);
             if (!result.Success)
                 return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Failed to update payment link" };
@@ -136,23 +123,23 @@ namespace invoice.Services
 
             foreach (var dto in dtos)
             {
-                if (string.IsNullOrWhiteSpace(dto.Id))
-                    continue;
+                //if (string.IsNullOrWhiteSpace(dto.Id))
+                //    continue;
 
-                var existing = await _paymentLinkRepo.GetByIdAsync(dto.Id, userId);
-                if (existing == null) continue;
+                //var existing = await _paymentLinkRepo.GetByIdAsync(dto.Id, userId);
+                //if (existing == null) continue;
 
-                _mapper.Map(dto, existing);
-                existing.UpdatedAt = DateTime.UtcNow;
+                //_mapper.Map(dto, existing);
+                //existing.UpdatedAt = DateTime.UtcNow;
 
-                if (dto.Image != null)
-                {
-                    existing.Image = await _fileService.UpdateImageAsync(dto.Image, existing.Image, "paymentlinks");
-                }
+                //if (dto.Image != null)
+                //{
+                //    existing.Image = await _fileService.UpdateImageAsync(dto.Image, existing.Image, "paymentlinks");
+                //}
 
-                var result = await _paymentLinkRepo.UpdateAsync(existing);
-                if (result.Success)
-                    updatedLinks.Add(result.Data);
+                //var result = await _paymentLinkRepo.UpdateAsync(existing);
+                //if (result.Success)
+                //    updatedLinks.Add(result.Data);
             }
 
             return new GeneralResponse<IEnumerable<PaymentLinkReadDTO>>
@@ -218,16 +205,32 @@ namespace invoice.Services
             };
         }
 
-        public async Task<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>> GetAllAsync(string userId)
+        public async Task<GeneralResponse<IEnumerable<GetAllPaymentLinkDTO>>> GetAllAsync(string userId)
         {
             var entities = await _paymentLinkRepo.GetAllAsync(userId);
 
-            return new GeneralResponse<IEnumerable<PaymentLinkReadDTO>>
+            return new GeneralResponse<IEnumerable<GetAllPaymentLinkDTO>>
             {
                 Success = true,
                 Message = entities.Any() ? "Payment links retrieved successfully" : "No payment links found",
-                Data = _mapper.Map<IEnumerable<PaymentLinkReadDTO>>(entities)
+                Data = _mapper.Map<IEnumerable<GetAllPaymentLinkDTO>>(entities)
             };
+        }
+        public async Task<GeneralResponse<bool>> ActivateStoreAsync(string id,string userId)
+        {
+
+            if (string.IsNullOrWhiteSpace(id))
+                return new GeneralResponse<bool> { Success = false, Message = "Payment link ID is required" };
+
+            var entity = await _paymentLinkRepo.GetByIdAsync(id, userId);
+            if (entity == null)
+                return new GeneralResponse<bool> { Success = false, Message = "Payment link not found" };
+
+
+            entity.IsActivated = !entity.IsActivated;
+            await _paymentLinkRepo.UpdateAsync(entity);
+
+            return new GeneralResponse<bool>(true, "payment link updated successfully", true);
         }
 
         public async Task<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>> QueryAsync(Expression<Func<PaymentLink, bool>> predicate, string userId)
@@ -242,7 +245,7 @@ namespace invoice.Services
             var entities = await _paymentLinkRepo.QueryAsync(predicate);
 
             if (!string.IsNullOrEmpty(userId))
-                entities = entities.Where(pl => pl.CreatedBy == userId);
+                entities = entities.Where(pl => pl.UserId == userId);
 
             return new GeneralResponse<IEnumerable<PaymentLinkReadDTO>>
             {
@@ -254,21 +257,11 @@ namespace invoice.Services
 
         public async Task<int> CountAsync(string userId)
         {
-            var links = await _paymentLinkRepo.QueryAsync(pl => string.IsNullOrEmpty(userId) || pl.CreatedBy == userId);
-            return links.Count();
+            return await _paymentLinkRepo.CountAsync(userId);
+           
         }
 
-        public async Task<int> CountActiveAsync(string userId)
-        {
-            var links = await _paymentLinkRepo.QueryAsync(pl => pl.IsActive && (string.IsNullOrEmpty(userId) || pl.CreatedBy == userId));
-            return links.Count();
-        }
-
-        public async Task<int> CountByInvoiceAsync(string invoiceId, string userId)
-        {
-            var links = await _paymentLinkRepo.QueryAsync(pl => pl.InvoiceId == invoiceId && (string.IsNullOrEmpty(userId) || pl.CreatedBy == userId));
-            return links.Count();
-        }
+      
 
         public async Task<bool> ExistsAsync(string id, string userId)
         {

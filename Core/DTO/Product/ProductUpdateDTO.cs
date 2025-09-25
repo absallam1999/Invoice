@@ -6,7 +6,7 @@ namespace invoice.Core.DTO.Product
     {
         [Required]
         public string Name { get; set; }
-        public string? Image { get; set; }
+        public IFormFile? Image { get; set; }
         [Required]
         public decimal Price { get; set; }
         public int? Quantity { get; set; } = null;

@@ -166,6 +166,16 @@ namespace invoice.Services
                 return new GeneralResponse<StoreReadDTO>(false, "Store not found");
 
             _mapper.Map(dto, entity);
+            var exists = await _storeRepo.GetBySlugAsync(dto.Slug);
+            if (exists != null)
+            {
+                return new GeneralResponse<StoreReadDTO>
+                {
+                    Success = false,
+                    Message = "Slug already exists, please choose another name."
+                };
+            }
+
             await _storeRepo.UpdateAsync(entity);
 
             return new GeneralResponse<StoreReadDTO>(true, "Store updated successfully", _mapper.Map<StoreReadDTO>(entity));
@@ -174,10 +184,10 @@ namespace invoice.Services
 
        
         #region order
-        public async Task<GeneralResponse<string>> CreateOrderAsync(CreateOrderDTO dto, string userId)
+        public async Task<GeneralResponse<object>> CreateOrderAsync(CreateOrderDTO dto, string userId)
         {
             if (dto == null || string.IsNullOrWhiteSpace(userId))
-                return new GeneralResponse<string> { Success = false, Message = "order data and UserId are required." };
+                return new GeneralResponse<object> { Success = false, Message = "order data and UserId are required." };
             var user = await _ApplicationUserRepo.GetByIdAsync(userId);
 
             //client
@@ -200,7 +210,7 @@ namespace invoice.Services
                 entity.UserId = userId;
                 var result = await _clientRepo.AddAsync(entity);
 
-                if (!result.Success) return new GeneralResponse<string>(false, result.Message);
+                if (!result.Success) return new GeneralResponse<object>(false, result.Message);
                 var dtoResult = _mapper.Map<ClientReadDTO>(result.Data);
                 ClientId = dtoResult.Id;
             }
@@ -220,12 +230,12 @@ namespace invoice.Services
                 foreach (var item in dto.Invoice.InvoiceItems)
                 {
                     var product = await _ProductRepo.GetByIdAsync(item.ProductId, userId);
-                    if (product == null) return new GeneralResponse<string> { Success = false, Message = $"Product {item.ProductId} not found" };
+                    if (product == null) return new GeneralResponse<object> { Success = false, Message = $"Product {item.ProductId} not found" };
 
                     if (product.Quantity != null)
                     {
                         if (product.Quantity < item.Quantity)
-                            return new GeneralResponse<string> { Success = false, Message = $"Product Quantity not Enough for {product.Name}" };
+                            return new GeneralResponse<object> { Success = false, Message = $"Product Quantity not Enough for {product.Name}" };
 
                         product.Quantity -= item.Quantity;
                         await _ProductRepo.UpdateAsync(product);
@@ -267,7 +277,7 @@ namespace invoice.Services
 
             await _invoiceRepo.AddAsync(invoice);
 
-            return new GeneralResponse<string>
+            return new GeneralResponse<object>
             {
                 Success = true,
                 Message = "Order created successfully.",

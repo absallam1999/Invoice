@@ -127,7 +127,8 @@ namespace invoice.Services
                 .Include(x => x.Payments)
                 .Include(x => x.Language)
                 .Include(x => x.Order)
-                .Include(x => x.User)
+                .Include(x => x.User).ThenInclude(u=>u.Currency)
+                
 
                 );
 
@@ -141,12 +142,24 @@ namespace invoice.Services
             };
         }
 
+        public async Task<GeneralResponse<IEnumerable<InvoiceSummaryWithDateDto>>> GetInvoicesSummaryWithDateAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                return new  GeneralResponse<IEnumerable<InvoiceSummaryWithDateDto>> { Success = false, Message = " UserId are required." };
+            var summary = await _invoiceRepo.GetGroupedByStatusAndDateAsync(userId);
+            return new GeneralResponse<IEnumerable<InvoiceSummaryWithDateDto>>
+            {
+                Success = true,
+                Message = "invoices summary retrieved successfully.",
+                Data = summary
+            };
+
+        }
         public async Task<GeneralResponse<IEnumerable<InvoiceSummaryDto>>> GetInvoicesSummaryAsync(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId))
                 return new  GeneralResponse<IEnumerable<InvoiceSummaryDto>> { Success = false, Message = " UserId are required." };
-            var groupedInvoices = await _invoiceRepo.GetGroupedByStatusAsync(userId);
-            var summary = _mapper.Map<IEnumerable<InvoiceSummaryDto>>(groupedInvoices);
+            var summary = await _invoiceRepo.GetGroupedByStatusAsync(userId);
 
             return new GeneralResponse<IEnumerable<InvoiceSummaryDto>>
             {
@@ -810,35 +823,7 @@ namespace invoice.Services
             };
         }
 
-        public async Task<GeneralResponse<bool>> GeneratePaymentLinkAsync(
-            PaymentLinkCreateDTO dto, string userId)
-        {
-            var invoice = await _invoiceRepo.GetByIdAsync(dto.InvoiceId, userId);
-            if (invoice == null)
-            {
-                return new GeneralResponse<bool>
-                {
-                    Success = false,
-                    Message = $"Invoice with Id '{dto.InvoiceId}' not found.",
-                    Data = false
-                };
-            }
-
-            var paymentLink = _mapper.Map<PaymentLink>(dto);
-            paymentLink.CreatedAt = DateTime.UtcNow;
-
-            await _paymentLinkRepo.AddAsync(paymentLink);
-
-            //invoice.PaymentLink.Add(paymentLink);
-            await _invoiceRepo.UpdateAsync(invoice);
-
-            return new GeneralResponse<bool>
-            {
-                Success = true,
-                Message = "Payment link generated successfully.",
-                Data = true
-            };
-        }
+    
 
         public async Task<GeneralResponse<bool>> MarkAsPaidAsync(string invoiceId, string userId)
         {

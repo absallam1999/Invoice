@@ -36,6 +36,9 @@ namespace Repo
             if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
                 query = query.Where(e => EF.Property<string>(e, "UserId") == userId);
 
+            if (typeof(T).GetProperty("CreatedAt") != null)
+                query = query.OrderByDescending(e => EF.Property<DateTime>(e, "CreatedAt"));
+
             return await query.ToListAsync();
         }
 
@@ -75,7 +78,8 @@ namespace Repo
                     EF.Property<string>(e, "UserId") == userId
                     && EF.Property<bool>(e, "IsDeleted") == false
                 );
-
+            if (typeof(T).GetProperty("CreatedAt") != null)
+                query = query.OrderByDescending(e => EF.Property<DateTime>(e, "CreatedAt"));
             return await query.Where(e => ids.Contains(EF.Property<string>(e, "Id"))).ToListAsync();
         }
 
@@ -94,7 +98,8 @@ namespace Repo
                     EF.Property<string>(e, "UserId") == userId
                     && EF.Property<bool>(e, "IsDeleted") == false
                 );
-
+            if (typeof(T).GetProperty("CreatedAt") != null)
+                query = query.OrderByDescending(e => EF.Property<DateTime>(e, "CreatedAt"));
             return await query.ToListAsync();
         }
         public async Task<T> GetSingleByUserIdAsync(
@@ -114,8 +119,6 @@ namespace Repo
                     && EF.Property<bool>(e, "IsDeleted") == false
                 );
             }
-
-            // هنا تجيب عنصر واحد
             return await query.FirstOrDefaultAsync();
         }
 
@@ -129,6 +132,8 @@ namespace Repo
             if (includes != null && includes.Any())
                 query = includes.Aggregate(query, (current, include) => current.Include(include));
 
+            if (typeof(T).GetProperty("CreatedAt") != null)
+                query = query.OrderByDescending(e => EF.Property<DateTime>(e, "CreatedAt"));
             return await query.ToListAsync();
         }
 
@@ -141,7 +146,8 @@ namespace Repo
 
             if (include != null)
                 query = include(query);
-
+            if (typeof(T).GetProperty("CreatedAt") != null)
+                query = query.OrderByDescending(e => EF.Property<DateTime>(e, "CreatedAt"));
             return await query.ToListAsync();
         }
 

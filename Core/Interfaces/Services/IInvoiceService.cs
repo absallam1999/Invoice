@@ -15,6 +15,7 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<InvoiceReadDTO>> GetByIdAsync(string id, string userId);
         Task<GeneralResponse<InvoicewithUserDTO>> GetByIdWithUserAsync(string id);
         Task<GeneralResponse<IEnumerable<InvoiceSummaryDto>>> GetInvoicesSummaryAsync(string userId);
+        Task<GeneralResponse<IEnumerable<InvoiceSummaryWithDateDto>>> GetInvoicesSummaryWithDateAsync(string userId);
 
         Task<GeneralResponse<InvoiceReadDTO>> GetByCodeAsync(string code, string userId);
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> SearchAsync(string keyword, string userId);
@@ -44,7 +45,6 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<decimal>> GetTotalFinalValueAsync(string userId);
 
         Task<GeneralResponse<bool>> AddPaymentAsync(string invoiceId, PaymentCreateDTO paymentDto, string userId);
-        Task<GeneralResponse<bool>> GeneratePaymentLinkAsync(PaymentLinkCreateDTO dto, string userId);
 
         Task<GeneralResponse<bool>> MarkAsPaidAsync(string invoiceId, string userId);
         Task<GeneralResponse<bool>> CancelAsync(string invoiceId, string userId);

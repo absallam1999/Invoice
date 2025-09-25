@@ -144,11 +144,14 @@ namespace invoice.Repo.Data.Configurations
             builder.HasMany(i => i.Payments)
                 .WithOne(p => p.Invoice)
                 .HasForeignKey(p => p.InvoiceId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
+
+            
+
             builder.HasOne(i => i.PaymentLink)
-           .WithOne(pl => pl.Invoice)
-           .HasForeignKey<PaymentLink>(pl => pl.InvoiceId)
-           .OnDelete(DeleteBehavior.NoAction);
+            .WithMany(pl => pl.Invoices)
+            .HasForeignKey(i => i.PaymentLinkId)
+            .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(i => i.InvoiceItems)
                 .WithOne(ii => ii.Invoice)

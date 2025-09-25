@@ -20,10 +20,10 @@ namespace invoice.Core.Entities
         public string? TermsConditions { get; set; }
 
         public string UserId { get; set; }
-        public ApplicationUser User { get; set; }
+        public ApplicationUser User { get; set; } 
         public Order? Order { get; set; }
-       
-
+        public string? PaymentLinkId { get; set; }
+        public PaymentLink? PaymentLink { get; set; }
         public string? ClientId { get; set; }
         public Client? Client { get; set; }
 
@@ -33,6 +33,6 @@ namespace invoice.Core.Entities
         public List<Payment> Payments { get; set; } = new();
         public PayInvoice? PayInvoice { get; set; }
         public List<InvoiceItem> InvoiceItems { get; set; } = new();
-        public PaymentLink? PaymentLink { get; set; } 
+
     }
 }

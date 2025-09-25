@@ -6,6 +6,7 @@ using invoice.Core.DTO.Language;
 using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentLink;
 using invoice.Core.DTO.Store;
+using invoice.Core.DTO.Tax;
 using invoice.Core.Entities;
 using invoice.Core.Enums;
 
@@ -20,14 +21,16 @@ namespace invoice.Services.Mappers
                 .ForMember(dest => dest.PayAt, opt => opt.MapFrom(src => src.PayInvoice.PaidAt))
                 .ForMember(dest => dest.Language, opt => opt.MapFrom(src => src.Language))
                 .ForMember(dest => dest.InvoiceItems, opt => opt.MapFrom(src => src.InvoiceItems))
-                .ForMember(dest => dest.Taxinfo, opt => opt.MapFrom(src => src.User.Tax))
+                .ForMember(dest => dest.TaxInfo, opt => opt.MapFrom(src => src.User.Tax))
                 .ForMember(dest => dest.payMethodId, opt => opt.MapFrom(src => src.PayInvoice != null ? src.PayInvoice.PaymentMethodId : null))
                 .ForMember(dest => dest.payMethod, opt => opt.MapFrom(src => src.PayInvoice != null ? src.PayInvoice.PaymentMethod.Name : 0))
                 .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src.Order))
-                .ReverseMap();
+               ;
 
+            CreateMap<Tax, TaxReadDTO>();
 
-            CreateMap<Invoice, InvoicewithUserDTO>().ReverseMap();
+            CreateMap<Invoice, InvoicewithUserDTO>()
+                .ForMember(dest => dest.CurrencyInfo, opt => opt.MapFrom(src => src.User.Currency));
 
 
             CreateMap<Invoice, GetAllInvoiceDTO>()
@@ -62,10 +65,7 @@ namespace invoice.Services.Mappers
             CreateMap<Language, LanguageReadDTO>().ReverseMap();
 
 
-            CreateMap<IGrouping<InvoiceStatus, Invoice>, InvoiceSummaryDto>()
-            .ForMember(dest => dest.InvoiceStatus, opt => opt.MapFrom(src => src.Key.ToString()))
-            .ForMember(dest => dest.NumberOfInvoices, opt => opt.MapFrom(src => src.Count()))
-            .ForMember(dest => dest.TotalCost, opt => opt.MapFrom(src => src.Sum(i => i.FinalValue)));
+          
         }
     }
 
