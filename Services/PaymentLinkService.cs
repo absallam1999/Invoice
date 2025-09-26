@@ -54,6 +54,7 @@ namespace invoice.Services
             }
 
             entity.PaymentOptions = new PaymentOptions();
+            entity.purchaseOptions = new PurchaseCompletionOptions();
 
 
             var resp = await _paymentLinkRepo.AddAsync(entity);
@@ -96,12 +97,7 @@ namespace invoice.Services
             }
 
 
-            if (dto.Image != null)
-            {
-                existing.Image = await _fileService.UpdateImageAsync(dto.Image, existing.Image, "paymentlinks");
-            }
-
-         
+          
             var result = await _paymentLinkRepo.UpdateAsync(existing);
             if (!result.Success)
                 return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Failed to update payment link" };
@@ -216,7 +212,7 @@ namespace invoice.Services
                 Data = _mapper.Map<IEnumerable<GetAllPaymentLinkDTO>>(entities)
             };
         }
-        public async Task<GeneralResponse<bool>> ActivateStoreAsync(string id,string userId)
+        public async Task<GeneralResponse<bool>> ActivatePaymentLinkAsync(string id,string userId)
         {
 
             if (string.IsNullOrWhiteSpace(id))
@@ -258,10 +254,12 @@ namespace invoice.Services
         public async Task<int> CountAsync(string userId)
         {
             return await _paymentLinkRepo.CountAsync(userId);
-           
+
         }
 
-      
+
+
+
 
         public async Task<bool> ExistsAsync(string id, string userId)
         {

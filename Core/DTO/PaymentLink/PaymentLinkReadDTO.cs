@@ -10,19 +10,19 @@ namespace invoice.Core.DTO.PaymentLink
 {
     public class PaymentLinkReadDTO
     {
+        public string Id { get; set; }
+        public string Slug { get; set; }
         public decimal Value { get; set; }
         public string Currency { get; set; }
-        public string PaymentsNumber { get; set; }
+        public int PaymentsNumber { get; set; }
         public int? MaxPaymentsNumber { get; set; }
         public bool IsActivated { get; set; }
         public string Description { get; set; }
-        public string Image { get; set; }
+        public DateTime? ExpireDate { get; set; } 
         public DateTime CreatedAt { get; set; }
 
-
-        
         public List<GetAllInvoiceDTO>? Invoices { get; set; }
         public PaymentOptionsDTO PaymentOptions { get; set; }
-        public PurchaseCompletionOptions PurchaseOptions { get; set; }
+        public PurchaseCompletionOptions purchaseOptions { get; set; }
     }
 }

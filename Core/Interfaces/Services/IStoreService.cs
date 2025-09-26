@@ -10,7 +10,7 @@ namespace invoice.Core.Interfaces.Services
     public interface IStoreService
     {
         Task<GeneralResponse<StoreReadDTO>> CreateAsync(StoreCreateDTO dto, string userId);
-        Task<GeneralResponse<StoreReadDTO>> UpdateAsync(string id, StoreUpdateDTO dto, string userId);
+        Task<GeneralResponse<StoreReadDTO>> UpdateAsync(StoreUpdateDTO dto, string userId);
         Task<GeneralResponse<bool>> DeleteAsync(string id, string userId);
         Task<GeneralResponse<StoreReadDTO>> GetByIdAsync(string id, string userId);
         Task<GeneralResponse<StoreReadDTO>> GetBySlug(string slug);

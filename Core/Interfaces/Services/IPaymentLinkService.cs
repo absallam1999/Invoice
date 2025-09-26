@@ -13,6 +13,7 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>> UpdateRangeAsync(IEnumerable<PaymentLinkUpdateDTO> dtos, string userId);
         Task<GeneralResponse<bool>> DeleteAsync(string id, string userId);
         Task<GeneralResponse<bool>> DeleteRangeAsync(IEnumerable<string> ids, string userId);
+        Task<GeneralResponse<bool>> ActivatePaymentLinkAsync(string id, string userId);
 
         Task<GeneralResponse<PaymentLinkReadDTO>> GetByIdAsync(string id, string userId);
         Task<GeneralResponse<IEnumerable<GetAllPaymentLinkDTO>>> GetAllAsync(string userId);

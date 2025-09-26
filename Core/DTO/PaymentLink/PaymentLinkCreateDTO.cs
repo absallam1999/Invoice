@@ -13,7 +13,8 @@ namespace invoice.Core.DTO.PaymentLink
         public decimal Value { get; set; }
 
         public int? PaymentsNumber { get; set; } = null;
-        public string? Description { get; set; }
+        public DateTime? ExpireDate { get; set; } = null;
+        public string Currency { get; set; }
 
       
        

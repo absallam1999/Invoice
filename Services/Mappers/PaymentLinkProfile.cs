@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO.PaymentLink;
+using invoice.Core.DTO.Store;
 using invoice.Core.Entities;
 
 namespace invoice.Services.Mappers
@@ -8,9 +9,25 @@ namespace invoice.Services.Mappers
     {
         public PaymentLinkProfile()
         {
-            CreateMap<PaymentLink, PaymentLinkReadDTO>().ReverseMap();
+            CreateMap<PaymentLink, PaymentLinkReadDTO>();
+
             CreateMap<PaymentLinkCreateDTO, PaymentLink>();
-            CreateMap<PaymentLinkUpdateDTO, PaymentLink>();
+
+            CreateMap<PaymentLink, GetAllPaymentLinkDTO>();
+            
+            CreateMap<PaymentLinkUpdateDTO, PaymentLink>()
+              .ForMember(dest => dest.PaymentOptions, opt => opt.MapFrom(src => src.PaymentOptions))
+              .ForMember(dest => dest.purchaseOptions, opt => opt.MapFrom(src => src.purchaseOptions));
+
+
+
+
+            CreateMap<PaymentLink, PaymentLinkReadDTO>()
+                .ForMember(dest => dest.PaymentOptions, opt => opt.MapFrom(src => src.PaymentOptions))
+                .ForMember(dest => dest.purchaseOptions, opt => opt.MapFrom(src => src.purchaseOptions));
+
+
+
         }
     }
 }

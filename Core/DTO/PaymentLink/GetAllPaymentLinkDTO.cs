@@ -8,5 +8,6 @@
         public bool IsActivated { get; set; }
         public int PaymentsNumber { get; set; }
         public int? MaxPaymentsNumber { get; set; }
+        public DateTime? ExpireDate { get; set; } 
     }
 }

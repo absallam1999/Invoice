@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using invoice.Repo.Data;
 
@@ -11,9 +12,11 @@ using invoice.Repo.Data;
 namespace invoice.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250926001640_updatepaymentlink3")]
+    partial class updatepaymentlink3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -371,7 +374,7 @@ namespace invoice.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Currencies", (string)null);
+                    b.ToTable("Currencies");
                 });
 
             modelBuilder.Entity("invoice.Core.Entities.Invoice", b =>
@@ -655,7 +658,7 @@ namespace invoice.Migrations
                     b.HasIndex("InvoiceId")
                         .IsUnique();
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("invoice.Core.Entities.OrderItem", b =>
@@ -1235,7 +1238,7 @@ namespace invoice.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Taxes", (string)null);
+                    b.ToTable("Taxes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1480,7 +1483,7 @@ namespace invoice.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("invoice.Core.Entities.PaymentLink.PaymentOptions#invoice.Core.Entities.utils.PaymentOptions", "PaymentOptions", b1 =>
+                    b.OwnsOne("invoice.Core.Entities.utils.PaymentOptions", "PaymentOptions", b1 =>
                         {
                             b1.Property<string>("PaymentLinkId")
                                 .HasColumnType("nvarchar(8)");
@@ -1508,13 +1511,13 @@ namespace invoice.Migrations
 
                             b1.HasKey("PaymentLinkId");
 
-                            b1.ToTable("PaymentLinks", (string)null);
+                            b1.ToTable("PaymentLinks");
 
                             b1.WithOwner()
                                 .HasForeignKey("PaymentLinkId");
                         });
 
-                    b.OwnsOne("invoice.Core.Entities.PaymentLink.purchaseOptions#invoice.Models.Entities.utils.PurchaseCompletionOptions", "purchaseOptions", b1 =>
+                    b.OwnsOne("invoice.Models.Entities.utils.PurchaseCompletionOptions", "purchaseOptions", b1 =>
                         {
                             b1.Property<string>("PaymentLinkId")
                                 .HasColumnType("nvarchar(8)");
@@ -1549,7 +1552,7 @@ namespace invoice.Migrations
 
                             b1.HasKey("PaymentLinkId");
 
-                            b1.ToTable("PaymentLinks", (string)null);
+                            b1.ToTable("PaymentLinks");
 
                             b1.WithOwner()
                                 .HasForeignKey("PaymentLinkId");
@@ -1594,7 +1597,40 @@ namespace invoice.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.OwnsOne("invoice.Core.Entities.Store.ContactInformations#invoice.Core.Entities.utils.ContactInfo", "ContactInformations", b1 =>
+                    b.OwnsOne("invoice.Core.Entities.utils.PaymentOptions", "PaymentOptions", b1 =>
+                        {
+                            b1.Property<string>("StoreId")
+                                .HasColumnType("nvarchar(8)");
+
+                            b1.Property<bool>("BankTransfer")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false);
+
+                            b1.Property<bool>("Cash")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(true);
+
+                            b1.Property<bool>("PayPal")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false);
+
+                            b1.Property<bool>("Tax")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false);
+
+                            b1.HasKey("StoreId");
+
+                            b1.ToTable("Stores");
+
+                            b1.WithOwner()
+                                .HasForeignKey("StoreId");
+                        });
+
+                    b.OwnsOne("invoice.Core.Entities.utils.ContactInfo", "ContactInformations", b1 =>
                         {
                             b1.Property<string>("StoreId")
                                 .HasColumnType("nvarchar(8)");
@@ -1625,46 +1661,13 @@ namespace invoice.Migrations
 
                             b1.HasKey("StoreId");
 
-                            b1.ToTable("Stores", (string)null);
+                            b1.ToTable("Stores");
 
                             b1.WithOwner()
                                 .HasForeignKey("StoreId");
                         });
 
-                    b.OwnsOne("invoice.Core.Entities.Store.PaymentOptions#invoice.Core.Entities.utils.PaymentOptions", "PaymentOptions", b1 =>
-                        {
-                            b1.Property<string>("StoreId")
-                                .HasColumnType("nvarchar(8)");
-
-                            b1.Property<bool>("BankTransfer")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("bit")
-                                .HasDefaultValue(false);
-
-                            b1.Property<bool>("Cash")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("bit")
-                                .HasDefaultValue(true);
-
-                            b1.Property<bool>("PayPal")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("bit")
-                                .HasDefaultValue(false);
-
-                            b1.Property<bool>("Tax")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("bit")
-                                .HasDefaultValue(false);
-
-                            b1.HasKey("StoreId");
-
-                            b1.ToTable("Stores", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("StoreId");
-                        });
-
-                    b.OwnsOne("invoice.Core.Entities.Store.Shipping#invoice.Models.Entities.utils.Shipping", "Shipping", b1 =>
+                    b.OwnsOne("invoice.Models.Entities.utils.Shipping", "Shipping", b1 =>
                         {
                             b1.Property<string>("StoreId")
                                 .HasColumnType("nvarchar(8)");
@@ -1685,13 +1688,13 @@ namespace invoice.Migrations
 
                             b1.HasKey("StoreId");
 
-                            b1.ToTable("Stores", (string)null);
+                            b1.ToTable("Stores");
 
                             b1.WithOwner()
                                 .HasForeignKey("StoreId");
                         });
 
-                    b.OwnsOne("invoice.Core.Entities.Store.StoreSettings#invoice.Models.Entities.utils.StoreSettings", "StoreSettings", b1 =>
+                    b.OwnsOne("invoice.Models.Entities.utils.StoreSettings", "StoreSettings", b1 =>
                         {
                             b1.Property<string>("StoreId")
                                 .HasColumnType("nvarchar(8)");
@@ -1724,12 +1727,12 @@ namespace invoice.Migrations
 
                             b1.HasKey("StoreId");
 
-                            b1.ToTable("Stores", (string)null);
+                            b1.ToTable("Stores");
 
                             b1.WithOwner()
                                 .HasForeignKey("StoreId");
 
-                            b1.OwnsOne("invoice.Core.Entities.Store.StoreSettings#invoice.Models.Entities.utils.StoreSettings.purchaseOptions#invoice.Models.Entities.utils.PurchaseCompletionOptions", "purchaseOptions", b2 =>
+                            b1.OwnsOne("invoice.Models.Entities.utils.PurchaseCompletionOptions", "purchaseOptions", b2 =>
                                 {
                                     b2.Property<string>("StoreSettingsStoreId")
                                         .HasColumnType("nvarchar(8)");
@@ -1758,7 +1761,7 @@ namespace invoice.Migrations
 
                                     b2.HasKey("StoreSettingsStoreId");
 
-                                    b2.ToTable("Stores", (string)null);
+                                    b2.ToTable("Stores");
 
                                     b2.WithOwner()
                                         .HasForeignKey("StoreSettingsStoreId");

@@ -13,13 +13,14 @@ namespace invoice.Core.DTO.PaymentLink
         public decimal Value { get; set; }
         public string Currency { get; set; }
         public int? MaxPaymentsNumber { get; set; } = null;
-        public string Description { get; set; }
-        public IFormFile? Image { get; set; }
-        public bool IsActivated { get; set; }
-
+        public string? Description { get; set; }
+        public bool IsActivated { get; set; } = true;
+        public DateTime? ExpireDate { get; set; } = null;
+   
 
         public PaymentOptionsDTO PaymentOptions { get; set; }
-        public PurchaseCompletionOptions PurchaseOptions { get; set; }
+        public PurchaseCompletionOptions purchaseOptions { get; set; }
 
     }
+    
 }

@@ -47,10 +47,10 @@ namespace invoice.Controllers
         }
 
 
-        [HttpPut("{id}/{userId}")]
-        public async Task<IActionResult> Update(string id, [FromForm] StoreUpdateDTO dto, string userId)
+        [HttpPut()]
+        public async Task<IActionResult> Update( [FromForm] StoreUpdateDTO dto)
         {
-            var result = await _storeService.UpdateAsync(id, dto, userId);
+            var result = await _storeService.UpdateAsync( dto, GetUserId ());
             return Ok(result);
         }
 
@@ -83,19 +83,8 @@ namespace invoice.Controllers
 
 
 
-        [HttpGet("active")]
-        public async Task<IActionResult> GetActiveStores([FromQuery] string userId)
-        {
-            var result = await _storeService.GetActiveStoresAsync(userId);
-            return Ok(result);
-        }
 
-        [HttpGet("inactive")]
-        public async Task<IActionResult> GetInactiveStores([FromQuery] string userId)
-        {
-            var result = await _storeService.GetInactiveStoresAsync(userId);
-            return Ok(result);
-        }
+     
 
 
 

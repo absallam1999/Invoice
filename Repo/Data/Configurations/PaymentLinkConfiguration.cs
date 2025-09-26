@@ -30,11 +30,7 @@ namespace invoice.Repo.Data.Configurations
 
           
 
-            builder.Property(pl => pl.Image)
-                   .HasMaxLength(500);
-
-            builder.Property(pl => pl.Terms)
-                   .HasMaxLength(2000);
+          
 
            
         }

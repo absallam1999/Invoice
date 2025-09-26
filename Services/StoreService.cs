@@ -159,9 +159,9 @@ namespace invoice.Services
         }
 
 
-        public async Task<GeneralResponse<StoreReadDTO>> UpdateAsync(string id, StoreUpdateDTO dto, string userId)
+        public async Task<GeneralResponse<StoreReadDTO>> UpdateAsync(  StoreUpdateDTO dto, string userId)
         {
-            var entity = await _storeRepo.GetByIdAsync(id, userId);
+            var entity = await _storeRepo.GetSingleByUserIdAsync( userId);
             if (entity == null)
                 return new GeneralResponse<StoreReadDTO>(false, "Store not found");
 

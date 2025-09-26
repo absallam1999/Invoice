@@ -14,7 +14,6 @@ namespace invoice.Repo.Data
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<Client> Clients { get; set; }
-        //public DbSet<ContactInfo> ContactInfos { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceItem> InvoiceItems { get; set; }
         public DbSet<Language> Languages { get; set; }
@@ -101,7 +100,7 @@ namespace invoice.Repo.Data
                       .IsRequired(false);
 
                     ci.Property(c => c.WhatsApp)
-                      .HasMaxLength(20)
+                      .HasMaxLength(150)
                       .IsRequired(false);
 
                     ci.Property(c => c.Instagram)
@@ -109,6 +108,31 @@ namespace invoice.Repo.Data
                       .IsRequired(false);
                 });
             });
+
+
+            builder.Entity<PaymentLink>(pl =>
+            {
+                pl.OwnsOne(p => p.purchaseOptions, po =>
+                {
+                    po.Property(x => x.Name).HasColumnName("ClientName").HasDefaultValue(true);
+                    po.Property(x => x.Email).HasColumnName("ClientEmail").HasDefaultValue(true);
+                    po.Property(x => x.phone).HasColumnName("ClientPhone").HasDefaultValue(true);
+                    po.Property(x => x.Address).HasColumnName("ClientAddress").HasDefaultValue(true);
+                    po.Property(x => x.TermsAndConditions).HasColumnName("TermsAndConditions");
+                });
+            });
+
+            builder.Entity<PaymentLink>(pl =>
+            {
+                pl.OwnsOne(p => p.PaymentOptions, po =>
+                {
+                    po.Property(x => x.BankTransfer).HasColumnName("BankTransfer").HasDefaultValue(true);
+                    po.Property(x => x.PayPal).HasColumnName("PayPal").HasDefaultValue(false);
+                    po.Property(x => x.Cash).HasColumnName("Cash").HasDefaultValue(true);
+                 
+                });
+            });
+
         }
 
 

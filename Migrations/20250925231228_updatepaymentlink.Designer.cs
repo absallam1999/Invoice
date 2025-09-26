@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using invoice.Repo.Data;
 
@@ -11,9 +12,11 @@ using invoice.Repo.Data;
 namespace invoice.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250925231228_updatepaymentlink")]
+    partial class updatepaymentlink
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -371,7 +374,7 @@ namespace invoice.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Currencies", (string)null);
+                    b.ToTable("Currencies");
                 });
 
             modelBuilder.Entity("invoice.Core.Entities.Invoice", b =>
@@ -546,7 +549,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ar",
-                            CreatedAt = new DateTime(2025, 9, 26, 3, 16, 39, 897, DateTimeKind.Unspecified).AddTicks(4520),
+                            CreatedAt = new DateTime(2025, 9, 26, 2, 12, 27, 940, DateTimeKind.Unspecified).AddTicks(290),
                             IsDeleted = false,
                             Name = "Arabic",
                             Target = "Page"
@@ -554,7 +557,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "en",
-                            CreatedAt = new DateTime(2025, 9, 26, 3, 16, 39, 897, DateTimeKind.Unspecified).AddTicks(4570),
+                            CreatedAt = new DateTime(2025, 9, 26, 2, 12, 27, 940, DateTimeKind.Unspecified).AddTicks(324),
                             IsDeleted = false,
                             Name = "English",
                             Target = "Page"
@@ -655,7 +658,7 @@ namespace invoice.Migrations
                     b.HasIndex("InvoiceId")
                         .IsUnique();
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("invoice.Core.Entities.OrderItem", b =>
@@ -908,11 +911,12 @@ namespace invoice.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<DateTime?>("ExpireDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly?>("ExpireDate")
+                        .HasColumnType("date");
 
                     b.Property<bool>("IsActivated")
                         .HasColumnType("bit");
@@ -985,84 +989,84 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ca",
-                            CreatedAt = new DateTime(2025, 9, 26, 3, 16, 39, 897, DateTimeKind.Unspecified).AddTicks(4901),
+                            CreatedAt = new DateTime(2025, 9, 26, 2, 12, 27, 940, DateTimeKind.Unspecified).AddTicks(587),
                             IsDeleted = false,
                             Name = "Cash"
                         },
                         new
                         {
                             Id = "cc",
-                            CreatedAt = new DateTime(2025, 9, 26, 3, 16, 39, 897, DateTimeKind.Unspecified).AddTicks(4934),
+                            CreatedAt = new DateTime(2025, 9, 26, 2, 12, 27, 940, DateTimeKind.Unspecified).AddTicks(623),
                             IsDeleted = false,
                             Name = "CreditCard"
                         },
                         new
                         {
                             Id = "dc",
-                            CreatedAt = new DateTime(2025, 9, 26, 3, 16, 39, 897, DateTimeKind.Unspecified).AddTicks(4994),
+                            CreatedAt = new DateTime(2025, 9, 26, 2, 12, 27, 940, DateTimeKind.Unspecified).AddTicks(631),
                             IsDeleted = false,
                             Name = "DebitCard"
                         },
                         new
                         {
                             Id = "bt",
-                            CreatedAt = new DateTime(2025, 9, 26, 3, 16, 39, 897, DateTimeKind.Unspecified).AddTicks(5004),
+                            CreatedAt = new DateTime(2025, 9, 26, 2, 12, 27, 940, DateTimeKind.Unspecified).AddTicks(639),
                             IsDeleted = false,
                             Name = "BankTransfer"
                         },
                         new
                         {
                             Id = "pp",
-                            CreatedAt = new DateTime(2025, 9, 26, 3, 16, 39, 897, DateTimeKind.Unspecified).AddTicks(5013),
+                            CreatedAt = new DateTime(2025, 9, 26, 2, 12, 27, 940, DateTimeKind.Unspecified).AddTicks(646),
                             IsDeleted = false,
                             Name = "PayPal"
                         },
                         new
                         {
                             Id = "st",
-                            CreatedAt = new DateTime(2025, 9, 26, 3, 16, 39, 897, DateTimeKind.Unspecified).AddTicks(5022),
+                            CreatedAt = new DateTime(2025, 9, 26, 2, 12, 27, 940, DateTimeKind.Unspecified).AddTicks(654),
                             IsDeleted = false,
                             Name = "Stripe"
                         },
                         new
                         {
                             Id = "ap",
-                            CreatedAt = new DateTime(2025, 9, 26, 3, 16, 39, 897, DateTimeKind.Unspecified).AddTicks(5031),
+                            CreatedAt = new DateTime(2025, 9, 26, 2, 12, 27, 940, DateTimeKind.Unspecified).AddTicks(661),
                             IsDeleted = false,
                             Name = "ApplePay"
                         },
                         new
                         {
                             Id = "gp",
-                            CreatedAt = new DateTime(2025, 9, 26, 3, 16, 39, 897, DateTimeKind.Unspecified).AddTicks(5040),
+                            CreatedAt = new DateTime(2025, 9, 26, 2, 12, 27, 940, DateTimeKind.Unspecified).AddTicks(669),
                             IsDeleted = false,
                             Name = "GooglePay"
                         },
                         new
                         {
                             Id = "ma",
-                            CreatedAt = new DateTime(2025, 9, 26, 3, 16, 39, 897, DateTimeKind.Unspecified).AddTicks(5052),
+                            CreatedAt = new DateTime(2025, 9, 26, 2, 12, 27, 940, DateTimeKind.Unspecified).AddTicks(676),
                             IsDeleted = false,
                             Name = "Mada"
                         },
                         new
                         {
                             Id = "sp",
-                            CreatedAt = new DateTime(2025, 9, 26, 3, 16, 39, 897, DateTimeKind.Unspecified).AddTicks(5061),
+                            CreatedAt = new DateTime(2025, 9, 26, 2, 12, 27, 940, DateTimeKind.Unspecified).AddTicks(686),
                             IsDeleted = false,
                             Name = "STCPay"
                         },
                         new
                         {
                             Id = "sa",
-                            CreatedAt = new DateTime(2025, 9, 26, 3, 16, 39, 897, DateTimeKind.Unspecified).AddTicks(5069),
+                            CreatedAt = new DateTime(2025, 9, 26, 2, 12, 27, 940, DateTimeKind.Unspecified).AddTicks(693),
                             IsDeleted = false,
                             Name = "Sadad"
                         },
                         new
                         {
                             Id = "dl",
-                            CreatedAt = new DateTime(2025, 9, 26, 3, 16, 39, 897, DateTimeKind.Unspecified).AddTicks(5078),
+                            CreatedAt = new DateTime(2025, 9, 26, 2, 12, 27, 940, DateTimeKind.Unspecified).AddTicks(701),
                             IsDeleted = false,
                             Name = "Delivery"
                         });
@@ -1235,7 +1239,7 @@ namespace invoice.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Taxes", (string)null);
+                    b.ToTable("Taxes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1480,7 +1484,7 @@ namespace invoice.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("invoice.Core.Entities.PaymentLink.PaymentOptions#invoice.Core.Entities.utils.PaymentOptions", "PaymentOptions", b1 =>
+                    b.OwnsOne("invoice.Core.Entities.utils.PaymentOptions", "PaymentOptions", b1 =>
                         {
                             b1.Property<string>("PaymentLinkId")
                                 .HasColumnType("nvarchar(8)");
@@ -1508,13 +1512,13 @@ namespace invoice.Migrations
 
                             b1.HasKey("PaymentLinkId");
 
-                            b1.ToTable("PaymentLinks", (string)null);
+                            b1.ToTable("PaymentLinks");
 
                             b1.WithOwner()
                                 .HasForeignKey("PaymentLinkId");
                         });
 
-                    b.OwnsOne("invoice.Core.Entities.PaymentLink.purchaseOptions#invoice.Models.Entities.utils.PurchaseCompletionOptions", "purchaseOptions", b1 =>
+                    b.OwnsOne("invoice.Models.Entities.utils.PurchaseCompletionOptions", "purchaseOptions", b1 =>
                         {
                             b1.Property<string>("PaymentLinkId")
                                 .HasColumnType("nvarchar(8)");
@@ -1549,7 +1553,7 @@ namespace invoice.Migrations
 
                             b1.HasKey("PaymentLinkId");
 
-                            b1.ToTable("PaymentLinks", (string)null);
+                            b1.ToTable("PaymentLinks");
 
                             b1.WithOwner()
                                 .HasForeignKey("PaymentLinkId");
@@ -1594,7 +1598,40 @@ namespace invoice.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.OwnsOne("invoice.Core.Entities.Store.ContactInformations#invoice.Core.Entities.utils.ContactInfo", "ContactInformations", b1 =>
+                    b.OwnsOne("invoice.Core.Entities.utils.PaymentOptions", "PaymentOptions", b1 =>
+                        {
+                            b1.Property<string>("StoreId")
+                                .HasColumnType("nvarchar(8)");
+
+                            b1.Property<bool>("BankTransfer")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false);
+
+                            b1.Property<bool>("Cash")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(true);
+
+                            b1.Property<bool>("PayPal")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false);
+
+                            b1.Property<bool>("Tax")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false);
+
+                            b1.HasKey("StoreId");
+
+                            b1.ToTable("Stores");
+
+                            b1.WithOwner()
+                                .HasForeignKey("StoreId");
+                        });
+
+                    b.OwnsOne("invoice.Core.Entities.utils.ContactInfo", "ContactInformations", b1 =>
                         {
                             b1.Property<string>("StoreId")
                                 .HasColumnType("nvarchar(8)");
@@ -1625,46 +1662,13 @@ namespace invoice.Migrations
 
                             b1.HasKey("StoreId");
 
-                            b1.ToTable("Stores", (string)null);
+                            b1.ToTable("Stores");
 
                             b1.WithOwner()
                                 .HasForeignKey("StoreId");
                         });
 
-                    b.OwnsOne("invoice.Core.Entities.Store.PaymentOptions#invoice.Core.Entities.utils.PaymentOptions", "PaymentOptions", b1 =>
-                        {
-                            b1.Property<string>("StoreId")
-                                .HasColumnType("nvarchar(8)");
-
-                            b1.Property<bool>("BankTransfer")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("bit")
-                                .HasDefaultValue(false);
-
-                            b1.Property<bool>("Cash")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("bit")
-                                .HasDefaultValue(true);
-
-                            b1.Property<bool>("PayPal")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("bit")
-                                .HasDefaultValue(false);
-
-                            b1.Property<bool>("Tax")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("bit")
-                                .HasDefaultValue(false);
-
-                            b1.HasKey("StoreId");
-
-                            b1.ToTable("Stores", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("StoreId");
-                        });
-
-                    b.OwnsOne("invoice.Core.Entities.Store.Shipping#invoice.Models.Entities.utils.Shipping", "Shipping", b1 =>
+                    b.OwnsOne("invoice.Models.Entities.utils.Shipping", "Shipping", b1 =>
                         {
                             b1.Property<string>("StoreId")
                                 .HasColumnType("nvarchar(8)");
@@ -1685,13 +1689,13 @@ namespace invoice.Migrations
 
                             b1.HasKey("StoreId");
 
-                            b1.ToTable("Stores", (string)null);
+                            b1.ToTable("Stores");
 
                             b1.WithOwner()
                                 .HasForeignKey("StoreId");
                         });
 
-                    b.OwnsOne("invoice.Core.Entities.Store.StoreSettings#invoice.Models.Entities.utils.StoreSettings", "StoreSettings", b1 =>
+                    b.OwnsOne("invoice.Models.Entities.utils.StoreSettings", "StoreSettings", b1 =>
                         {
                             b1.Property<string>("StoreId")
                                 .HasColumnType("nvarchar(8)");
@@ -1724,12 +1728,12 @@ namespace invoice.Migrations
 
                             b1.HasKey("StoreId");
 
-                            b1.ToTable("Stores", (string)null);
+                            b1.ToTable("Stores");
 
                             b1.WithOwner()
                                 .HasForeignKey("StoreId");
 
-                            b1.OwnsOne("invoice.Core.Entities.Store.StoreSettings#invoice.Models.Entities.utils.StoreSettings.purchaseOptions#invoice.Models.Entities.utils.PurchaseCompletionOptions", "purchaseOptions", b2 =>
+                            b1.OwnsOne("invoice.Models.Entities.utils.PurchaseCompletionOptions", "purchaseOptions", b2 =>
                                 {
                                     b2.Property<string>("StoreSettingsStoreId")
                                         .HasColumnType("nvarchar(8)");
@@ -1758,7 +1762,7 @@ namespace invoice.Migrations
 
                                     b2.HasKey("StoreSettingsStoreId");
 
-                                    b2.ToTable("Stores", (string)null);
+                                    b2.ToTable("Stores");
 
                                     b2.WithOwner()
                                         .HasForeignKey("StoreSettingsStoreId");

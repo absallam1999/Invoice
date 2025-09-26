@@ -6,6 +6,7 @@ using invoice.Core.Entities;
 using invoice.Core.Interfaces.Services;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Authorization;
+using invoice.Services;
 
 namespace invoice.Controllers
 {
@@ -73,15 +74,24 @@ namespace invoice.Controllers
             return result.Success ? Ok(result) : NotFound(result);
         }
 
-        [HttpGet("all")]
-        public async Task<ActionResult<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>>> GetAll()
+        [HttpGet]
+        public async Task<ActionResult<GeneralResponse<IEnumerable<GetAllPaymentLinkDTO>>>> GetAll()
         {
             var result = await _paymentLinkService.GetAllAsync(GetUserId());
 
             return Ok(result);
         }
 
-        [HttpGet("query")]
+
+        [HttpPut("activate/{id}")]
+        public async Task<IActionResult> ActivateStore(string id)
+        {
+            var result = await _paymentLinkService.ActivatePaymentLinkAsync(id, GetUserId());
+            return Ok(result);
+        }
+
+
+        //[HttpGet("query")]
         //public async Task<ActionResult<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>>> Query(
         //    [FromQuery] string purpose = null,
         //    [FromQuery] decimal? minValue = null,
@@ -108,12 +118,14 @@ namespace invoice.Controllers
         }
 
         [HttpGet("count")]
-        public async Task<ActionResult<int>> Count()
+        public async Task<IActionResult> Count()
         {
-            var result = await _paymentLinkService.CountAsync(GetUserId());
+            var count = await _paymentLinkService.CountAsync(GetUserId());
 
-            return Ok(new { Success = true, Count = result });
+            return Ok(new { Count = count });
         }
+
+       
 
 
     }
