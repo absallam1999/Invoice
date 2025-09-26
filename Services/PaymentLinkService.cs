@@ -11,6 +11,7 @@ using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
 using invoice.Models.Entities.utils;
 using invoice.Repo;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace invoice.Services
@@ -87,7 +88,7 @@ namespace invoice.Services
             existing.UpdatedAt = DateTime.UtcNow;
 
             var exists = await _paymentLinkRepo.GetBySlugAsync(dto.Slug);
-            if (exists != null)
+            if (exists != null  && exists.Id != id)
             {
                 return new GeneralResponse<PaymentLinkReadDTO>
                 {
@@ -212,6 +213,16 @@ namespace invoice.Services
                 Data = _mapper.Map<IEnumerable<GetAllPaymentLinkDTO>>(entities)
             };
         }
+        public async Task<GeneralResponse<PaymentLinkWithUserDTO>> GetBySlug(string slug)
+        {
+            var entity = await _paymentLinkRepo.GetBySlugAsync(slug, 
+            q => q.Include(pl => pl.User) );
+            if (entity == null)
+                return new GeneralResponse<PaymentLinkWithUserDTO>(false, "payment link not found");
+
+            return new GeneralResponse<PaymentLinkWithUserDTO>(true, "payment link retrieved successfully", _mapper.Map<PaymentLinkWithUserDTO>(entity));
+        }
+
         public async Task<GeneralResponse<bool>> ActivatePaymentLinkAsync(string id,string userId)
         {
 

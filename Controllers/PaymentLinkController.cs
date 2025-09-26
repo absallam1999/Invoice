@@ -91,6 +91,15 @@ namespace invoice.Controllers
         }
 
 
+        [AllowAnonymous]
+        [HttpGet("slug/{slug}")]
+        public async Task<IActionResult> GetBySlug(string slug)
+        {
+            var result = await _paymentLinkService.GetBySlug(slug);
+            return Ok(result);
+        }
+
+
         //[HttpGet("query")]
         //public async Task<ActionResult<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>>> Query(
         //    [FromQuery] string purpose = null,

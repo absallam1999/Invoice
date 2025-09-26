@@ -151,16 +151,14 @@ namespace Repo
             return await query.ToListAsync();
         }
 
-        public async Task<T> GetBySlugAsync(string slug, string userId = null, Func<IQueryable<T>, IQueryable<T>> include = null)
+        public async Task<T> GetBySlugAsync(string slug, Func<IQueryable<T>, IQueryable<T>> include = null)
         {
             IQueryable<T> query = _dbSet;
 
             if (include != null)
                 query = include(query);
 
-            if (!string.IsNullOrEmpty(userId) && typeof(T).GetProperty("UserId") != null)
-                query = query.Where(e => EF.Property<string>(e, "UserId") == userId &&
-                 EF.Property<bool>(e, "IsDeleted") == false);
+                query = query.Where(e =>  EF.Property<bool>(e, "IsDeleted") == false);
 
             return await query.FirstOrDefaultAsync(e => EF.Property<string>(e, "Slug") == slug);
         }

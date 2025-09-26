@@ -107,6 +107,18 @@ namespace invoice.Services
             );
             if (existing == null) return new GeneralResponse<ClientReadDTO>(false, "Client not found");
 
+            var exists = await _clientRepo.QueryAsync( c => c.UserId == userId && c.Email == dto.Email && c.Id != id);
+          
+            if (exists.Any())
+            {
+                return new GeneralResponse<ClientReadDTO>
+                {
+                    Success = false,
+                    Message = "Email already exists, please choose another one."
+                };
+            }
+
+
             _mapper.Map(dto, existing);
 
             var result = await _clientRepo.UpdateAsync(existing);

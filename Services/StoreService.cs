@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO;
 using invoice.Core.DTO.Client;
-using invoice.Core.DTO.Invoice;
 using invoice.Core.DTO.Store;
 using invoice.Core.DTO.StoreSettings;
 using invoice.Core.Entities;
@@ -167,7 +166,7 @@ namespace invoice.Services
 
             _mapper.Map(dto, entity);
             var exists = await _storeRepo.GetBySlugAsync(dto.Slug);
-            if (exists != null)
+            if (exists != null && exists.Id!=entity.Id)
             {
                 return new GeneralResponse<StoreReadDTO>
                 {
