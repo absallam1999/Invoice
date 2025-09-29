@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO;
+using invoice.Core.DTO.Client;
 using invoice.Core.DTO.Invoice;
 using invoice.Core.DTO.InvoiceItem;
 using invoice.Core.DTO.Payment;
@@ -12,6 +13,7 @@ using invoice.Core.Interfaces.Services;
 using invoice.Models.Entities.utils;
 using invoice.Repo;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System.Linq.Expressions;
 
 namespace invoice.Services
@@ -21,16 +23,22 @@ namespace invoice.Services
         private readonly IRepository<Invoice> _invoiceRepo;
         private readonly IRepository<PaymentLink> _paymentLinkRepo;
         private readonly IFileService _fileService;
+        private readonly IRepository<Client> _clientRepo;
+        private readonly IRepository<InvoiceItem> _invoiceItemRepo;
         private readonly IMapper _mapper;
 
         public PaymentLinkService(
             IRepository<PaymentLink> paymentLinkRepo,
             IRepository<Invoice> invoiceRepo,
+            IRepository<InvoiceItem> invoiceItemRepo,
+            IRepository<Client> clientRepo,
             IFileService fileService,
             IMapper mapper)
         {
             _paymentLinkRepo = paymentLinkRepo;
             _invoiceRepo = invoiceRepo;
+            _clientRepo = clientRepo;
+            _invoiceItemRepo = invoiceItemRepo;
             _fileService = fileService;
             _mapper = mapper;
         }
@@ -40,7 +48,7 @@ namespace invoice.Services
             if (dto == null)
                 return new GeneralResponse<PaymentLinkReadDTO>(false, "Payment link data is required");
 
- 
+
             var entity = _mapper.Map<PaymentLink>(dto);
             entity.UserId = userId;
 
@@ -68,8 +76,8 @@ namespace invoice.Services
                 "payment link created successfully",
                 _mapper.Map<PaymentLinkReadDTO>(resp.Data)
             );
- 
-                    
+
+
         }
 
         public async Task<GeneralResponse<PaymentLinkReadDTO>> UpdateAsync(string id, PaymentLinkUpdateDTO dto, string userId)
@@ -88,7 +96,7 @@ namespace invoice.Services
             existing.UpdatedAt = DateTime.UtcNow;
 
             var exists = await _paymentLinkRepo.GetBySlugAsync(dto.Slug);
-            if (exists != null  && exists.Id != id)
+            if (exists != null && exists.Id != id)
             {
                 return new GeneralResponse<PaymentLinkReadDTO>
                 {
@@ -98,7 +106,7 @@ namespace invoice.Services
             }
 
 
-          
+
             var result = await _paymentLinkRepo.UpdateAsync(existing);
             if (!result.Success)
                 return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Failed to update payment link" };
@@ -190,7 +198,10 @@ namespace invoice.Services
             if (string.IsNullOrWhiteSpace(id))
                 return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Payment link ID is required" };
 
-            var entity = await _paymentLinkRepo.GetByIdAsync(id, userId);
+            var entity = await _paymentLinkRepo.GetByIdAsync(id, userId, q =>q
+            .Include(i =>i.PaymentLinkPayments).ThenInclude(l => l.Invoice)
+                
+                );
             if (entity == null)
                 return new GeneralResponse<PaymentLinkReadDTO> { Success = false, Message = "Payment link not found" };
 
@@ -215,15 +226,15 @@ namespace invoice.Services
         }
         public async Task<GeneralResponse<PaymentLinkWithUserDTO>> GetBySlug(string slug)
         {
-            var entity = await _paymentLinkRepo.GetBySlugAsync(slug, 
-            q => q.Include(pl => pl.User) );
+            var entity = await _paymentLinkRepo.GetBySlugAsync(slug,
+            q => q.Include(pl => pl.User));
             if (entity == null)
                 return new GeneralResponse<PaymentLinkWithUserDTO>(false, "payment link not found");
 
             return new GeneralResponse<PaymentLinkWithUserDTO>(true, "payment link retrieved successfully", _mapper.Map<PaymentLinkWithUserDTO>(entity));
         }
 
-        public async Task<GeneralResponse<bool>> ActivatePaymentLinkAsync(string id,string userId)
+        public async Task<GeneralResponse<bool>> ActivatePaymentLinkAsync(string id, string userId)
         {
 
             if (string.IsNullOrWhiteSpace(id))
@@ -267,11 +278,6 @@ namespace invoice.Services
             return await _paymentLinkRepo.CountAsync(userId);
 
         }
-
-
-
-
-
         public async Task<bool> ExistsAsync(string id, string userId)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -280,5 +286,95 @@ namespace invoice.Services
             var entity = await _paymentLinkRepo.GetByIdAsync(id, userId);
             return entity != null;
         }
+
+
+        #region Create a Payment
+
+        public async Task<GeneralResponse<object>> CreatePaymentAsync(CreatePaymentDTO dto, string id ,string userId)
+        {
+            if (dto == null || string.IsNullOrWhiteSpace(userId))
+                return new GeneralResponse<object> { Success = false, Message = "Payment link  data and UserId are required." };
+
+            var paymentlink = await _paymentLinkRepo.GetByIdAsync(id, userId);
+
+            if (paymentlink == null)
+                return new GeneralResponse<object> { Success = false, Message = "Payment link not found" };
+
+            //check
+
+            if (paymentlink.MaxPaymentsNumber != null &&((paymentlink.MaxPaymentsNumber - paymentlink.PaymentsNumber) >= dto.PaymentsNumber ))
+
+                return new GeneralResponse<object> { Success = false, Message = "Payment link expired" }; 
+            
+            if(paymentlink.ExpireDate != null &&( HelperFunctions.GetSaudiTime() > paymentlink.ExpireDate))
+
+                return new GeneralResponse<object> { Success = false, Message = "Payment link expired" };
+
+            //client
+
+            string ClientId;
+            var EmailExists = await _clientRepo.ExistsAsync(c => c.Email == dto.Client.Email && c.UserId == userId);
+            if (EmailExists)
+            {
+
+                var client = (await _clientRepo.QueryAsync(c => c.UserId == userId && c.Email == dto.Client.Email && !c.IsDeleted)).First();
+                _mapper.Map(dto.Client, client);
+
+                var result = await _clientRepo.UpdateAsync(client);
+                ClientId = result.Data.Id;
+
+            }
+            else
+            {
+                var entity = _mapper.Map<Client>(dto.Client);
+                entity.UserId = userId;
+                var result = await _clientRepo.AddAsync(entity);
+
+                if (!result.Success) return new GeneralResponse<object>(false, result.Message);
+                var dtoResult = _mapper.Map<ClientReadDTO>(result.Data);
+                ClientId = dtoResult.Id;
+            }
+
+
+            //invoice
+
+            var invoice = new Invoice();
+            invoice.UserId = userId;
+            invoice.ClientId = ClientId;
+            invoice.Code = $"INV-{DateTime.UtcNow.Ticks}";
+            invoice.InvoiceStatus = InvoiceStatus.Paid;
+            invoice.InvoiceType = InvoiceType.PaymentLink;
+            invoice.Value = paymentlink.Value * dto.PaymentsNumber;
+            invoice.FinalValue = paymentlink.Value * dto.PaymentsNumber;
+            invoice.LanguageId = "ar";
+
+           
+
+            invoice.PaymentLinkPayment = _mapper.Map<PaymentLinkPayments>(dto);
+            invoice.PaymentLinkPayment.InvoiceId = invoice.Id;
+            invoice.PaymentLinkPayment.PaymentLinkId = id;
+
+         await _invoiceRepo.AddAsync(invoice);
+
+
+            //update paymentlink
+            paymentlink.PaymentsNumber += dto.PaymentsNumber;
+            await _paymentLinkRepo.UpdateAsync(paymentlink);
+
+            return new GeneralResponse<object>
+            {
+                Success = true,
+                Message = "Order created successfully.",
+                Data = (new
+                {
+                    InvoiceId = invoice.Id,
+                    InvoiceCode = invoice.Code
+                })
+
+            };
+
+        }
+    
+    #endregion
     }
 }

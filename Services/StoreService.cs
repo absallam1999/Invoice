@@ -220,6 +220,7 @@ namespace invoice.Services
             invoice.ClientId = ClientId;
             invoice.Code = $"INV-{DateTime.UtcNow.Ticks}";
             invoice.InvoiceStatus = InvoiceStatus.Active;
+            invoice.InvoiceType = InvoiceType.Online;
             invoice.Value = 0;
             invoice.LanguageId = "ar";
             invoice.InvoiceItems = new List<InvoiceItem>();

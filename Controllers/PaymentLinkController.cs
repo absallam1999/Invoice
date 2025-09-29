@@ -7,6 +7,7 @@ using invoice.Core.Interfaces.Services;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Authorization;
 using invoice.Services;
+using invoice.Core.DTO.Store;
 
 namespace invoice.Controllers
 {
@@ -134,8 +135,14 @@ namespace invoice.Controllers
             return Ok(new { Count = count });
         }
 
-       
 
+        [AllowAnonymous]
+        [HttpPost("CreatePayment/{linkid}/{userid}")]
+        public async Task<IActionResult> CreateOrder(string linkid ,string userid, [FromBody] CreatePaymentDTO dto)
+        {
+            var result = await _paymentLinkService.CreatePaymentAsync(dto,linkid, userid);
+            return Ok(result);
+        }
 
     }
 }

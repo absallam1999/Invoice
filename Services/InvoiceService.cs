@@ -97,7 +97,7 @@ namespace invoice.Services
                 .Include(x => x.InvoiceItems).ThenInclude(i => i.Product).ThenInclude(p => p.Category)
                 .Include(x => x.PayInvoice).ThenInclude(p => p.PaymentMethod)
                 .Include(x => x.User).ThenInclude(u => u.Tax)
-                //.Include(x => x.PaymentLink)
+                .Include(x => x.PaymentLinkPayment).ThenInclude(p => p.PaymentLink)
                 .Include(x => x.Payments)
                 .Include(x => x.Language)
                 .Include(x => x.Order)
@@ -123,7 +123,7 @@ namespace invoice.Services
                 .Include(x => x.InvoiceItems).ThenInclude(i => i.Product).ThenInclude(p => p.Category)
                 .Include(x => x.PayInvoice).ThenInclude(p => p.PaymentMethod)
                 .Include(x => x.User).ThenInclude(u => u.Tax)
-                .Include(x => x.PaymentLink)
+                .Include(x => x.PaymentLinkPayment.PaymentLink)
                 .Include(x => x.Payments)
                 .Include(x => x.Language)
                 .Include(x => x.Order)
@@ -175,7 +175,7 @@ namespace invoice.Services
             if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(userId))
                 return new GeneralResponse<InvoiceReadDTO> { Success = false, Message = "Code and UserId are required." };
 
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLink, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinkPayment.PaymentLink, x => x.PayInvoice);
             var invoice = invoices.FirstOrDefault(i => i.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
 
             if (invoice == null)
@@ -194,7 +194,7 @@ namespace invoice.Services
             if (string.IsNullOrWhiteSpace(userId))
                 return new GeneralResponse<IEnumerable<InvoiceReadDTO>> { Success = false, Message = "UserId is required.", Data = Enumerable.Empty<InvoiceReadDTO>() };
 
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLink, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinkPayment.PaymentLink, x => x.PayInvoice);
 
             var filtered = invoices.Where(i =>
                 (!string.IsNullOrWhiteSpace(i.Code) && i.Code.Contains(keyword ?? "", StringComparison.OrdinalIgnoreCase)) ||
@@ -726,7 +726,7 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByClientAsync(string clientId, string userId)
         {
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLink, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinkPayment.PaymentLink, x => x.PayInvoice);
             var filtered = invoices.Where(i => i.ClientId == clientId);
 
             return new GeneralResponse<IEnumerable<InvoiceReadDTO>>
@@ -741,7 +741,7 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByStatusAsync(InvoiceStatus status, string userId)
         {
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLink, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinkPayment.PaymentLink, x => x.PayInvoice);
             var filtered = invoices.Where(i => i.InvoiceStatus == status);
 
             return new GeneralResponse<IEnumerable<InvoiceReadDTO>>
@@ -757,7 +757,7 @@ namespace invoice.Services
             var today = DateTime.Today;
             var tomorrow = today.AddDays(1);
 
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLink, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinkPayment.PaymentLink, x => x.PayInvoice);
             var filtered = invoices.Where(i => i.InvoiceType == type
             && (i.CreatedAt >= today && i.CreatedAt < tomorrow)
             );

@@ -22,5 +22,7 @@ namespace invoice.Core.Interfaces.Services
         
         Task<bool> ExistsAsync(string id, string userId);
         Task<int> CountAsync(string userId);
+        Task<GeneralResponse<object>> CreatePaymentAsync(CreatePaymentDTO dto, string id, string userId);
+
     }
 }

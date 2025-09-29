@@ -8,7 +8,6 @@ using invoice.Core.DTO.PaymentLink;
 using invoice.Core.DTO.Store;
 using invoice.Core.DTO.Tax;
 using invoice.Core.Entities;
-using invoice.Core.Enums;
 
 namespace invoice.Services.Mappers
 {
@@ -25,6 +24,9 @@ namespace invoice.Services.Mappers
                 .ForMember(dest => dest.payMethodId, opt => opt.MapFrom(src => src.PayInvoice != null ? src.PayInvoice.PaymentMethodId : null))
                 .ForMember(dest => dest.payMethod, opt => opt.MapFrom(src => src.PayInvoice != null ? src.PayInvoice.PaymentMethod.Name : 0))
                 .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src.Order))
+                .ForMember(dest => dest.PaymentLinkPayment, opt => opt.MapFrom(src => src.PaymentLinkPayment))
+                
+
                ;
 
             CreateMap<Tax, TaxReadDTO>();

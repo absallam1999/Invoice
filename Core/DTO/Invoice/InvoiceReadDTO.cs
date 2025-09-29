@@ -35,5 +35,6 @@ namespace invoice.Core.DTO.Invoice
 
         public IEnumerable<InvoiceItemReadDTO> InvoiceItems { get; set; } = new List<InvoiceItemReadDTO>();
         public OrderDTO Order { get; set; } = new OrderDTO();
+        public PaymentLinkPaymentsDTO PaymentLinkPayment { get; set; }
     }
 }

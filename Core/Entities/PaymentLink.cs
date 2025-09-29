@@ -22,7 +22,8 @@ using invoice.Models.Entities.utils;
         public PaymentOptions PaymentOptions { get; set; } = null!;
         public PurchaseCompletionOptions purchaseOptions { get; set; }
 
-        public ICollection<Invoice> Invoices { get; set; }
+        public ICollection<PaymentLinkPayments> PaymentLinkPayments { get; set; }
+        //public ICollection<Invoice> Invoices { get; set; }
 
 
     }
