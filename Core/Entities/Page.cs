@@ -10,9 +10,5 @@
 
         public string StoreId { get; set; }
         public Store Store { get; set; }
-     
-
-        //public string LanguageId { get; set; }
-        //public Language Language { get; set; }
     }
 }

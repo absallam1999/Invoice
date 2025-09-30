@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 ﻿using invoice.Core.Entities;
 using invoice.Core.Enums;
-using invoice.Migrations;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -112,7 +111,7 @@ namespace invoice.Repo.Data
 
             builder.Entity<PaymentLink>(pl =>
             {
-                pl.OwnsOne(p => p.purchaseOptions, po =>
+                pl.OwnsOne(p => p.PurchaseOptions, po =>
                 {
                     po.Property(x => x.Name).HasColumnName("ClientName").HasDefaultValue(true);
                     po.Property(x => x.Email).HasColumnName("ClientEmail").HasDefaultValue(true);
@@ -122,22 +121,17 @@ namespace invoice.Repo.Data
                 });
             });
 
-            builder.Entity<PaymentLink>(pl =>
-            {
-                pl.OwnsOne(p => p.PaymentOptions, po =>
-                {
-                    po.Property(x => x.BankTransfer).HasColumnName("BankTransfer").HasDefaultValue(true);
-                    po.Property(x => x.PayPal).HasColumnName("PayPal").HasDefaultValue(false);
-                    po.Property(x => x.Cash).HasColumnName("Cash").HasDefaultValue(true);
+            //builder.Entity<PaymentLink>(pl =>
+            //{
+            //    pl.OwnsOne(p => p.PaymentOptions, po =>
+            //    {
+            //        po.Property(x => x.BankTransfer).HasColumnName("BankTransfer").HasDefaultValue(true);
+            //        po.Property(x => x.PayPal).HasColumnName("PayPal").HasDefaultValue(false);
+            //        po.Property(x => x.Cash).HasColumnName("Cash").HasDefaultValue(true);
                  
-                });
-            });
+            //    });
+            //});
 
         }
-
-
-
     }
-
-
 }

@@ -32,7 +32,7 @@ namespace invoice.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _storeService.GetAsync(GetUserId());
@@ -75,40 +75,40 @@ namespace invoice.Controllers
 
 
         [HttpGet("by-user")]
-        public async Task<IActionResult> GetByUser([FromQuery] string userId)
+        public async Task<IActionResult> GetByUser()
         {
-            var result = await _storeService.GetByUserAsync(userId);
+            var result = await _storeService.GetByUserAsync(GetUserId());
             return Ok(result);
         }
 
 
         [HttpPost("range")]
-        public async Task<IActionResult> AddRange([FromBody] IEnumerable<StoreCreateDTO> dtos, [FromQuery] string userId)
+        public async Task<IActionResult> AddRange([FromBody] IEnumerable<StoreCreateDTO> dtos)
         {
-            var result = await _storeService.AddRangeAsync(dtos, userId);
+            var result = await _storeService.AddRangeAsync(dtos, GetUserId());
             return Ok(result);
         }
 
 
 
         [HttpPut("range")]
-        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<StoreUpdateDTO> dtos, [FromQuery] string userId)
+        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<StoreUpdateDTO> dtos)
         {
-            var result = await _storeService.UpdateRangeAsync(dtos, userId);
+            var result = await _storeService.UpdateRangeAsync(dtos, GetUserId());
             return Ok(result);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id, [FromQuery] string userId)
+        public async Task<IActionResult> Delete(string id)
         {
-            var result = await _storeService.DeleteAsync(id, userId);
+            var result = await _storeService.DeleteAsync(id, GetUserId());
             return Ok(result);
         }
 
         [HttpDelete("range")]
-        public async Task<IActionResult> DeleteRange([FromBody] IEnumerable<string> ids, [FromQuery] string userId)
+        public async Task<IActionResult> DeleteRange([FromBody] IEnumerable<string> ids)
         {
-            var result = await _storeService.DeleteRangeAsync(ids, userId);
+            var result = await _storeService.DeleteRangeAsync(ids, GetUserId());
             return Ok(result);
         }
 
@@ -127,30 +127,30 @@ namespace invoice.Controllers
         //}
 
         [HttpGet("{storeId}/settings")]
-        public async Task<IActionResult> GetSettings(string storeId, [FromQuery] string userId)
+        public async Task<IActionResult> GetSettings(string storeId)
         {
-            var result = await _storeService.GetSettingsAsync(storeId, userId);
+            var result = await _storeService.GetSettingsAsync(storeId, GetUserId());
             return Ok(result);
         }
 
         [HttpPut("{storeId}/settings")]
-        public async Task<IActionResult> UpdateSettings(string storeId, [FromBody] StoreSettingsUpdateDTO settingsDto, [FromQuery] string userId)
+        public async Task<IActionResult> UpdateSettings(string storeId, [FromForm] StoreSettingsUpdateDTO settingsDto)
         {
-            var result = await _storeService.UpdateSettingsAsync(storeId, settingsDto, userId);
+            var result = await _storeService.UpdateSettingsAsync(storeId, settingsDto, GetUserId());
             return Ok(result);
         }
 
         [HttpPatch("{storeId}/payment-method")]
-        public async Task<IActionResult> UpdatePaymentMethods(string storeId, [FromQuery] PaymentType paymentType, [FromQuery] string userId)
+        public async Task<IActionResult> UpdatePaymentMethods(string storeId, [FromQuery] PaymentType paymentType)
         {
-            var result = await _storeService.UpdatePaymentMethodsAsync(storeId, paymentType, userId);
+            var result = await _storeService.UpdatePaymentMethodsAsync(storeId, paymentType, GetUserId());
             return Ok(result);
         }
 
         [HttpPost("query")]
-        public async Task<IActionResult> Query([FromBody] Expression<Func<Store, bool>> predicate, [FromQuery] string userId)
+        public async Task<IActionResult> Query([FromBody] Expression<Func<Store, bool>> predicate)
         {
-            var result = await _storeService.QueryAsync(predicate, userId);
+            var result = await _storeService.QueryAsync(predicate, GetUserId());
             return Ok(result);
         }
     }

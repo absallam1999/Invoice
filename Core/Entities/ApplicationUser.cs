@@ -6,6 +6,8 @@ namespace invoice.Core.Entities
 {
     public class ApplicationUser : IdentityUser, IEntity
     {
+        public string? PaypalEmail { get; set; }
+        public string? StripeAccountId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; } = false;

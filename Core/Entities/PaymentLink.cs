@@ -1,29 +1,23 @@
 ﻿using invoice.Core.Entities.utils;
-using invoice.Core.Enums;
-using invoice.Models.Entities.utils;
 
-﻿namespace invoice.Core.Entities
+namespace invoice.Core.Entities
 {
     public class PaymentLink : BaseEntity
     {
         public decimal Value { get; set; }
-        public string Slug { get; set; } = null!;
-        public bool IsActivated { get; set; } = true;
-        public int PaymentsNumber { get; set; } = 0;
-        public DateTime? ExpireDate { get; set; } = null;
-        public int? MaxPaymentsNumber { get; set; } = null ;
-       public string? Description { get; set; }
-        public string Currency { get; set; }
+        public string Purpose { get; set; }
+        public int PaymentsNumber { get; set; }
+        public string Description { get; set; }
+        public string Message { get; set; }
+        public string Image { get; set; }
+        public string Terms { get; set; }
 
+        public string CreatedBy { get; set; }
+        public bool IsActive { get; set; } = true;
 
+        public string? InvoiceId { get; set; }
+        public Invoice? Invoice { get; set; }
 
-        public string UserId { get; set; } = null!;
-        public ApplicationUser User { get; set; } = null!;
-        public PaymentOptions PaymentOptions { get; set; } = null!;
-        public PurchaseCompletionOptions purchaseOptions { get; set; }
-
-        public ICollection<Invoice> Invoices { get; set; }
-
-
+        public PurchaseCompletionOptions PurchaseOptions { get; set; }
     }
 }

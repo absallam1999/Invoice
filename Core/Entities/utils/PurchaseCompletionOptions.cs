@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace invoice.Models.Entities.utils
+﻿namespace invoice.Core.Entities.utils
 {
     public class PurchaseCompletionOptions
     {

@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO.Invoice;
 using invoice.Core.DTO.Payment;
-using invoice.Core.DTO.PaymentLink;
 using invoice.Core.Interfaces.Services;
 using invoice.Core.DTO;
 using invoice.Core.Entities;
@@ -9,7 +8,6 @@ using invoice.Core.Enums;
 using invoice.Repo;
 using Microsoft.EntityFrameworkCore;
 using invoice.Core.DTO.PayInvoice;
-using System.Linq;
 using invoice.Core.DTO.Store;
 
 namespace invoice.Services

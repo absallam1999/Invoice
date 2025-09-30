@@ -1,7 +1,4 @@
-﻿
-using invoice.Core.Entities;
-
-namespace invoice.Models.Entities.utils
+﻿namespace invoice.Core.Entities.utils
 {
     public class ShippingRegion:BaseEntity
     {

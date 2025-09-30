@@ -57,16 +57,16 @@ namespace invoice.Services
             };
         }
 
-        public async Task<GeneralResponse<IEnumerable<Language>>> GetByTargetAsync(LanguageTarget target)
-        {
-            var entities = (await _languageRepo.QueryAsync(l => l.Target == target)).ToList();
+        //public async Task<GeneralResponse<IEnumerable<Language>>> GetByTargetAsync(LanguageTarget target)
+        //{
+        //    var entities = (await _languageRepo.QueryAsync(l => l.Target == target)).ToList();
 
-            return new GeneralResponse<IEnumerable<Language>>
-            {
-                Success = true,
-                Data = entities
-            };
-        }
+        //    return new GeneralResponse<IEnumerable<Language>>
+        //    {
+        //        Success = true,
+        //        Data = entities
+        //    };
+        //}
 
         public async Task<GeneralResponse<IEnumerable<Language>>> SearchAsync(string keyword)
         {

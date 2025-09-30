@@ -9,7 +9,5 @@ namespace invoice.Core.DTO.Invoice
         public UserDTO User { get; set; }
         public CurrencyReadDTO? CurrencyInfo { get; set; }
 
-
-
     }
 }

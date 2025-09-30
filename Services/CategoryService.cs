@@ -5,19 +5,16 @@ using invoice.Core.Entities;
 using invoice.Core.DTO.Category;
 using Microsoft.EntityFrameworkCore;
 using invoice.Core.Interfaces.Services;
-using System.Reflection;
 
 namespace invoice.Services
 {
     public class CategoryService : ICategoryService
     {
-        private readonly IRepository<ApplicationUser> _applicationUserRepo;
         private readonly IRepository<Category> _categoryRepo;
         private readonly IMapper _mapper;
 
-        public CategoryService(IRepository<Category> categoryRepo, IRepository<ApplicationUser> applicationUserRepo, IMapper mapper)
+        public CategoryService(IRepository<Category> categoryRepo, IMapper mapper)
         {
-            _applicationUserRepo = applicationUserRepo;
             _categoryRepo = categoryRepo;
             _mapper = mapper;
         }
@@ -38,13 +35,16 @@ namespace invoice.Services
             return new GeneralResponse<CategoryReadDTO>(true, "Category retrieved successfully", _mapper.Map<CategoryReadDTO>(category));
         }
 
-        public async Task<GeneralResponse<CategoryReadDTO>> GetByUserIdAsync(string userId)
+        public async Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> GetByUserIdAsync(string userId)
         {
-            var category = await _categoryRepo.GetByUserIdAsync(userId, q => q.Include(c => c.Products));
-            if (category == null)
-                return new GeneralResponse<CategoryReadDTO>(false, "No category found for user");
+            var categories = await _categoryRepo.GetByUserIdAsync(userId, q => q.Include(c => c.Products));
 
-            return new GeneralResponse<CategoryReadDTO>(true, "Category retrieved successfully", _mapper.Map<CategoryReadDTO>(category));
+            if (categories == null || !categories.Any())
+                return new GeneralResponse<IEnumerable<CategoryReadDTO>>(false, "No categories found for user");
+
+            var mappedCategories = _mapper.Map<IEnumerable<CategoryReadDTO>>(categories);
+
+            return new GeneralResponse<IEnumerable<CategoryReadDTO>>(true, "Categories retrieved successfully", mappedCategories);
         }
 
         public async Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> QueryAsync(string userId, string keyword)
@@ -158,11 +158,6 @@ namespace invoice.Services
 
             var response = await _categoryRepo.DeleteRangeAsync(ids);
             return new GeneralResponse<bool>(response.Success, response.Message, response.Success);
-        }
-
-        Task<GeneralResponse<IEnumerable<CategoryReadDTO>>> ICategoryService.GetByUserIdAsync(string userId)
-        {
-            throw new NotImplementedException();
         }
     }
 }

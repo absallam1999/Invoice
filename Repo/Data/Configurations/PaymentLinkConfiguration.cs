@@ -16,11 +16,6 @@ namespace invoice.Repo.Data.Configurations
                    .IsRequired()
                    .HasColumnType("decimal(18,2)");
 
-            builder.Property(pl => pl.Currency)
-                   .IsRequired()
-                   .HasMaxLength(10);
-
-
             builder.Property(pl => pl.PaymentsNumber)
                    .IsRequired()
                    .HasMaxLength(50);
@@ -28,11 +23,11 @@ namespace invoice.Repo.Data.Configurations
             builder.Property(pl => pl.Description)
                    .HasMaxLength(1000);
 
-          
-
-          
-
-           
+            builder.HasOne(pl => pl.Invoice)
+                   .WithOne(inv => inv.PaymentLink)
+                   .HasForeignKey<PaymentLink>(pl => pl.InvoiceId)
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
+
 }

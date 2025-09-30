@@ -6,7 +6,6 @@ using invoice.Core.DTO.Store;
 using invoice.Core.DTO.StoreSettings;
 using invoice.Core.Entities;
 using invoice.Core.Entities.utils;
-using invoice.Models.Entities.utils;
 
 namespace invoice.Services.Mappers
 {

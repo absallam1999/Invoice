@@ -1,32 +1,61 @@
-﻿using invoice.Core.Interfaces.Services;
+﻿using invoice.Core.Enums;
+using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace invoice.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
     [Authorize]
+    [ApiController]
+    [Route("api/[controller]")]
     public class PaymentMethodController : ControllerBase
     {
-        private readonly IPaymentMethodService _paymentMethodservice;
+        private readonly IPaymentMethodService _paymentMethodService;
 
-        public PaymentMethodController(IPaymentMethodService paymentMethodservice)
+        public PaymentMethodController(IPaymentMethodService paymentMethodService)
         {
-            _paymentMethodservice = paymentMethodservice;
+            _paymentMethodService = paymentMethodService;
         }
-
-        private string GetUserId() =>
-     User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
-
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var response = await _paymentMethodservice.GetAllAsync();
+            var response = await _paymentMethodService.GetAllAsync();
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var response = await _paymentMethodService.GetByIdAsync(id);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpGet("get-id-from-type/{paymentType}")]
+        public async Task<IActionResult> GetIdFromType(PaymentType paymentType)
+        {
+            var response = await _paymentMethodService.GetIdFromTypeAsync(paymentType);
+            return Ok(response);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromQuery] PaymentType type)
+        {
+            var response = await _paymentMethodService.CreateAsync(type);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromQuery] PaymentType type)
+        {
+            var response = await _paymentMethodService.UpdateAsync(id, type);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var response = await _paymentMethodService.DeleteAsync(id);
             return response.Success ? Ok(response) : BadRequest(response);
         }
     }

@@ -26,7 +26,7 @@ namespace invoice.Controllers
         private string GetUserId() =>
         User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
             var response = await _invoiceService.GetAllAsync(GetUserId());

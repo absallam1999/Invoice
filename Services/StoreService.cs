@@ -7,7 +7,6 @@ using invoice.Core.Entities;
 using invoice.Core.Entities.utils;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
-using invoice.Models.Entities.utils;
 using invoice.Repo;
 using Newtonsoft.Json;
 using System.Linq.Expressions;
@@ -161,13 +160,13 @@ namespace invoice.Services
             string? logoPath = null;
             if (dto.Logo != null)
             {
-                logoPath = await _fileService.UploadImageAsync(dto.Logo, "store-settings");
+                logoPath = await _fileService.UploadImageAsync(dto.Logo, "stores");
             }
 
             string? coverPath = null;
             if (dto.CoverImage != null)
             {
-                coverPath = await _fileService.UploadImageAsync(dto.CoverImage, "store-settings");
+                coverPath = await _fileService.UploadImageAsync(dto.CoverImage, "stores");
             }
 
             entity.StoreSettings = new StoreSettings
@@ -371,18 +370,43 @@ namespace invoice.Services
 
 
 
-
-        public async Task<GeneralResponse<bool>> UpdateSettingsAsync(string storeId, StoreSettingsUpdateDTO settingsDto, string userId)
+        public async Task<GeneralResponse<bool>> UpdateSettingsAsync(
+            string storeId,
+            StoreSettingsUpdateDTO settingsDto,
+            string userId)
         {
             var entity = await _storeRepo.GetByIdAsync(storeId, userId);
             if (entity == null)
                 return new GeneralResponse<bool>(false, "Store not found");
 
-            entity.StoreSettings = _mapper.Map<StoreSettings>(settingsDto);
+            entity.StoreSettings.Color = settingsDto.Color;
+            entity.StoreSettings.Currency = settingsDto.Currency;
+            entity.StoreSettings.Country = settingsDto.Country;
+            entity.StoreSettings.purchaseOptions = settingsDto.PurchaseOptions;
+
+            if (settingsDto.Logo != null)
+            {
+                entity.StoreSettings.Logo = await _fileService.UpdateImageAsync(
+                    settingsDto.Logo,
+                    entity.StoreSettings.Logo,
+                    "stores"
+                );
+            }
+
+            if (settingsDto.CoverImage != null)
+            {
+                entity.StoreSettings.CoverImage = await _fileService.UpdateImageAsync(
+                    settingsDto.CoverImage,
+                    entity.StoreSettings.CoverImage,
+                    "stores"
+                );
+            }
+
             await _storeRepo.UpdateAsync(entity);
 
             return new GeneralResponse<bool>(true, "Settings updated successfully", true);
         }
+
 
         public async Task<GeneralResponse<IEnumerable<StoreReadDTO>>> AddRangeAsync(IEnumerable<StoreCreateDTO> dtos, string userId)
         {

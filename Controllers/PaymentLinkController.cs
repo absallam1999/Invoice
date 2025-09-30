@@ -2,11 +2,10 @@
 using System.Security.Claims;
 using invoice.Core.DTO;
 using invoice.Core.DTO.PaymentLink;
-using invoice.Core.Entities;
 using invoice.Core.Interfaces.Services;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Authorization;
-using invoice.Services;
+using invoice.Core.Entities;
 
 namespace invoice.Controllers
 {
@@ -30,8 +29,9 @@ namespace invoice.Controllers
         {
             var result = await _paymentLinkService.CreateAsync(dto, GetUserId());
 
-            return Ok(result);
-
+            return result.Success
+                ? CreatedAtAction(nameof(GetById), new { id = result.Data.Id }, result)
+                : BadRequest(result);
         }
 
         [HttpPut("{id}")]
@@ -74,49 +74,31 @@ namespace invoice.Controllers
             return result.Success ? Ok(result) : NotFound(result);
         }
 
-        [HttpGet]
-        public async Task<ActionResult<GeneralResponse<IEnumerable<GetAllPaymentLinkDTO>>>> GetAll()
+        [HttpGet("all")]
+        public async Task<ActionResult<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>>> GetAll()
         {
             var result = await _paymentLinkService.GetAllAsync(GetUserId());
 
             return Ok(result);
         }
 
-
-        [HttpPut("activate/{id}")]
-        public async Task<IActionResult> ActivateStore(string id)
+        [HttpGet("query")]
+        public async Task<ActionResult<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>>> Query(
+            [FromQuery] string purpose = null,
+            [FromQuery] decimal? minValue = null,
+            [FromQuery] decimal? maxValue = null,
+            [FromQuery] bool? isActive = null)
         {
-            var result = await _paymentLinkService.ActivatePaymentLinkAsync(id, GetUserId());
+            Expression<Func<PaymentLink, bool>> predicate = pl =>
+                (string.IsNullOrEmpty(purpose) || pl.Purpose.Contains(purpose)) &&
+                (!minValue.HasValue || pl.Value >= minValue.Value) &&
+                (!maxValue.HasValue || pl.Value <= maxValue.Value) &&
+                (!isActive.HasValue || pl.IsActive == isActive.Value);
+
+            var result = await _paymentLinkService.QueryAsync(predicate, GetUserId());
+
             return Ok(result);
         }
-
-
-        [AllowAnonymous]
-        [HttpGet("slug/{slug}")]
-        public async Task<IActionResult> GetBySlug(string slug)
-        {
-            var result = await _paymentLinkService.GetBySlug(slug);
-            return Ok(result);
-        }
-
-
-        //[HttpGet("query")]
-        //public async Task<ActionResult<GeneralResponse<IEnumerable<PaymentLinkReadDTO>>>> Query(
-        //    [FromQuery] string purpose = null,
-        //    [FromQuery] decimal? minValue = null,
-        //    [FromQuery] decimal? maxValue = null,
-        //    [FromQuery] bool? isActive = null)
-        //{
-        //    Expression<Func<PaymentLink, bool>> predicate = pl =>
-        //        (string.IsNullOrEmpty(purpose) || pl.Purpose.Contains(purpose)) &&
-        //        (!minValue.HasValue || pl.Value >= minValue.Value) &&
-        //        (!maxValue.HasValue || pl.Value <= maxValue.Value) &&
-        //        (!isActive.HasValue || pl.IsActive == isActive.Value);
-
-        //    var result = await _paymentLinkService.QueryAsync(predicate, GetUserId());
-
-        //    return Ok(result);
-        //}
 
         [HttpGet("exists/{id}")]
         public async Task<ActionResult<bool>> Exists(string id)
@@ -127,15 +109,27 @@ namespace invoice.Controllers
         }
 
         [HttpGet("count")]
-        public async Task<IActionResult> Count()
+        public async Task<ActionResult<int>> Count()
         {
-            var count = await _paymentLinkService.CountAsync(GetUserId());
+            var result = await _paymentLinkService.CountAsync(GetUserId());
 
-            return Ok(new { Count = count });
+            return Ok(new { Success = true, Count = result });
         }
 
-       
+        [HttpGet("count/active")]
+        public async Task<ActionResult<int>> CountActive()
+        {
+            var result = await _paymentLinkService.CountActiveAsync(GetUserId());
 
+            return Ok(new { Success = true, ActiveCount = result });
+        }
 
+        [HttpGet("count/invoice/{invoiceId}")]
+        public async Task<ActionResult<int>> CountByInvoice(string invoiceId)
+        {
+            var result = await _paymentLinkService.CountByInvoiceAsync(invoiceId, GetUserId());
+
+            return Ok(new { Success = true, Count = result });
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using invoice.Models.Entities.utils;
-using invoice.Core.Entities.utils;
+﻿using invoice.Core.Entities.utils;
 
 namespace invoice.Core.Entities
 {

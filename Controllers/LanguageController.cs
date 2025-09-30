@@ -17,7 +17,7 @@ namespace invoice.Controllers
             _languageService = languageService;
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _languageService.GetAllAsync();
@@ -40,13 +40,13 @@ namespace invoice.Controllers
             return Ok(result);
         }
 
-        [HttpGet("target/{target}")]
-        public async Task<IActionResult> GetByTarget(LanguageTarget target)
-        {
-            var result = await _languageService.GetByTargetAsync(target);
-            if (!result.Success) return NotFound(result);
-            return Ok(result);
-        }
+        //[HttpGet("target/{target}")]
+        //public async Task<IActionResult> GetByTarget(LanguageTarget target)
+        //{
+        //    var result = await _languageService.GetByTargetAsync(target);
+        //    if (!result.Success) return NotFound(result);
+        //    return Ok(result);
+        //}
 
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string keyword)

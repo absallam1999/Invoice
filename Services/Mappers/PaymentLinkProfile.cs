@@ -11,37 +11,22 @@ namespace invoice.Services.Mappers
         {
             CreateMap<PaymentLink, PaymentLinkReadDTO>();
 
-            CreateMap<PaymentLinkCreateDTO, PaymentLink>();
+            CreateMap<PaymentLinkCreateDTO, PaymentLink>()
+                .ForMember(dest => dest.Image, opt => opt.Ignore())
+                .ForMember(dest => dest.PaymentsNumber, opt => opt.MapFrom(src => src.PaymentsNumber.ToString()));
 
-            CreateMap<PaymentLink, GetAllPaymentLinkDTO>();
-            
             CreateMap<PaymentLinkUpdateDTO, PaymentLink>()
-              .ForMember(dest => dest.PaymentOptions, opt => opt.MapFrom(src => src.PaymentOptions))
-              .ForMember(dest => dest.purchaseOptions, opt => opt.MapFrom(src => src.purchaseOptions));
+                .ForMember(dest => dest.Image, opt => opt.Ignore())
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
+            CreateMap<PaymentLink, GetAllPaymentLinkDTO>()
+                .ForMember(dest => dest.PaymentsNumber, opt => opt.MapFrom(src => src.PaymentsNumber));
 
             CreateMap<PaymentLink, PaymentLinkWithUserDTO>()
-              .ForMember(dest => dest.PaymentOptions, opt => opt.MapFrom(src => src.PaymentOptions))
-              .ForMember(dest => dest.PurchaseOptions, opt => opt.MapFrom(src => src.purchaseOptions))           
-                .ForMember(
-                    dest => dest.RemainingPaymentsNumber,
-                    opt => opt.MapFrom(src =>
-                        src.MaxPaymentsNumber == null
-                            ? (int?)null
-                            : src.MaxPaymentsNumber - src.PaymentsNumber
-                    )
-                );
-
-
-
-
-
-            CreateMap<PaymentLink, PaymentLinkReadDTO>()
-                .ForMember(dest => dest.PaymentOptions, opt => opt.MapFrom(src => src.PaymentOptions))
-                .ForMember(dest => dest.purchaseOptions, opt => opt.MapFrom(src => src.purchaseOptions));
-
-
-
+                .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.Invoice, opt => opt.Ignore())
+                .ForMember(dest => dest.PaymentOptions, opt => opt.Ignore());
         }
     }
+
 }

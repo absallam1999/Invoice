@@ -9,8 +9,6 @@ namespace invoice.Services.Mappers
         public PageProfile()
         {
             CreateMap<Page, PageReadDTO>();
-
-            CreateMap<Page, GetAllPagesDTO>();
             CreateMap<PageCreateDTO, Page>();
             CreateMap<PageUpdateDTO, Page>();
         }

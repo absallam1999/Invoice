@@ -17,10 +17,10 @@ namespace invoice.Repo.Data.Configurations
                    .HasConversion<string>()
                    .HasMaxLength(20);
 
-            builder.Property(l => l.Target)
-                   .IsRequired()
-                   .HasConversion<string>()
-                   .HasMaxLength(20);
+            //builder.Property(l => l.Target)
+            //       .IsRequired()
+            //       .HasConversion<string>()
+            //       .HasMaxLength(20);
 
             //builder.HasMany(l => l.Pages)
             //       .WithOne(p => p.Language)
@@ -37,8 +37,8 @@ namespace invoice.Repo.Data.Configurations
             //       .HasForeignKey(i => i.LanguageId)
                    //.OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasIndex(l => new { l.Name, l.Target })
-                   .IsUnique();
+            //builder.HasIndex(l => new { l.Name, l.Target })
+            //       .IsUnique();
         }
     }
 }

@@ -22,7 +22,7 @@ namespace invoice.Controllers
      User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
             var response = await _categoryService.GetAllAsync(GetUserId());

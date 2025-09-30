@@ -16,8 +16,21 @@ namespace invoice.Repo.Data.Configurations
                    .IsRequired()
                    .HasMaxLength(200);
 
-            builder.Property(p => p.Image)
+            builder.Property(p => p.Code)
+                   .IsRequired()
+                   .HasMaxLength(50);
+
+            builder.HasIndex(i => i.Code)
+                   .IsUnique();
+
+            builder.Property(p => p.Description)
                    .HasMaxLength(500);
+
+            builder.Property(p => p.MainImage)
+                   .HasMaxLength(500);
+
+            builder.Property(p => p.Images)
+                    .IsRequired(false);
 
             builder.Property(p => p.Price)
                    .HasColumnType("decimal(18,2)")
@@ -35,8 +48,6 @@ namespace invoice.Repo.Data.Configurations
             builder.Property(p => p.InStore)
                    .HasDefaultValue(true);
 
-
-
             builder.HasOne(p => p.User)
                    .WithMany(u => u.Products)
                    .HasForeignKey(p => p.UserId)
@@ -46,11 +57,6 @@ namespace invoice.Repo.Data.Configurations
                    .WithMany(c => c.Products)
                    .HasForeignKey(p => p.CategoryId)
                    .OnDelete(DeleteBehavior.SetNull);
-
-            //builder.HasOne(p => p.Store)
-            //       .WithMany(s => s.Products)
-            //       .HasForeignKey(p => p.StoreId)
-            //       .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(p => p.InvoiceItems)
                    .WithOne(ii => ii.Product)

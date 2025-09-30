@@ -32,11 +32,6 @@ namespace invoice.Repo.Data.Configurations
                    .WithMany(s => s.Pages)
                    .HasForeignKey(p => p.StoreId)
                    .OnDelete(DeleteBehavior.Restrict);
-
-            //builder.HasOne(p => p.Language)
-            //       .WithMany(l => l.Pages)
-            //       .HasForeignKey(p => p.LanguageId)
-            //       .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

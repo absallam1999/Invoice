@@ -11,7 +11,7 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<Language>> GetByIdAsync(string id);
 
         Task<GeneralResponse<IEnumerable<Language>>> GetByNameAsync(LanguageName name);
-        Task<GeneralResponse<IEnumerable<Language>>> GetByTargetAsync(LanguageTarget target);
+        //Task<GeneralResponse<IEnumerable<Language>>> GetByTargetAsync(LanguageTarget target);
         Task<GeneralResponse<IEnumerable<Language>>> SearchAsync(string keyword);
 
         Task<GeneralResponse<Language>> CreateAsync(CreateLanguageDTO language);

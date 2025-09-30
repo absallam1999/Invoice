@@ -1,6 +1,6 @@
 ﻿using invoice.Core.Enums;
 
-﻿namespace invoice.Core.Entities
+namespace invoice.Core.Entities
 {
     public class Payment : BaseEntity
     {
