@@ -290,7 +290,10 @@ namespace invoice
                 app.UseExceptionHandler("/error");
                 app.UseHsts();
 
-                app.UseCors("AllowSpecificOrigins");
+                //app.UseCors("AllowSpecificOrigins");
+
+                //Temporarily
+                app.UseCors("AllowAll");
             }
          
             app.UseHttpsRedirection();

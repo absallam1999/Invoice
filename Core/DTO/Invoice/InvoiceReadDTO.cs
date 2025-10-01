@@ -3,6 +3,7 @@ using invoice.Core.DTO.Client;
 using invoice.Core.DTO.InvoiceItem;
 using invoice.Core.DTO.Language;
 using invoice.Core.DTO.Tax;
+using invoice.Core.DTO.PayInvoice;
 
 namespace invoice.Core.DTO.Invoice
 {
@@ -28,10 +29,10 @@ namespace invoice.Core.DTO.Invoice
         public string? ClientId { get; set; }
         public ClientSummaryDTO? Client { get; set; }
         public LanguageReadDTO Language { get; set; }
-        public string? payMethodId { get; set; }
-        public PaymentType? payMethod { get; set; }
+     
 
         public TaxReadDTO TaxInfo { get; set; }
+        public PayInvoiceReadDTO PayInvoice { get; set; }
 
         public IEnumerable<InvoiceItemReadDTO> InvoiceItems { get; set; } = new List<InvoiceItemReadDTO>();
         public OrderDTO Order { get; set; } = new OrderDTO();

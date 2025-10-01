@@ -1,6 +1,5 @@
 ﻿using invoice.Core.Entities;
 using invoice.Core.Enums;
-using Stripe.Climate;
 
 namespace invoice.Core.Entities
 {

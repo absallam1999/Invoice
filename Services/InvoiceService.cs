@@ -106,6 +106,7 @@ namespace invoice.Services
 
             if (invoice == null)
                 return new GeneralResponse<InvoiceReadDTO> { Success = false, Message = $"Invoice with Id '{id}' not found." };
+
             return new GeneralResponse<InvoiceReadDTO>
             {
                 Success = true,

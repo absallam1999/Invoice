@@ -21,13 +21,10 @@ namespace invoice.Services.Mappers
                 .ForMember(dest => dest.Language, opt => opt.MapFrom(src => src.Language))
                 .ForMember(dest => dest.InvoiceItems, opt => opt.MapFrom(src => src.InvoiceItems))
                 .ForMember(dest => dest.TaxInfo, opt => opt.MapFrom(src => src.User.Tax))
-                .ForMember(dest => dest.payMethodId, opt => opt.MapFrom(src => src.PayInvoice != null ? src.PayInvoice.PaymentMethodId : null))
-                .ForMember(dest => dest.payMethod, opt => opt.MapFrom(src => src.PayInvoice != null ? src.PayInvoice.PaymentMethod.Name : 0))
                 .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src.Order))
                 .ForMember(dest => dest.PaymentLinkPayment, opt => opt.MapFrom(src => src.PaymentLinkPayment))
-                
-
-               ;
+               
+            ;
 
             CreateMap<Tax, TaxReadDTO>();
 

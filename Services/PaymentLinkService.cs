@@ -354,7 +354,7 @@ namespace invoice.Services
             invoice.PaymentLinkPayment.InvoiceId = invoice.Id;
             invoice.PaymentLinkPayment.PaymentLinkId = id;
 
-         await _invoiceRepo.AddAsync(invoice);
+           await _invoiceRepo.AddAsync(invoice);
 
 
             //update paymentlink

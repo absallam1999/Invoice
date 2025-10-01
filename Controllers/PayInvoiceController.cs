@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO.PayInvoice;
 using invoice.Core.Entities;
-using invoice.Core.Entities;
 using invoice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 

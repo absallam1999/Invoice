@@ -41,7 +41,6 @@ namespace invoice.Helpers
             services.AddScoped<IPageService, PageService>();
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IOrderService, OrderService>();
-           // services.AddScoped<IContactInfoService, ContactInfoService>();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<ITaxService, TaxService>();
             services.AddScoped<ICurrencyService, CurrencyService>();
