@@ -9,7 +9,6 @@ using invoice.Core.Enums;
 using invoice.Repo;
 using Microsoft.EntityFrameworkCore;
 using invoice.Core.DTO.PayInvoice;
-using System.Linq;
 using invoice.Core.DTO.Store;
 
 namespace invoice.Services
@@ -75,6 +74,23 @@ namespace invoice.Services
                 return new GeneralResponse<IEnumerable<GetAllInvoiceDTO>> { Success = false, Message = "UserId is required.", Data = Enumerable.Empty<GetAllInvoiceDTO>() };
 
             var invoices = await _invoiceRepo.QueryAsync(i => i.UserId == userId && i.InvoiceType == 0 && !i.IsDeleted, x => x.Client, o => o.Order);
+
+            if (!invoices.Any())
+                return new GeneralResponse<IEnumerable<GetAllInvoiceDTO>> { Success = false, Message = "No invoices found.", Data = Enumerable.Empty<GetAllInvoiceDTO>() };
+
+            return new GeneralResponse<IEnumerable<GetAllInvoiceDTO>>
+            {
+                Success = true,
+                Message = "Invoices retrieved successfully.",
+                Data = _mapper.Map<IEnumerable<GetAllInvoiceDTO>>(invoices)
+            };
+        }
+          public async Task<GeneralResponse<IEnumerable<GetAllInvoiceDTO>>> GetByTypeAsync(string userId ,InvoiceType invoicetype)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                return new GeneralResponse<IEnumerable<GetAllInvoiceDTO>> { Success = false, Message = "UserId is required.", Data = Enumerable.Empty<GetAllInvoiceDTO>() };
+
+            var invoices = await _invoiceRepo.QueryAsync(i => i.UserId == userId && i.InvoiceType == invoicetype && !i.IsDeleted, x => x.Client, o => o.Order);
 
             if (!invoices.Any())
                 return new GeneralResponse<IEnumerable<GetAllInvoiceDTO>> { Success = false, Message = "No invoices found.", Data = Enumerable.Empty<GetAllInvoiceDTO>() };
@@ -826,55 +842,8 @@ namespace invoice.Services
 
     
 
-        public async Task<GeneralResponse<bool>> MarkAsPaidAsync(string invoiceId, string userId)
-        {
-            var invoice = await _invoiceRepo.GetByIdAsync(invoiceId, userId);
-            if (invoice == null)
-            {
-                return new GeneralResponse<bool>
-                {
-                    Success = false,
-                    Message = $"Invoice with Id '{invoiceId}' not found.",
-                    Data = false
-                };
-            }
-
-            invoice.InvoiceStatus = InvoiceStatus.Paid;
-            await _invoiceRepo.UpdateAsync(invoice);
-
-            return new GeneralResponse<bool>
-            {
-                Success = true,
-                Message = "Invoice marked as paid.",
-                Data = true
-            };
-        }
-
-        public async Task<GeneralResponse<bool>> CancelAsync(string invoiceId, string userId)
-        {
-            var invoice = await _invoiceRepo.GetByIdAsync(invoiceId, userId);
-            if (invoice == null)
-            {
-                return new GeneralResponse<bool>
-                {
-                    Success = false,
-                    Message = $"Invoice with Id '{invoiceId}' not found.",
-                    Data = false
-                };
-            }
-
-            invoice.InvoiceStatus = InvoiceStatus.Cancelled;
-            await _invoiceRepo.UpdateAsync(invoice);
-
-            return new GeneralResponse<bool>
-            {
-                Success = true,
-                Message = "Invoice cancelled successfully.",
-                Data = true
-            };
-        }
-
-        private void RecalculateInvoiceTotals(Invoice invoice)
+     
+           private void RecalculateInvoiceTotals(Invoice invoice)
         {
             invoice.Value = invoice.InvoiceItems?.Sum(i => i.UnitPrice * i.Quantity) ?? 0;
             invoice.FinalValue = invoice.DiscountType.HasValue && invoice.DiscountValue.HasValue

@@ -23,7 +23,6 @@ using invoice.Models.Entities.utils;
         public PurchaseCompletionOptions purchaseOptions { get; set; }
 
         public ICollection<PaymentLinkPayments> PaymentLinkPayments { get; set; }
-        //public ICollection<Invoice> Invoices { get; set; }
 
 
     }

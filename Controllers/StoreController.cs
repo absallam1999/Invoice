@@ -65,10 +65,10 @@ namespace invoice.Controllers
 
 
         [AllowAnonymous]
-        [HttpPost("CreateOrder/{userid}")]
-        public async Task<IActionResult> CreateOrder(string userid, [FromBody] CreateOrderDTO dto)
+        [HttpPost("CreateOrder/{userid}/{storeId}")]
+        public async Task<IActionResult> CreateOrder(string userid,string storeId, [FromBody] CreateOrderDTO dto)
         {
-            var result = await _storeService.CreateOrderAsync(dto, userid);
+            var result = await _storeService.CreateOrderAsync(dto, userid, storeId);
             return Ok(result);
         }
 

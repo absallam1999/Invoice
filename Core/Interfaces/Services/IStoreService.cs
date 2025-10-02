@@ -14,7 +14,7 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<bool>> DeleteAsync(string id, string userId);
         Task<GeneralResponse<StoreReadDTO>> GetByIdAsync(string id, string userId);
         Task<GeneralResponse<StoreReadDTO>> GetBySlug(string slug);
-        Task<GeneralResponse<object>> CreateOrderAsync(CreateOrderDTO dto, string userId);
+        Task<GeneralResponse<object>> CreateOrderAsync(CreateOrderDTO dto, string userId,string storeId);
 
         Task<GeneralResponse<StoreReadDTO>> GetAsync(string userId);
         Task<GeneralResponse<IEnumerable<StoreReadDTO>>> QueryAsync(Expression<Func<Store, bool>> predicate, string userId);

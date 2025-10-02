@@ -8,7 +8,7 @@ namespace invoice.Core.Entities
         public PaymentType PaymentType { get; set; }
 
         public string PaymentLinkId { get; set; }
-        public PaymentLink? PaymentLink { get; set; }     
+        public PaymentLink PaymentLink { get; set; }     
         
         public string InvoiceId { get; set; }
         public Invoice Invoice { get; set; }

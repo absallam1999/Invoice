@@ -183,7 +183,7 @@ namespace invoice.Services
 
        
         #region order
-        public async Task<GeneralResponse<object>> CreateOrderAsync(CreateOrderDTO dto, string userId)
+        public async Task<GeneralResponse<object>> CreateOrderAsync(CreateOrderDTO dto, string userId, string storeId)
         {
             if (dto == null || string.IsNullOrWhiteSpace(userId))
                 return new GeneralResponse<object> { Success = false, Message = "order data and UserId are required." };
@@ -265,6 +265,7 @@ namespace invoice.Services
             invoice.Order = _mapper.Map<Order>(dto);
             invoice.Order.InvoiceId = invoice.Id;
             invoice.Order.OrderStatus = OrderStatus.Delivered;
+            invoice.Order.StoreId= storeId;
 
             //{
             //   InvoiceId = invoice.Id,
@@ -281,7 +282,7 @@ namespace invoice.Services
             {
                 Success = true,
                 Message = "Order created successfully.",
-                Data = JsonConvert.SerializeObject(new
+                Data =(new
                 {
                     InvoiceId = invoice.Id,
                     InvoiceCode = invoice.Code

@@ -9,9 +9,7 @@ namespace invoice.Core.Entities
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
         public string Slug { get; set; } = null!;
-
         public bool IsActivated { get; set; } = true;
-
 
         public string UserId { get; set; } = null!;
         public ApplicationUser User { get; set; } = null!;
@@ -22,6 +20,7 @@ namespace invoice.Core.Entities
 
         public PaymentOptions PaymentOptions { get; set; } = null!;
         public ParallelMergeOptions ParallelMergeOptions { get; set; }
+        public ICollection<Order> Orders { get; set; }
 
 
         public List<Page> Pages { get; set; } = new();

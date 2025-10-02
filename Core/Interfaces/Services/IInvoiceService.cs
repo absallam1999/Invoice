@@ -27,9 +27,7 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<bool>> PayAsync(string id, string userId, PayInvoiceCreateDTO dto = null);
         Task<GeneralResponse<bool>> RefundAsync(string id, string userId);
         Task<GeneralResponse<bool>> ChangeOrderStatus(string id, ChangeOrderStatusDTO dto, string userId);
-
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> UpdateRangeAsync(IEnumerable<InvoiceUpdateDTO> dtos, string userId);
-
         Task<GeneralResponse<bool>> DeleteAsync(string id, string userId);
         Task<GeneralResponse<bool>> DeleteRangeAsync(IEnumerable<string> ids, string userId);
 
@@ -40,13 +38,12 @@ namespace invoice.Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByStatusAsync(InvoiceStatus status, string userId);
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetForPOSAsync(InvoiceType type, string userId);
         Task<GeneralResponse<IEnumerable<GetAllInvoiceDTO>>> GetAllForStoreAsync(string userId);
+        Task<GeneralResponse<IEnumerable<GetAllInvoiceDTO>>> GetByTypeAsync(string userId,InvoiceType invoicetype);
 
         Task<GeneralResponse<decimal>> GetTotalValueAsync(string userId);
         Task<GeneralResponse<decimal>> GetTotalFinalValueAsync(string userId);
 
         Task<GeneralResponse<bool>> AddPaymentAsync(string invoiceId, PaymentCreateDTO paymentDto, string userId);
 
-        Task<GeneralResponse<bool>> MarkAsPaidAsync(string invoiceId, string userId);
-        Task<GeneralResponse<bool>> CancelAsync(string invoiceId, string userId);
     }
 }

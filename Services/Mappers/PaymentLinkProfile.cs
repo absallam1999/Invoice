@@ -38,7 +38,10 @@ namespace invoice.Services.Mappers
 
             CreateMap<PaymentLink, PaymentLinkReadDTO>()
                 .ForMember(dest => dest.PaymentOptions, opt => opt.MapFrom(src => src.PaymentOptions))
-                .ForMember(dest => dest.purchaseOptions, opt => opt.MapFrom(src => src.purchaseOptions));
+                .ForMember(dest => dest.purchaseOptions, opt => opt.MapFrom(src => src.purchaseOptions))
+                .ForMember(dest => dest.Invoices, opt => opt.MapFrom(src =>
+                 src.PaymentLinkPayments.Select(p => p.Invoice))); 
+            ;
 
             CreateMap<CreatePaymentDTO, PaymentLinkPayments>();
 

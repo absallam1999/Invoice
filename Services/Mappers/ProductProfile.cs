@@ -10,8 +10,40 @@ namespace invoice.Services.Mappers
     {
         public ProductProfile()
         {
-            CreateMap<ProductCreateDTO, Product>();
-            CreateMap<ProductUpdateDTO, Product>();
+
+
+            //CreateMap<ProductCreateDTO, Product>()
+            //    .ForMember(dest => dest.Quantity,
+            //        opt => opt.MapFrom((src, dest) =>
+            //        {
+            //            if (int.TryParse(src.Quantity, out var result))
+            //                return (int?)result;
+            //            return null;
+            //        }));
+
+            CreateMap<ProductCreateDTO, Product>()
+      .ForMember(dest => dest.Quantity,
+          opt => opt.MapFrom((src, dest) =>
+          {
+              if (string.IsNullOrWhiteSpace(src.Quantity))
+                  return (int?)null;
+
+              if (int.TryParse(src.Quantity, out var result))
+                  return result;
+
+              return (int?)null;
+          }));
+
+
+
+            CreateMap<ProductUpdateDTO, Product>()
+                 .ForMember(dest => dest.Quantity,
+                    opt => opt.MapFrom((src, dest) =>
+                    {
+                        if (int.TryParse(src.Quantity, out var result))
+                            return (int?)result;
+                        return null;
+                    }));
 
             CreateMap<Product, ProductReadDTO>()
 

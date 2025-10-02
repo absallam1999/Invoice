@@ -21,8 +21,10 @@ namespace invoice.Core.DTO.PaymentLink
         public DateTime? ExpireDate { get; set; } 
         public DateTime CreatedAt { get; set; }
 
-        public List<GetAllInvoiceDTO>? Invoices { get; set; }
         public PaymentOptionsDTO PaymentOptions { get; set; }
         public PurchaseCompletionOptions purchaseOptions { get; set; }
+
+        public List<GetAllInvoiceDTO>? Invoices { get; set; }
+
     }
 }

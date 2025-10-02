@@ -26,8 +26,8 @@ namespace invoice.Core.Entities
 
         public string LanguageId { get; set; } = "ar";
         public Language Language { get; set; }
-
-        public List<Payment> Payments { get; set; } = new();
+       
+        public List<Payment> Payments { get; set; } = new();     //??
         public PayInvoice? PayInvoice { get; set; }
         public List<InvoiceItem>? InvoiceItems { get; set; } 
 

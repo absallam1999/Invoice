@@ -24,7 +24,6 @@ namespace invoice.Services
         {
             var product = _mapper.Map<Product>(dto);
             product.UserId = userId;
-
             await _productRepo.AddAsync(product);
 
             var readDto = _mapper.Map<ProductReadDTO>(product);

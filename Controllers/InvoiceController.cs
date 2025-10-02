@@ -32,12 +32,12 @@ namespace invoice.Controllers
             var response = await _invoiceService.GetAllAsync(GetUserId());
             return Ok(response);
         }
-         [HttpGet("InvoicesSummary")]
+        [HttpGet("InvoicesSummary")]
         public async Task<IActionResult> InvoicesSummary()
         {
             var response = await _invoiceService.GetInvoicesSummaryAsync(GetUserId());
             return Ok(response);
-        }  
+        }
         [HttpGet("InvoicesSummaryWithDate")]
         public async Task<IActionResult> InvoicesSummaryWithDate()
         {
@@ -49,6 +49,13 @@ namespace invoice.Controllers
         public async Task<IActionResult> StoreInvoice()
         {
             var response = await _invoiceService.GetAllForStoreAsync(GetUserId());
+            return Ok(response);
+        }
+
+        [HttpGet("type/{invoicetype}")]
+        public async Task<IActionResult> GetInvoiceByType( InvoiceType invoicetype)
+        {
+            var response = await _invoiceService.GetByTypeAsync(GetUserId(), invoicetype);
             return Ok(response);
         }
 
@@ -175,16 +182,12 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-
-
         [HttpGet("status/{status}")]
         public async Task<IActionResult> GetByStatus(InvoiceStatus status)
         {
             var response = await _invoiceService.GetByStatusAsync(status, GetUserId());
             return Ok(response);
         }
-
-
 
         [HttpGet("count")]
         public async Task<IActionResult> Count([FromQuery] InvoiceType? invoicetype = null)
@@ -214,20 +217,7 @@ namespace invoice.Controllers
             return Ok(response);
         }
 
-     
-
-        [HttpPost("{invoiceId}/mark-paid")]
-        public async Task<IActionResult> MarkAsPaid(string invoiceId)
-        {
-            var response = await _invoiceService.MarkAsPaidAsync(invoiceId, GetUserId());
-            return Ok(response);
-        }
-
-        [HttpPost("{invoiceId}/cancel")]
-        public async Task<IActionResult> Cancel(string invoiceId)
-        {
-            var response = await _invoiceService.CancelAsync(invoiceId, GetUserId());
-            return Ok(response);
-        }
+ 
+   
     }
 }
