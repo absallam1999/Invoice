@@ -2,6 +2,7 @@
 using invoice.Core.DTO.Invoice;
 using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentOptions;
+using invoice.Core.DTO.PurchaseCompletionOptions;
 using invoice.Core.DTO.Shipping;
 using invoice.Core.DTO.StoreSettings;
 using invoice.Models.Entities.utils;
@@ -22,7 +23,7 @@ namespace invoice.Core.DTO.PaymentLink
         public DateTime CreatedAt { get; set; }
 
         public PaymentOptionsDTO PaymentOptions { get; set; }
-        public PurchaseCompletionOptions purchaseOptions { get; set; }
+        public PurchaseCompletionOptionsReadDTO purchaseOptions { get; set; }
 
         public List<GetAllInvoiceDTO>? Invoices { get; set; }
 

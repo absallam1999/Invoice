@@ -1,4 +1,6 @@
-﻿using invoice.Models.Entities.utils;
+﻿using invoice.Core.DTO.PurchaseCompletionOptions;
+using invoice.Models.DTO.PurchaseCompletionOptions;
+using invoice.Models.Entities.utils;
 using System.ComponentModel.DataAnnotations;
 
 namespace invoice.Core.DTO.StoreSettings
@@ -19,6 +21,6 @@ namespace invoice.Core.DTO.StoreSettings
         public string Currency { get; set; }
 
         [Required]
-        public PurchaseCompletionOptions PurchaseOptions { get; set; }
+        public PurchaseCompletionOptionsCreateDTO PurchaseOptions { get; set; }
     }
 }

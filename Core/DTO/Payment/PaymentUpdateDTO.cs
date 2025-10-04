@@ -1,6 +1,7 @@
 ﻿using invoice.Core.DTO.Invoice;
 using invoice.Core.DTO.PaymentOptions;
 using invoice.Core.Enums;
+using invoice.Models.DTO.PurchaseCompletionOptions;
 using invoice.Models.Entities.utils;
 using System.ComponentModel.DataAnnotations;
 
@@ -22,7 +23,7 @@ namespace invoice.Core.DTO.Payment
 
 
         public PaymentOptionsDTO PaymentOptions { get; set; }
-        public PurchaseCompletionOptions PurchaseOptions { get; set; }
+        public PurchaseCompletionOptionsUpdateDTO PurchaseOptions { get; set; }
 
        
     }

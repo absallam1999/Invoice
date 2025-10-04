@@ -1,3 +1,4 @@
+using invoice.Models.DTO.PurchaseCompletionOptions;
 using invoice.Models.Entities.utils;
 using System.ComponentModel.DataAnnotations;
 
@@ -9,7 +10,7 @@ namespace invoice.Core.DTO.StoreSettings
         public IFormFile? CoverImage { get; set; }
         public string Color { get; set; }
         public string Currency { get; set; }
-        public PurchaseCompletionOptions PurchaseOptions { get; set; }
+        public PurchaseCompletionOptionsUpdateDTO PurchaseOptions { get; set; }
     }
 }
 

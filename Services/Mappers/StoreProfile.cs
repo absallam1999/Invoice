@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO.ContactInformation;
 using invoice.Core.DTO.PaymentOptions;
+using invoice.Core.DTO.PurchaseCompletionOptions;
 using invoice.Core.DTO.Shipping;
 using invoice.Core.DTO.Store;
 using invoice.Core.DTO.StoreSettings;
 using invoice.Core.Entities;
 using invoice.Core.Entities.utils;
+using invoice.Models.DTO.PurchaseCompletionOptions;
 using invoice.Models.Entities.utils;
 
 namespace invoice.Services.Mappers
@@ -44,6 +46,9 @@ namespace invoice.Services.Mappers
             CreateMap<ContactInfo, ContactInfoReadDTO>().ReverseMap();
             CreateMap<ContactInfo, ContactInfoUpdateDTO>().ReverseMap();
 
+            CreateMap<PurchaseCompletionOptions, PurchaseCompletionOptionsReadDTO>();
+            CreateMap<PurchaseCompletionOptionsCreateDTO, PurchaseCompletionOptions>();
+            CreateMap<PurchaseCompletionOptionsUpdateDTO, PurchaseCompletionOptions>();
         }
     }
 
