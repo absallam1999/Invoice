@@ -227,7 +227,8 @@ namespace invoice.Services
         public async Task<GeneralResponse<PaymentLinkWithUserDTO>> GetBySlug(string slug)
         {
             var entity = await _paymentLinkRepo.GetBySlugAsync(slug,
-            q => q.Include(pl => pl.User));
+            q => q.Include(pl => pl.User)
+            .Include(pl=>pl.User.Tax));
             if (entity == null)
                 return new GeneralResponse<PaymentLinkWithUserDTO>(false, "payment link not found");
 

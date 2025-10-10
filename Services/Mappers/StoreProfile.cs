@@ -33,7 +33,9 @@ namespace invoice.Services.Mappers
                 .ForMember(dest => dest.StoreSettings, opt => opt.MapFrom(src => src.StoreSettings))
                 .ForMember(dest => dest.Shipping, opt => opt.MapFrom(src => src.Shipping))
                 .ForMember(dest => dest.ContactInfo, opt => opt.MapFrom(src => src.ContactInformations))
-                .ForMember(dest => dest.PaymentOptions, opt => opt.MapFrom(src => src.PaymentOptions));
+                .ForMember(dest => dest.PaymentOptions, opt => opt.MapFrom(src => src.PaymentOptions))
+                .ForMember(dest => dest.Tax, opt => opt.MapFrom(src => src.User.Tax))
+;
 
             CreateMap<StoreSettings, StoreSettingsReadDTO>().ReverseMap();
             CreateMap<StoreSettings, StoreSettingsUpdateDTO>().ReverseMap();

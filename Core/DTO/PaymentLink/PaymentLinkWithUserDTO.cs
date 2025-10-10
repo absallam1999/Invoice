@@ -1,5 +1,6 @@
 ﻿using invoice.Core.DTO.PaymentOptions;
 using invoice.Core.DTO.PurchaseCompletionOptions;
+using invoice.Core.DTO.Tax;
 using invoice.Core.DTO.User;
 using invoice.Models.Entities.utils;
 
@@ -19,5 +20,7 @@ namespace invoice.Core.DTO.PaymentLink
         public UserDTO User { get; set; }
         public PurchaseCompletionOptionsReadDTO PurchaseOptions { get; set; }
         public PaymentOptionsDTO PaymentOptions { get; set; }
+        public TaxReadDTO? Tax { get; set; }
+
     }
 }

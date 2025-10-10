@@ -12,7 +12,7 @@ namespace invoice.Core.DTO.PaymentLink
         [Range(0.01, double.MaxValue, ErrorMessage = "Value must be greater than 0")]
         public decimal Value { get; set; }
 
-        public int? PaymentsNumber { get; set; } = null;
+        public int? MaxPaymentsNumber { get; set; } = null;
         public DateTime? ExpireDate { get; set; } = null;
         public string Currency { get; set; }
 

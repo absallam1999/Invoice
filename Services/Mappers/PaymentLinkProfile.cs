@@ -22,7 +22,9 @@ namespace invoice.Services.Mappers
 
             CreateMap<PaymentLink, PaymentLinkWithUserDTO>()
               .ForMember(dest => dest.PaymentOptions, opt => opt.MapFrom(src => src.PaymentOptions))
-              .ForMember(dest => dest.PurchaseOptions, opt => opt.MapFrom(src => src.purchaseOptions))           
+              .ForMember(dest => dest.PurchaseOptions, opt => opt.MapFrom(src => src.purchaseOptions))
+              .ForMember(dest => dest.Tax, opt => opt.MapFrom(src => src.User.Tax))
+
                 .ForMember(
                     dest => dest.RemainingPaymentsNumber,
                     opt => opt.MapFrom(src =>

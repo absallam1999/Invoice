@@ -9,6 +9,7 @@ using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
 using invoice.Models.Entities.utils;
 using invoice.Repo;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Linq.Expressions;
 
@@ -150,7 +151,8 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<StoreReadDTO>> GetBySlug(string slug)
         {
-            var entity = await _storeRepo.GetBySlugAsync(slug);
+            var entity = await _storeRepo.GetBySlugAsync(slug ,q => q
+             .Include(x => x.User.Tax));
             if (entity == null)
                 return new GeneralResponse<StoreReadDTO>(false, "Store not found");
 
