@@ -3,27 +3,40 @@ using Core.Interfaces.Services;
 using invoice.Core.DTO;
 using invoice.Core.DTO.Product;
 using invoice.Core.Entities;
+using invoice.Core.Interfaces.Services;
 using invoice.Repo;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+
 
 namespace invoice.Services
 {
     public class ProductService : IProductService
     {
         private readonly IRepository<Product> _productRepo;
+        private readonly IFileService _fileService;
         private readonly IMapper _mapper;
 
-        public ProductService(IRepository<Product> productRepo, IMapper mapper)
+        public ProductService(IRepository<Product> productRepo, IFileService fileService, IMapper mapper)
         {
             _productRepo = productRepo;
+            _fileService = fileService;
             _mapper = mapper;
         }
-
         public async Task<GeneralResponse<ProductReadDTO>> CreateAsync(ProductCreateDTO dto, string userId)
         {
+
+            string? mainImagePath = null;
+            var galleryPaths = new List<string>();
+
+            if (dto.MainImage != null && dto.MainImage.Length > 0)
+                mainImagePath = await _fileService.UploadImageAsync(dto.MainImage, "products");
+
+      
+
             var product = _mapper.Map<Product>(dto);
             product.UserId = userId;
+            product.MainImage = mainImagePath;
             await _productRepo.AddAsync(product);
 
             var readDto = _mapper.Map<ProductReadDTO>(product);
@@ -37,6 +50,15 @@ namespace invoice.Services
                 );
             if (product == null)
                 return new GeneralResponse<ProductReadDTO>(false, "Product not found");
+
+
+            string? mainImagePath = null;
+            var galleryPaths = new List<string>();
+
+            if (dto.MainImage != null && dto.MainImage.Length > 0)
+                mainImagePath = await _fileService.UpdateImageAsync(dto.MainImage, "products",product.MainImage);
+
+          
 
             _mapper.Map(dto, product);
             await _productRepo.UpdateAsync(product);
@@ -64,6 +86,11 @@ namespace invoice.Services
                 return new GeneralResponse<ProductWithInvoicesReadDTO>(false, "Product not found");
 
             var readDto = _mapper.Map<ProductWithInvoicesReadDTO>(product);
+
+            if (!string.IsNullOrWhiteSpace(product.MainImage))
+                readDto.MainImage = _fileService.GetImageUrl(product.MainImage);
+            else
+                readDto.MainImage = null;
             return new GeneralResponse<ProductWithInvoicesReadDTO>(true, "Product retrieved successfully", readDto);
         }
 
@@ -76,6 +103,13 @@ namespace invoice.Services
                 return new GeneralResponse<ProductReadDTO>(false, "Product not found");
 
             var readDto = _mapper.Map<ProductReadDTO>(product);
+
+
+            if (!string.IsNullOrWhiteSpace(product.MainImage))
+                readDto.MainImage = _fileService.GetImageUrl(product.MainImage);
+            else
+                readDto.MainImage = null;
+
             return new GeneralResponse<ProductReadDTO>(true, "Product retrieved successfully", readDto);
         }
 

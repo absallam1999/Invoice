@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
 namespace invoice.Core.DTO.Product
@@ -6,7 +7,14 @@ namespace invoice.Core.DTO.Product
     {
         [Required]
         public string Name { get; set; }
-        public IFormFile? Image { get; set; }
+        //  public IFormFile? Image { get; set; }
+
+        [FromForm(Name = "mainImage")]
+        public IFormFile? MainImage { get; set; }
+
+        //[FromForm(Name = "images")]
+        //public List<IFormFile>? Images { get; set; }
+
         [Required]
         public decimal Price { get; set; }
         public string? Quantity { get; set; }

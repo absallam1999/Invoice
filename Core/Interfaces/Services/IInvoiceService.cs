@@ -36,7 +36,7 @@ namespace invoice.Core.Interfaces.Services
 
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByClientAsync(string clientId, string userId);
         Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetByStatusAsync(InvoiceStatus status, string userId);
-        Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetForPOSAsync(InvoiceType type, string userId);
+        Task<GeneralResponse<POSInvoicesResultDTO>> GetForPOSAsync(InvoiceType type, string userId);
         Task<GeneralResponse<IEnumerable<GetAllInvoiceDTO>>> GetAllForStoreAsync(string userId);
         Task<GeneralResponse<IEnumerable<GetAllInvoiceDTO>>> GetByTypeAsync(string userId,InvoiceType invoicetype);
 

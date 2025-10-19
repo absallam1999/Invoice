@@ -16,6 +16,8 @@ namespace invoice.Core.DTO.Invoice
 
         public string? ClientId { get; set; }
         public string? ClientName { get; set; }
+      
+
 
     }
 }

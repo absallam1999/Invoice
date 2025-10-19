@@ -303,9 +303,9 @@ namespace invoice.Services
 
             //check
 
-            if (paymentlink.MaxPaymentsNumber != null &&((paymentlink.MaxPaymentsNumber - paymentlink.PaymentsNumber) >= dto.PaymentsNumber ))
+            if (paymentlink.MaxPaymentsNumber != null &&((paymentlink.MaxPaymentsNumber - paymentlink.PaymentsNumber) < dto.PaymentsNumber ))
 
-                return new GeneralResponse<object> { Success = false, Message = "Payment link expired" }; 
+                return new GeneralResponse<object> { Success = false, Message = "There are not enough payments left" }; 
             
             if(paymentlink.ExpireDate != null &&( HelperFunctions.GetSaudiTime() > paymentlink.ExpireDate))
 

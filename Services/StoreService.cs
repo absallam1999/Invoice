@@ -24,13 +24,19 @@ namespace invoice.Services
         private readonly IRepository<Invoice> _invoiceRepo;
         private readonly IRepository<Product> _ProductRepo;
         private readonly IRepository<ApplicationUser> _ApplicationUserRepo;
+        private readonly IFileService _fileService;
         private readonly IMapper _mapper;
 
-        public StoreService(IRepository<Store> storeRepo, IRepository<ApplicationUser> userepo,
+        public StoreService(
+            IRepository<Store> storeRepo,
+            IRepository<ApplicationUser> userepo,
+            IRepository<ApplicationUser> ApplicationUserRepo,
             IRepository<Product> productRepo,
             IRepository<InvoiceItem> invoiceItemRepo,
             IRepository<Invoice> invoiceRepo,
-            IRepository<Client> clientRepo, IRepository<ApplicationUser> ApplicationUserRepo, IMapper mapper)
+            IRepository<Client> clientRepo,
+            IFileService fileService,
+            IMapper mapper)
         {
             _storeRepo = storeRepo;
             _useRepo = userepo;
@@ -38,6 +44,7 @@ namespace invoice.Services
             _invoiceItemRepo = invoiceItemRepo;
             _invoiceRepo = invoiceRepo;
             _ProductRepo = productRepo;
+            _fileService = fileService;
             _ApplicationUserRepo = ApplicationUserRepo;
             _mapper = mapper;
 
@@ -61,18 +68,22 @@ namespace invoice.Services
                 return new GeneralResponse<StoreReadDTO>
                 {
                     Success = false,
-                    Message = "Slug already exists, please choose another name."
+                    Message = "Slug already exists, please choose another."
                 };
             }
 
-
+            string? logoPath = null;
+            if (dto.Logo != null)
+            {
+                logoPath = await _fileService.UploadImageAsync(dto.Logo, "stores");
+            }
             entity.StoreSettings = new StoreSettings
             {
 
                 Color = dto.Color,
                 Currency = dto.Currency,
                 Country = dto.Country,
-
+                Logo= logoPath,
                 purchaseOptions = new PurchaseCompletionOptions()
 
             };
@@ -82,7 +93,6 @@ namespace invoice.Services
                 Email = user.Email,
                 Phone = user.PhoneNumber,
             };
-
             entity.Shipping = new Shipping();
             entity.PaymentOptions = new PaymentOptions();
 
@@ -90,7 +100,7 @@ namespace invoice.Services
             var resp = await _storeRepo.AddAsync(entity);
             if (!resp.Success)
                 return new GeneralResponse<StoreReadDTO>(false, resp.Message);
-
+            #region page
             ////pagerepo
             //entity.Pages = new List<Page>()
             //{
@@ -123,7 +133,7 @@ namespace invoice.Services
             //    }
             //};
 
-
+            #endregion
             return new GeneralResponse<StoreReadDTO>(
                 true,
                 "Store created successfully",
@@ -132,9 +142,19 @@ namespace invoice.Services
         }
         public async Task<GeneralResponse<StoreReadDTO>> GetAsync(string userId)
         {
-            var entity = (await _storeRepo.GetSingleByUserIdAsync(userId));
-            return new GeneralResponse<StoreReadDTO>(true, "Store retrieved successfully", _mapper.Map<StoreReadDTO>(entity));
+            var entity = await _storeRepo.GetSingleByUserIdAsync(userId);
+
+            if (entity == null)
+                return new GeneralResponse<StoreReadDTO>(false, "Store not found");
+
+            var dto = _mapper.Map<StoreReadDTO>(entity);
+
+            dto.StoreSettings.Logo = _fileService.GetImageUrl(entity.StoreSettings.Logo);
+            dto.StoreSettings.CoverImage = _fileService.GetImageUrl(entity.StoreSettings.CoverImage);
+
+            return new GeneralResponse<StoreReadDTO>(true, "Store retrieved successfully", dto);
         }
+
 
         public async Task<GeneralResponse<bool>> ActivateStoreAsync(string userId)
         {
@@ -156,7 +176,13 @@ namespace invoice.Services
             if (entity == null)
                 return new GeneralResponse<StoreReadDTO>(false, "Store not found");
 
-            return new GeneralResponse<StoreReadDTO>(true, "Store retrieved successfully", _mapper.Map<StoreReadDTO>(entity));
+
+            var dto = _mapper.Map<StoreReadDTO>(entity);
+
+            dto.StoreSettings.Logo = _fileService.GetImageUrl(entity.StoreSettings.Logo);
+            dto.StoreSettings.CoverImage = _fileService.GetImageUrl(entity.StoreSettings.CoverImage);
+
+            return new GeneralResponse<StoreReadDTO>(true, "Store retrieved successfully", dto);
         }
 
 
@@ -177,9 +203,34 @@ namespace invoice.Services
                 };
             }
 
+            if (dto.StoreSettings.Logo != null)
+            {
+                entity.StoreSettings.Logo = await _fileService.UpdateImageAsync(
+                    dto.StoreSettings.Logo,
+                    entity.StoreSettings.Logo, "stores"
+
+                );
+            }
+            
+
+            if (dto.StoreSettings.CoverImage != null)
+            {
+                entity.StoreSettings.CoverImage = await _fileService.UpdateImageAsync(
+                    dto.StoreSettings.CoverImage,
+                    entity.StoreSettings.CoverImage, "stores"
+                    
+                );
+            }
+
             await _storeRepo.UpdateAsync(entity);
 
-            return new GeneralResponse<StoreReadDTO>(true, "Store updated successfully", _mapper.Map<StoreReadDTO>(entity));
+            var updatedto = _mapper.Map<StoreReadDTO>(entity);
+
+            updatedto.StoreSettings.Logo = _fileService.GetImageUrl(entity.StoreSettings.Logo);
+            updatedto.StoreSettings.CoverImage = _fileService.GetImageUrl(entity.StoreSettings.CoverImage);
+
+            return new GeneralResponse<StoreReadDTO>(true, "Store updated successfully", updatedto);
+
         }
 
 

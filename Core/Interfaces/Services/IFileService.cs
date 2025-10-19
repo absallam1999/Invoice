@@ -6,7 +6,7 @@
         bool IsValidImageFile(IFormFile file);
 
         Task<string> UploadImageAsync(IFormFile file, string controllerName);
-        Task<string> UpdateImageAsync(IFormFile newFile, string oldImagePath, string controllerName);
+        Task<string> UpdateImageAsync(IFormFile newFile, string controllerName, string oldImagePath =null);
         Task<bool> DeleteImageAsync(string imagePath);
     }
 }

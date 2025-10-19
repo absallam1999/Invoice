@@ -769,21 +769,29 @@ namespace invoice.Services
             };
         }
 
-        public async Task<GeneralResponse<IEnumerable<InvoiceReadDTO>>> GetForPOSAsync(InvoiceType type, string userId)
+        public async Task<GeneralResponse<POSInvoicesResultDTO>> GetForPOSAsync(InvoiceType type, string userId)
         {
             var today = DateTime.Today;
             var tomorrow = today.AddDays(1);
 
-            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client, x => x.InvoiceItems, x => x.Payments, x => x.PaymentLinkPayment.PaymentLink, x => x.PayInvoice);
+            var invoices = await _invoiceRepo.GetAllAsync(userId, x => x.Client);
+            
             var filtered = invoices.Where(i => i.InvoiceType == type
             && (i.CreatedAt >= today && i.CreatedAt < tomorrow)
             );
 
-            return new GeneralResponse<IEnumerable<InvoiceReadDTO>>
+            var totalValue = filtered.Sum(i => i.FinalValue);
+            var result = new POSInvoicesResultDTO
+            {
+                Invoices = _mapper.Map<IEnumerable<GetAllInvoiceDTO>>(filtered),
+                TotalValue = totalValue
+            };
+
+            return new GeneralResponse<POSInvoicesResultDTO>
             {
                 Success = filtered.Any(),
                 Message = filtered.Any() ? "Invoices retrieved." : "No invoices found for this type.",
-                Data = _mapper.Map<IEnumerable<InvoiceReadDTO>>(filtered)
+                Data = result
             };
         }
 

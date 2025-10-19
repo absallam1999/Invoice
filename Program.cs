@@ -17,6 +17,7 @@ using invoice.Core.Interfaces.Services;
 
 namespace invoice
 {
+
     public class Program
     {
         public static void Main(string[] args)
