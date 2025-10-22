@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO.Invoice;
 using invoice.Core.DTO.Payment;
-using invoice.Core.DTO.PaymentLink;
 using invoice.Core.Interfaces.Services;
 using invoice.Core.DTO;
 using invoice.Core.Entities;
@@ -230,7 +229,9 @@ namespace invoice.Services
         {
             if (dto == null || string.IsNullOrWhiteSpace(userId))
                 return new GeneralResponse<InvoiceReadDTO> { Success = false, Message = "Invoice data and UserId are required." };
-            var user = await _ApplicationUserRepo.GetByIdAsync(userId);
+            var user = await _ApplicationUserRepo.GetByIdAsync( userId,include: q => q.Include(u => u.Tax)
+                   
+            );
 
             var invoice = _mapper.Map<Invoice>(dto);
             invoice.UserId = userId;
@@ -293,6 +294,7 @@ namespace invoice.Services
             {
                 var taxRate = user.Tax.Value / 100m;
                 invoice.FinalValue += invoice.FinalValue * taxRate;
+                invoice.TaxId=user.Tax.Id;
             }
 
             await _invoiceRepo.AddAsync(invoice);
@@ -586,7 +588,8 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<bool>> RefundAsync(string id, string userId)
         {
-            var invoice = await _invoiceRepo.GetByIdAsync(id, userId, q => q.Include(x => x.InvoiceItems));
+            var invoice = await _invoiceRepo.GetByIdAsync(id, userId, q => q.Include(x => x.InvoiceItems)
+             .Include(x => x.PaymentLinkPayment).ThenInclude(p=>p.PaymentLink));
 
             if (invoice == null)
             {
@@ -605,6 +608,14 @@ namespace invoice.Services
                     product.Quantity += item.Quantity;
                     await _ProductRepo.UpdateAsync(product);
                 }
+            }
+            if (invoice.PaymentLinkPayment != null)
+            {
+                if (invoice.PaymentLinkPayment.PaymentLink.MaxPaymentsNumber != null)
+                {
+                    invoice.PaymentLinkPayment.PaymentLink.MaxPaymentsNumber += invoice.PaymentLinkPayment.PaymentsNumber;
+                }
+
             }
 
 

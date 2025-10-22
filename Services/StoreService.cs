@@ -211,16 +211,16 @@ namespace invoice.Services
 
                 );
             }
-            
 
-            if (dto.StoreSettings.CoverImage != null)
+            if (dto.StoreSettings.CoverImage != null && dto.StoreSettings.CoverImage.Length > 0)
             {
                 entity.StoreSettings.CoverImage = await _fileService.UpdateImageAsync(
                     dto.StoreSettings.CoverImage,
-                    entity.StoreSettings.CoverImage, "stores"
-                    
+                    entity.StoreSettings.CoverImage,
+                    "stores"
                 );
             }
+
 
             await _storeRepo.UpdateAsync(entity);
 

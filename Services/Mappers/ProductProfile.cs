@@ -12,14 +12,6 @@ namespace invoice.Services.Mappers
         {
 
 
-            //CreateMap<ProductCreateDTO, Product>()
-            //    .ForMember(dest => dest.Quantity,
-            //        opt => opt.MapFrom((src, dest) =>
-            //        {
-            //            if (int.TryParse(src.Quantity, out var result))
-            //                return (int?)result;
-            //            return null;
-            //        }));
 
             CreateMap<ProductCreateDTO, Product>()
       .ForMember(dest => dest.Quantity,

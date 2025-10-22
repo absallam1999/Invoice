@@ -25,7 +25,10 @@ namespace invoice.Core.Entities
         public Client? Client { get; set; }
 
         public string LanguageId { get; set; } = "ar";
-        public Language Language { get; set; }
+        public Language Language { get; set; }  
+        
+        public string? TaxId { get; set; } 
+        public Tax? TaxEntity { get; set; }
        
         public List<Payment> Payments { get; set; } = new();     //??
         public PayInvoice? PayInvoice { get; set; }

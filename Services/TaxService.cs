@@ -58,8 +58,10 @@ namespace invoice.Services
             if (tax == null)
                 return new GeneralResponse<TaxReadDTO>(false, "tax not found");
 
-            _mapper.Map(dto, tax);
-            await _taxRepo.UpdateAsync(tax);
+           var NewTax= _mapper.Map(dto, tax);
+
+            await _taxRepo.DeleteAsync(tax.Id);
+            await _taxRepo.AddAsync(NewTax);
 
             var readDto = _mapper.Map<TaxReadDTO>(tax);
             return new GeneralResponse<TaxReadDTO>(true, "tax updated successfully", readDto);

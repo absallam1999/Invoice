@@ -3,6 +3,7 @@ using Core.Interfaces.Services;
 using invoice.Core.DTO;
 using invoice.Core.DTO.Product;
 using invoice.Core.Entities;
+using invoice.Core.Interfaces;
 using invoice.Core.Interfaces.Services;
 using invoice.Repo;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,7 @@ namespace invoice.Services
             await _productRepo.AddAsync(product);
 
             var readDto = _mapper.Map<ProductReadDTO>(product);
+            readDto.MainImage = _fileService.GetImageUrl(product.MainImage);
             return new GeneralResponse<ProductReadDTO>(true, "Product created successfully", readDto);
         }
 
@@ -53,17 +55,18 @@ namespace invoice.Services
 
 
             string? mainImagePath = null;
-            var galleryPaths = new List<string>();
-
+         
             if (dto.MainImage != null && dto.MainImage.Length > 0)
-                mainImagePath = await _fileService.UpdateImageAsync(dto.MainImage, "products",product.MainImage);
+                mainImagePath = await _fileService.UpdateImageAsync(dto.MainImage, product.MainImage, "products");
 
-          
 
             _mapper.Map(dto, product);
+            product.MainImage = mainImagePath;
+
             await _productRepo.UpdateAsync(product);
 
             var readDto = _mapper.Map<ProductReadDTO>(product);
+            readDto.MainImage = _fileService.GetImageUrl(product.MainImage);
             return new GeneralResponse<ProductReadDTO>(true, "Product updated successfully", readDto);
         }
 
@@ -87,10 +90,8 @@ namespace invoice.Services
 
             var readDto = _mapper.Map<ProductWithInvoicesReadDTO>(product);
 
-            if (!string.IsNullOrWhiteSpace(product.MainImage))
-                readDto.MainImage = _fileService.GetImageUrl(product.MainImage);
-            else
-                readDto.MainImage = null;
+            readDto.MainImage = _fileService.GetImageUrl(product.MainImage);
+
             return new GeneralResponse<ProductWithInvoicesReadDTO>(true, "Product retrieved successfully", readDto);
         }
 
@@ -103,12 +104,7 @@ namespace invoice.Services
                 return new GeneralResponse<ProductReadDTO>(false, "Product not found");
 
             var readDto = _mapper.Map<ProductReadDTO>(product);
-
-
-            if (!string.IsNullOrWhiteSpace(product.MainImage))
-                readDto.MainImage = _fileService.GetImageUrl(product.MainImage);
-            else
-                readDto.MainImage = null;
+            readDto.MainImage = _fileService.GetImageUrl(product.MainImage);
 
             return new GeneralResponse<ProductReadDTO>(true, "Product retrieved successfully", readDto);
         }
@@ -118,13 +114,28 @@ namespace invoice.Services
         {
             var products = await _productRepo.GetAllAsync(userId, p => p.Category, p => p.InvoiceItems);
             var dtos = _mapper.Map<IEnumerable<GetAllProductDTO>>(products);
+
+            foreach (var dto in dtos)
+            {
+                var product = products.FirstOrDefault(p => p.Id == dto.Id);
+                if (product != null)
+                    dto.MainImage = _fileService.GetImageUrl(product.MainImage);
+            }
+
             return new GeneralResponse<IEnumerable<GetAllProductDTO>>(true, "Products retrieved successfully", dtos);
         }
         public async Task<GeneralResponse<IEnumerable<GetAllProductDTO>>> ProductsavailableAsync(string userId)
         {
             var products = await _productRepo.QueryAsync(p =>  p.UserId == userId && (p.Quantity == null || p.Quantity > 0), p => p.Category);
             var dtos = _mapper.Map<IEnumerable<GetAllProductDTO>>(products);
-            return new GeneralResponse<IEnumerable<GetAllProductDTO>>(true, "Products available  retrieved successfully", dtos);
+            foreach (var dto in dtos)
+            {
+                var product = products.FirstOrDefault(p => p.Id == dto.Id);
+                if (product != null)
+                    dto.MainImage = _fileService.GetImageUrl(product.MainImage);
+            }
+
+            return new GeneralResponse<IEnumerable<GetAllProductDTO>>(true, "Products retrieved successfully", dtos);
 
         }
 
@@ -132,6 +143,13 @@ namespace invoice.Services
         {
             var products = await _productRepo.QueryAsync(p => p.UserId == userId && predicate.Compile()(p), p => p.Category,/* p => p.Store,*/ p => p.InvoiceItems);
             var dtos = _mapper.Map<IEnumerable<ProductReadDTO>>(products);
+            foreach (var dto in dtos)
+            {
+                var product = products.FirstOrDefault(p => p.Id == dto.Id);
+                if (product != null)
+                    dto.MainImage = _fileService.GetImageUrl(product.MainImage);
+            }
+
             return new GeneralResponse<IEnumerable<ProductReadDTO>>(true, "Products retrieved successfully", dtos);
         }
 
@@ -146,6 +164,13 @@ namespace invoice.Services
         {
             var products = await _productRepo.QueryAsync(p => p.UserId == userId, p => p.Category);
             var dtos = _mapper.Map<IEnumerable<ProductReadDTO>>(products);
+            foreach (var dto in dtos)
+            {
+                var product = products.FirstOrDefault(p => p.Id == dto.Id);
+                if (product != null)
+                    dto.MainImage = _fileService.GetImageUrl(product.MainImage);
+            }
+
             return new GeneralResponse<IEnumerable<ProductReadDTO>>(true, "Products by store retrieved successfully", dtos);
         }
 
@@ -153,6 +178,13 @@ namespace invoice.Services
         {
             var products = await _productRepo.QueryAsync(p => p.InPOS && p.UserId == userId && (p.Quantity == null || p.Quantity > 0), p => p.Category);
             var dtos = _mapper.Map<IEnumerable<GetAllProductDTO>>(products);
+            foreach (var dto in dtos)
+            {
+                var product = products.FirstOrDefault(p => p.Id == dto.Id);
+                if (product != null)
+                    dto.MainImage = _fileService.GetImageUrl(product.MainImage);
+            }
+
             return new GeneralResponse<IEnumerable<GetAllProductDTO>>(true, "Products available for POS retrieved successfully", dtos);
         }
 
@@ -161,6 +193,13 @@ namespace invoice.Services
 
             var products = await _productRepo.QueryAsync(p => p.InStore && p.UserId == userId && p.User.Store.IsActivated, p => p.Category);
             var dtos = _mapper.Map<IEnumerable<GetAllProductDTO>>(products);
+            foreach (var dto in dtos)
+            {
+                var product = products.FirstOrDefault(p => p.Id == dto.Id);
+                if (product != null)
+                    dto.MainImage = _fileService.GetImageUrl(product.MainImage);
+            }
+
             return new GeneralResponse<IEnumerable<GetAllProductDTO>>(true, "Products available for store retrieved successfully", dtos);
         }
         public async Task<GeneralResponse<bool>> UpdateQuantityAsync(string id, int quantity, string userId)
