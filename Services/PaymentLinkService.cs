@@ -25,6 +25,7 @@ namespace invoice.Services
         private readonly IFileService _fileService;
         private readonly IRepository<Client> _clientRepo;
         private readonly IRepository<InvoiceItem> _invoiceItemRepo;
+        private readonly IRepository<ApplicationUser> _ApplicationUserRepo;
         private readonly IMapper _mapper;
 
         public PaymentLinkService(
@@ -32,12 +33,14 @@ namespace invoice.Services
             IRepository<Invoice> invoiceRepo,
             IRepository<InvoiceItem> invoiceItemRepo,
             IRepository<Client> clientRepo,
+            IRepository<ApplicationUser> applicationUserRepo,
             IFileService fileService,
             IMapper mapper)
         {
             _paymentLinkRepo = paymentLinkRepo;
             _invoiceRepo = invoiceRepo;
             _clientRepo = clientRepo;
+            _ApplicationUserRepo= applicationUserRepo;
             _invoiceItemRepo = invoiceItemRepo;
             _fileService = fileService;
             _mapper = mapper;
@@ -297,6 +300,8 @@ namespace invoice.Services
                 return new GeneralResponse<object> { Success = false, Message = "Payment link  data and UserId are required." };
 
             var paymentlink = await _paymentLinkRepo.GetByIdAsync(id, userId);
+            var user = await _ApplicationUserRepo.GetByIdAsync(userId, include: q => q.Include(u => u.Tax));
+
 
             if (paymentlink == null)
                 return new GeneralResponse<object> { Success = false, Message = "Payment link not found" };
@@ -354,6 +359,14 @@ namespace invoice.Services
             invoice.PaymentLinkPayment = _mapper.Map<PaymentLinkPayments>(dto);
             invoice.PaymentLinkPayment.InvoiceId = invoice.Id;
             invoice.PaymentLinkPayment.PaymentLinkId = id;
+
+            if (paymentlink.PaymentOptions.Tax && user.Tax?.Value > 0)
+            {
+                var taxRate = user.Tax.Value / 100m;
+                invoice.FinalValue += invoice.FinalValue * taxRate;
+                invoice.TaxId = user.Tax.Id;
+                invoice.Tax = true;
+            }
 
            await _invoiceRepo.AddAsync(invoice);
 

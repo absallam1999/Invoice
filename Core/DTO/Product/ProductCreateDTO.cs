@@ -30,7 +30,7 @@ namespace invoice.Core.DTO.Product
         public List<IFormFile>? Images { get; set; }
 
         public decimal Price { get; set; }
-        public int? Quantity { get; set; } ;
+        public int? Quantity { get; set; } 
         public bool InPOS { get; set; } = true;
         public bool InStore { get; set; } = true;
         public string? CategoryId { get; set; }
