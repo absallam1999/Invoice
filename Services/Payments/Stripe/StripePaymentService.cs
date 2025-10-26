@@ -3,6 +3,7 @@ using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentResponse;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
+using invoice.Repo;
 using Microsoft.Extensions.Options;
 using Stripe;
 using Stripe.Checkout;
@@ -13,16 +14,23 @@ namespace invoice.Services.Payments.Stripe
     public class StripePaymentService : PaymentGatewayBase, IPaymentGateway
     {
         private readonly StripeOptions _options;
+        private readonly IRepository<Core.Entities.Invoice> _invoiceRepo;
+        private readonly decimal _defaultCommissionRate;
 
         public override PaymentType PaymentType => PaymentType.Stripe;
 
         public StripePaymentService(
             IConfiguration configuration,
-            IOptions<StripeOptions> options)
+            IOptions<StripeOptions> options,
+            IRepository<Core.Entities.Invoice> invoiceRepo = null)
             : base(configuration)
         {
             _options = options.Value;
+            _invoiceRepo = invoiceRepo;
             StripeConfiguration.ApiKey = _options.SecretKey;
+
+            var cfgRate = Configuration["Payments:DefaultCommissionPercent"];
+            _defaultCommissionRate = decimal.TryParse(cfgRate, out var v) ? v / 100m : 0.1m;
         }
 
         public override async Task<GeneralResponse<PaymentSessionResponse>> CreatePaymentSessionAsync(PaymentCreateDTO dto)
@@ -31,7 +39,13 @@ namespace invoice.Services.Payments.Stripe
             {
                 var validationResult = ValidatePaymentRequest(dto);
                 if (!validationResult.Success)
-                    return validationResult;
+                    return new GeneralResponse<PaymentSessionResponse>(false, validationResult.Message);
+
+                Core.Entities.Invoice? invoice = null;
+                if (!string.IsNullOrEmpty(dto.InvoiceId) && _invoiceRepo != null)
+                {
+                    invoice = await _invoiceRepo.GetByIdAsync(dto.InvoiceId);
+                }
 
                 var currency = (dto.Currency ?? "USD").ToLowerInvariant();
                 if (currency.Length != 3)
@@ -39,9 +53,20 @@ namespace invoice.Services.Payments.Stripe
 
                 var unitAmount = (long)(dto.Cost * 100);
                 if (unitAmount < 50)
-                    return CreateErrorResponse<PaymentSessionResponse>($"Payment amount too small. Minimum amount is {GetMinimumAmount(currency)}");
+                    return new GeneralResponse<PaymentSessionResponse>(false, $"Payment amount too small. Minimum amount is {GetMinimumAmount(currency)}");
 
                 var domain = NormalizeDomain(Domain);
+
+                var sellerStripeAccountId = await GetSellerIdFromInvoice(invoice);
+                var isP2P = !string.IsNullOrEmpty(sellerStripeAccountId);
+
+                decimal sellerAmount = dto.Cost;
+                if (isP2P)
+                {
+                    var commission = dto.Cost * _defaultCommissionRate;
+                    sellerAmount = dto.Cost - commission;
+                }
+
 
                 var sessionOptions = new SessionCreateOptions
                 {
@@ -68,56 +93,77 @@ namespace invoice.Services.Payments.Stripe
                     CancelUrl = $"{domain}payments/cancel?invoice={Uri.EscapeDataString(dto.InvoiceId)}",
                     ClientReferenceId = dto.InvoiceId,
                     CustomerEmail = !string.IsNullOrWhiteSpace(dto.ClientEmail) ? dto.ClientEmail : null,
-                    Metadata = CreateMetadata(dto),
-                    PaymentIntentData = new SessionPaymentIntentDataOptions
-                    {
-                        Metadata = CreateMetadata(dto),
-                        Description = $"Payment for {TruncateString(dto.Name, 500)}"
-                    },
+                    Metadata = CreateMetadata(dto, sellerAmount, isP2P),
                     ExpiresAt = DateTime.UtcNow.AddHours(24),
                     AllowPromotionCodes = true,
                     BillingAddressCollection = "required",
-                    //AutomaticTax = new SessionAutomaticTaxOptions { Enabled = true },
-                    //TaxIdCollection = new SessionTaxIdCollectionOptions { Enabled = true }
-                    
-                    // FOR TESTING
-                    AutomaticTax = new SessionAutomaticTaxOptions { Enabled = false},
+                    AutomaticTax = new SessionAutomaticTaxOptions { Enabled = false },
                     TaxIdCollection = new SessionTaxIdCollectionOptions { Enabled = false }
                 };
+
+                if (isP2P)
+                {
+                    sessionOptions.PaymentIntentData = new SessionPaymentIntentDataOptions
+                    {
+                        Metadata = CreateMetadata(dto, sellerAmount, isP2P),
+                        Description = $"Payment for {TruncateString(dto.Name, 500)}",
+                        TransferData = new SessionPaymentIntentDataTransferDataOptions
+                        {
+                            Destination = sellerStripeAccountId,
+                            Amount = (long)(sellerAmount * 100) 
+                        },
+                    };
+                }
+                else
+                {
+                    sessionOptions.PaymentIntentData = new SessionPaymentIntentDataOptions
+                    {
+                        Metadata = CreateMetadata(dto, sellerAmount, isP2P),
+                        Description = $"Payment for {TruncateString(dto.Name, 500)}"
+                    };
+                }
 
                 if (!string.IsNullOrWhiteSpace(dto.ClientEmail))
                     sessionOptions.CustomerCreation = "always";
 
                 var service = new SessionService();
-                var session = await service.CreateAsync(sessionOptions, GetRequestOptions());
 
-                return CreateSuccessResponse(
-                    session.Id,
-                    session.Url,
-                    dto,
-                    session.ExpiresAt,
-                    JsonSerializer.Serialize(session)
-                );
+                var requestOptions = GetRequestOptions();
+                if (isP2P)
+                {
+                    requestOptions.StripeAccount = sellerStripeAccountId;
+                }
+
+                var session = await service.CreateAsync(sessionOptions, requestOptions);
+
+                var responseData = new PaymentSessionResponse
+                {
+                    SessionId = session.Id,
+                    PaymentUrl = session.Url,
+                    ExpiresAt = session.ExpiresAt,
+                    PaymentType = PaymentType.Stripe,
+                    PaymentStatus = PaymentStatus.Pending,
+                    InvoiceId = dto.InvoiceId,
+                    Amount = dto.Cost,
+                    Currency = "USD",
+                    RawResponse = JsonSerializer.Serialize(session)
+                };
+
+                return new GeneralResponse<PaymentSessionResponse>(true, "Payment session created successfully", responseData);
             }
             catch (StripeException ex)
             {
-                var errorMessage = $"Stripe error: {ex.StripeError?.Message}, Code: {ex.StripeError?.Code}, Type: {ex.StripeError?.Type}";
+                var errorMessage = $"Stripe error: {ex.StripeError?.Message}";
+                if (ex.StripeError?.Code != null)
+                    errorMessage += $", Code: {ex.StripeError.Code}";
+                if (ex.StripeError?.Type != null)
+                    errorMessage += $", Type: {ex.StripeError.Type}";
 
-                return new GeneralResponse<PaymentSessionResponse>
-                {
-                    Success = false,
-                    Message = errorMessage,
-                    Data = null
-                };
+                return new GeneralResponse<PaymentSessionResponse>(false, errorMessage);
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<PaymentSessionResponse>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred while creating the payment session",
-                    Data = null
-                };
+                return new GeneralResponse<PaymentSessionResponse>(false, "An unexpected error occurred while creating the payment session");
             }
         }
 
@@ -128,30 +174,17 @@ namespace invoice.Services.Payments.Stripe
                 var service = new PaymentIntentService();
                 await service.CancelAsync(paymentId);
 
-                return new GeneralResponse<bool> { Success = true, Data = true };
+                return new GeneralResponse<bool>(true, "Payment cancelled successfully", true);
             }
             catch (StripeException ex)
             {
-                return CreateErrorResponse<bool>(GetUserFriendlyError(ex), ex.StripeError?.Code);
+                return new GeneralResponse<bool>(false, GetUserFriendlyError(ex));
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<bool>(false, "Failed to cancel payment");
             }
         }
-
-        public override async Task<GeneralResponse<bool>> RefundPaymentAsync(string paymentId)
-        {
-            try
-            {
-                var options = new RefundCreateOptions { PaymentIntent = paymentId };
-                var service = new RefundService();
-                await service.CreateAsync(options);
-
-                return new GeneralResponse<bool> { Success = true, Data = true };
-            }
-            catch (StripeException ex)
-            {
-                return CreateErrorResponse<bool>(GetUserFriendlyError(ex), ex.StripeError?.Code);
-            }
-        }
-
         public override async Task<GeneralResponse<PaymentStatusResponse>> GetPaymentStatusAsync(string paymentId)
         {
             try
@@ -161,102 +194,47 @@ namespace invoice.Services.Payments.Stripe
 
                 var status = MapStripeStatus(paymentIntent.Status);
 
-                return new GeneralResponse<PaymentStatusResponse>
+                var statusResponse = new PaymentStatusResponse
                 {
-                    Success = true,
-                    Data = new PaymentStatusResponse
-                    {
-                        PaymentId = paymentId,
-                        Status = status,
-                        LastUpdated = DateTime.UtcNow,
-                        RawResponse = JsonSerializer.Serialize(paymentIntent)
-                    }
+                    PaymentId = paymentId,
+                    Status = status,
+                    LastUpdated = DateTime.UtcNow,
+                    RawResponse = JsonSerializer.Serialize(paymentIntent)
                 };
+
+                return new GeneralResponse<PaymentStatusResponse>(true, "Status retrieved successfully", statusResponse);
             }
             catch (StripeException ex)
             {
-                return CreateErrorResponse<PaymentStatusResponse>(GetUserFriendlyError(ex), ex.StripeError?.Code);
-            }
-        }
-
-        public override async Task<GeneralResponse<PaymentWebhookResponse>> ProcessWebhookAsync(string payload, string signature)
-        {
-            try
-            {
-                var stripeEvent = EventUtility.ConstructEvent(
-                    payload,
-                    signature,
-                    _options.WebhookSecret
-                );
-
-                string paymentId = null;
-                PaymentStatus status = PaymentStatus.Pending;
-                string eventType = stripeEvent.Type;
-
-                switch (stripeEvent.Type)
-                {
-                    case "payment_intent.succeeded":
-                        var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
-                        paymentId = paymentIntent?.Id;
-                        status = PaymentStatus.Completed;
-                        break;
-
-                    case "payment_intent.payment_failed":
-                        var failedPayment = stripeEvent.Data.Object as PaymentIntent;
-                        paymentId = failedPayment?.Id;
-                        status = PaymentStatus.Failed;
-                        break;
-
-                    case "payment_intent.canceled":
-                        var canceledPayment = stripeEvent.Data.Object as PaymentIntent;
-                        paymentId = canceledPayment?.Id;
-                        status = PaymentStatus.Cancelled;
-                        break;
-
-                    case "charge.refunded":
-                        var charge = stripeEvent.Data.Object as Charge;
-                        paymentId = charge?.PaymentIntentId;
-                        status = PaymentStatus.Refunded;
-                        break;
-
-                    default:
-                        break;
-                }
-
-                return new GeneralResponse<PaymentWebhookResponse>
-                {
-                    Success = true,
-                    Data = new PaymentWebhookResponse
-                    {
-                        Processed = true,
-                        EventType = eventType,
-                        PaymentId = paymentId,
-                        Status = status,
-                        GatewayName = "Stripe",
-                        Timestamp = DateTime.UtcNow,
-                        Metadata = new Dictionary<string, string>
-                {
-                    { "stripe_event_id", stripeEvent.Id },
-                    { "livemode", stripeEvent.Livemode.ToString() }
-                }
-                    }
-                };
-            }
-            catch (StripeException ex)
-            {
-                return CreateErrorResponse<PaymentWebhookResponse>("Webhook signature verification failed", "invalid_signature");
+                return new GeneralResponse<PaymentStatusResponse>(false, GetUserFriendlyError(ex));
             }
             catch (Exception ex)
             {
-                return CreateErrorResponse<PaymentWebhookResponse>("Failed to process webhook");
+                return new GeneralResponse<PaymentStatusResponse>(false, "Failed to get payment status");
             }
         }
 
-        private Dictionary<string, string> CreateMetadata(PaymentCreateDTO dto)
+        private async Task<string?> GetSellerIdFromInvoice(Core.Entities.Invoice invoice)
+        {
+            if (!string.IsNullOrEmpty(invoice.UserId))
+                return invoice?.User?.StripeAccountId;
+
+            if (!string.IsNullOrEmpty(invoice.ClientId))
+                return invoice?.User?.StripeAccountId;
+
+            return null;
+        }
+
+
+        #region Helper Methods
+
+        private Dictionary<string, string> CreateMetadata(PaymentCreateDTO dto, decimal sellerAmount, bool isP2P)
         {
             var metadata = dto.Metadata ?? new Dictionary<string, string>();
             metadata["invoice_id"] = dto.InvoiceId;
             metadata["created_at_utc"] = DateTime.UtcNow.ToString("O");
+            metadata["seller_amount"] = sellerAmount.ToString("F2");
+            metadata["is_p2p"] = isP2P.ToString();
 
             if (!string.IsNullOrEmpty(dto.ClientEmail))
                 metadata["customer_email"] = dto.ClientEmail;
@@ -314,5 +292,42 @@ namespace invoice.Services.Payments.Stripe
                 ? minimum
                 : $"{0.50} {currency.ToUpper()}";
         }
+
+        private ValidationResult ValidatePaymentRequest(PaymentCreateDTO dto)
+        {
+            if (dto == null)
+                return ValidationResult.Fail("Payment request is required");
+
+            if (string.IsNullOrEmpty(dto.InvoiceId))
+                return ValidationResult.Fail("Invoice ID is required");
+
+            if (dto.Cost <= 0)
+                return ValidationResult.Fail("Cost must be greater than zero");
+
+            if (string.IsNullOrEmpty(dto.Currency) || dto.Currency.Length != 3)
+                return ValidationResult.Fail("Currency must be a 3-letter code");
+
+            if (string.IsNullOrEmpty(dto.Description))
+                return ValidationResult.Fail("Description is required");
+
+            return ValidationResult.SuccessFull();
+        }
+
+        private static string TruncateString(string input, int maxLength)
+        {
+            if (string.IsNullOrEmpty(input)) return input;
+            return input.Length <= maxLength ? input : input.Substring(0, maxLength);
+        }
+
+        internal class ValidationResult
+        {
+            public bool Success { get; set; }
+            public string Message { get; set; } = string.Empty;
+
+            public static ValidationResult SuccessFull() => new ValidationResult { Success = true, Message = "Valid" };
+            public static ValidationResult Fail(string message) => new ValidationResult { Success = false, Message = message };
+        }
+
+        #endregion
     }
 }

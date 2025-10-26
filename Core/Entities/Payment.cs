@@ -1,4 +1,5 @@
 ﻿using invoice.Core.Enums;
+using invoice.Helpers;
 
 ﻿namespace invoice.Core.Entities
 {
@@ -12,7 +13,7 @@
 
         public PaymentType Type { get; set; } = PaymentType.None;
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
-        public DateTime? ExpiresAt { get; set; } = DateTime.UtcNow.AddDays(3);
+        public DateTime? ExpiresAt { get; set; } = GetSaudiTime.Now().AddDays(7);
 
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }

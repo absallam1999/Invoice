@@ -175,6 +175,9 @@ namespace invoice.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("EdfaAccountId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -204,6 +207,9 @@ namespace invoice.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("PaypalEmail")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
@@ -211,6 +217,12 @@ namespace invoice.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripeAccountId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TabAccountId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -423,6 +435,9 @@ namespace invoice.Migrations
                     b.Property<bool>("Tax")
                         .HasColumnType("bit");
 
+                    b.Property<string>("TaxId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("TermsConditions")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
@@ -442,6 +457,10 @@ namespace invoice.Migrations
                     b.HasIndex("ClientId");
 
                     b.HasIndex("LanguageId");
+
+                    b.HasIndex("TaxId")
+                        .IsUnique()
+                        .HasFilter("[TaxId] IS NOT NULL");
 
                     b.HasIndex("UserId");
 
@@ -541,7 +560,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ar",
-                            CreatedAt = new DateTime(2025, 10, 2, 5, 49, 16, 112, DateTimeKind.Unspecified).AddTicks(6185),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(6393),
                             IsDeleted = false,
                             Name = "Arabic",
                             Target = "Page"
@@ -549,7 +568,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "en",
-                            CreatedAt = new DateTime(2025, 10, 2, 5, 49, 16, 112, DateTimeKind.Unspecified).AddTicks(6283),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(6455),
                             IsDeleted = false,
                             Name = "English",
                             Target = "Page"
@@ -1027,84 +1046,84 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ca",
-                            CreatedAt = new DateTime(2025, 10, 2, 5, 49, 16, 112, DateTimeKind.Unspecified).AddTicks(7126),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(6961),
                             IsDeleted = false,
                             Name = "Cash"
                         },
                         new
                         {
                             Id = "cc",
-                            CreatedAt = new DateTime(2025, 10, 2, 5, 49, 16, 112, DateTimeKind.Unspecified).AddTicks(7208),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7013),
                             IsDeleted = false,
                             Name = "CreditCard"
                         },
                         new
                         {
                             Id = "dc",
-                            CreatedAt = new DateTime(2025, 10, 2, 5, 49, 16, 112, DateTimeKind.Unspecified).AddTicks(7234),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7165),
                             IsDeleted = false,
                             Name = "DebitCard"
                         },
                         new
                         {
                             Id = "bt",
-                            CreatedAt = new DateTime(2025, 10, 2, 5, 49, 16, 112, DateTimeKind.Unspecified).AddTicks(7258),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7192),
                             IsDeleted = false,
                             Name = "BankTransfer"
                         },
                         new
                         {
                             Id = "pp",
-                            CreatedAt = new DateTime(2025, 10, 2, 5, 49, 16, 112, DateTimeKind.Unspecified).AddTicks(7280),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7208),
                             IsDeleted = false,
                             Name = "PayPal"
                         },
                         new
                         {
                             Id = "st",
-                            CreatedAt = new DateTime(2025, 10, 2, 5, 49, 16, 112, DateTimeKind.Unspecified).AddTicks(7320),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7224),
                             IsDeleted = false,
                             Name = "Stripe"
                         },
                         new
                         {
                             Id = "ap",
-                            CreatedAt = new DateTime(2025, 10, 2, 5, 49, 16, 112, DateTimeKind.Unspecified).AddTicks(7344),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7240),
                             IsDeleted = false,
                             Name = "ApplePay"
                         },
                         new
                         {
                             Id = "gp",
-                            CreatedAt = new DateTime(2025, 10, 2, 5, 49, 16, 112, DateTimeKind.Unspecified).AddTicks(7369),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7256),
                             IsDeleted = false,
                             Name = "GooglePay"
                         },
                         new
                         {
                             Id = "ma",
-                            CreatedAt = new DateTime(2025, 10, 2, 5, 49, 16, 112, DateTimeKind.Unspecified).AddTicks(7392),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7272),
                             IsDeleted = false,
                             Name = "Mada"
                         },
                         new
                         {
                             Id = "sp",
-                            CreatedAt = new DateTime(2025, 10, 2, 5, 49, 16, 112, DateTimeKind.Unspecified).AddTicks(7449),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7288),
                             IsDeleted = false,
                             Name = "STCPay"
                         },
                         new
                         {
                             Id = "sa",
-                            CreatedAt = new DateTime(2025, 10, 2, 5, 49, 16, 112, DateTimeKind.Unspecified).AddTicks(7478),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7311),
                             IsDeleted = false,
                             Name = "Sadad"
                         },
                         new
                         {
                             Id = "dl",
-                            CreatedAt = new DateTime(2025, 10, 2, 5, 49, 16, 112, DateTimeKind.Unspecified).AddTicks(7502),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7326),
                             IsDeleted = false,
                             Name = "Delivery"
                         });
@@ -1127,10 +1146,6 @@ namespace invoice.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Image")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<bool>("InPOS")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -1150,6 +1165,10 @@ namespace invoice.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
+
+                    b.Property<string>("MainImage")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1377,6 +1396,10 @@ namespace invoice.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("invoice.Core.Entities.Tax", "TaxEntity")
+                        .WithOne("Invoice")
+                        .HasForeignKey("invoice.Core.Entities.Invoice", "TaxId");
+
                     b.HasOne("invoice.Core.Entities.ApplicationUser", "User")
                         .WithMany("Invoices")
                         .HasForeignKey("UserId")
@@ -1386,6 +1409,8 @@ namespace invoice.Migrations
                     b.Navigation("Client");
 
                     b.Navigation("Language");
+
+                    b.Navigation("TaxEntity");
 
                     b.Navigation("User");
                 });
@@ -1934,6 +1959,12 @@ namespace invoice.Migrations
                     b.Navigation("Pages");
 
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("invoice.Core.Entities.Tax", b =>
+                {
+                    b.Navigation("Invoice")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

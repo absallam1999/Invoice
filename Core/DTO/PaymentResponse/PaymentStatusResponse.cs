@@ -12,5 +12,6 @@ namespace invoice.Core.DTO.PaymentResponse
 
         public DateTime LastUpdated { get; set; }
         public string? AdditionalInfo { get; set; }
+        public Dictionary<string, string> Metadata { get; set; }
     }
 }

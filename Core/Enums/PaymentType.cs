@@ -6,7 +6,6 @@ namespace invoice.Core.Enums
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum PaymentType
     {
-
         [EnumMember(Value = "none")]
         None = 0,
 
@@ -14,37 +13,42 @@ namespace invoice.Core.Enums
         Cash = 1,
 
         [EnumMember(Value = "paypal")]
-        CreditCard = 2,
-
-        [EnumMember(Value = "bank_transfer")]
-        DebitCard = 3,
-
-        [EnumMember(Value = "debit_card")]
-        BankTransfer = 4,
-
-        [EnumMember(Value = "credit_card")]
-        PayPal = 5,
+        PayPal = 2,
 
         [EnumMember(Value = "stripe")]
-        Stripe = 6,
+        Stripe = 3,
+
+        [EnumMember(Value = "tab_payments")]
+        TabPayments = 4,
 
         [EnumMember(Value = "apple_pay")]
-        ApplePay = 7,
+        ApplePay = 5,
 
         [EnumMember(Value = "google_pay")]
-        GooglePay = 8,
+        GooglePay = 6,
 
         [EnumMember(Value = "mada")]
-        Mada = 9,
+        Mada = 7,
 
         [EnumMember(Value = "stc_pay")]
-        STCPay = 10,
+        STCPay = 8,
+
+        [EnumMember(Value = "edfa")]
+        Edfa = 9,
 
         [EnumMember(Value = "sadad")]
-        Sadad = 11,
+        Sadad = 10,
+
+        [EnumMember(Value = "bank_transfer")]
+        BankTransfer = 11,
+
+        [EnumMember(Value = "debit_card")]
+        DebitCard = 12,
+
+        [EnumMember(Value = "credit_card")]
+        CreditCard = 13,
 
         [EnumMember(Value = "delivery")]
-        Delivery = 12
-
+        Delivery = 14
     }
 }

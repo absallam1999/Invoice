@@ -1,5 +1,4 @@
 ﻿using invoice.Core.DTO.InvoiceItem;
-using invoice.Core.DTO.Payment;
 using invoice.Core.Enums;
 
 namespace invoice.Core.DTO.Invoice

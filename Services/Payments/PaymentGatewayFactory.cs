@@ -1,9 +1,9 @@
 ﻿using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
-using invoice.Services.Payments.ApplePay;
-using invoice.Services.Payments.Mada;
+using invoice.Services.Payments.Edfa;
 using invoice.Services.Payments.Paypal;
 using invoice.Services.Payments.Stripe;
+using invoice.Services.Payments.TabPayments;
 
 namespace invoice.Services.Payments
 {
@@ -20,10 +20,10 @@ namespace invoice.Services.Payments
         {
             return paymentType switch
             {
+                PaymentType.Edfa => _serviceProvider.GetRequiredService<EdfaPaymentService>(),
                 PaymentType.Stripe => _serviceProvider.GetRequiredService<StripePaymentService>(),
                 PaymentType.PayPal => _serviceProvider.GetRequiredService<PayPalPaymentService>(),
-                PaymentType.Mada => _serviceProvider.GetRequiredService<MadaPaymentService>(),
-                PaymentType.ApplePay => _serviceProvider.GetRequiredService<ApplePayPaymentService>(),
+                PaymentType.TabPayments => _serviceProvider.GetRequiredService<TabPaymentsService>(),
 
                 // Future gateways (to implement later)
                 PaymentType.GooglePay => throw new NotSupportedException("Google Pay gateway is not implemented yet"),
@@ -45,8 +45,8 @@ namespace invoice.Services.Payments
             {
                 PaymentType.Stripe => true,
                 PaymentType.PayPal => true,
-                PaymentType.Mada => true,
-                PaymentType.ApplePay => true,
+                PaymentType.TabPayments => true,
+                PaymentType.Edfa => true,
                 _ => false
             };
         }

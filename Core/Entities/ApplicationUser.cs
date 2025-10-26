@@ -1,11 +1,15 @@
-﻿using invoice.Core.Entities;
-using invoice.Core.Interfaces;
+﻿using invoice.Core.Interfaces;
 using Microsoft.AspNetCore.Identity;
 
 namespace invoice.Core.Entities
 {
     public class ApplicationUser : IdentityUser, IEntity
     {
+        public string? PaypalEmail { get; set; }
+        public string? StripeAccountId { get; set; }
+        public string? EdfaAccountId { get; set; }
+        public string? TabAccountId { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; } = false;

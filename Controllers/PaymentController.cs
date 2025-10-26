@@ -10,221 +10,165 @@ namespace invoice.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class PaymentController : ControllerBase
+    public class PaymentsController : ControllerBase
     {
-        private readonly IPaymentService _service;
+        private readonly IPaymentService _paymentService;
 
-        public PaymentController(IPaymentService service)
+        public PaymentsController(IPaymentService paymentService)
         {
-            _service = service;
+            _paymentService = paymentService;
         }
 
         private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
-        [HttpGet("all")]
+
+        [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var response = await _service.GetAllAsync(GetUserId());
-            if (!response.Success) return BadRequest(response);
+            var response = await _paymentService.GetAllAsync(GetUserId());
             return Ok(response);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var response = await _service.GetByIdAsync(id, GetUserId());
+            var response = await _paymentService.GetByIdAsync(id, GetUserId());
             if (!response.Success) return NotFound(response);
             return Ok(response);
         }
 
         [HttpGet("invoice/{invoiceId}")]
-        public async Task<IActionResult> GetByInvoice(string invoiceId)
+        public async Task<IActionResult> GetByInvoiceId(string invoiceId)
         {
-            var response = await _service.GetByInvoiceIdAsync(invoiceId, GetUserId());
-            if (!response.Success) return NotFound(response);
+            var response = await _paymentService.GetByInvoiceIdAsync(invoiceId, GetUserId());
             return Ok(response);
         }
 
         [HttpGet("method/{paymentMethodId}")]
-        public async Task<IActionResult> GetByPaymentMethod(string paymentMethodId)
+        public async Task<IActionResult> GetByPaymentMethodId(string paymentMethodId)
         {
-            var response = await _service.GetByPaymentMethodIdAsync(paymentMethodId, GetUserId());
-            if (!response.Success) return NotFound(response);
-            return Ok(response);
-        }
-
-        [HttpGet("count/invoice/{invoiceId}")]
-        public async Task<IActionResult> CountByInvoice(string invoiceId)
-        {
-            var count = await _service.CountByInvoiceAsync(invoiceId, GetUserId());
-            return Ok(new GeneralResponse<int>(true, "Payments count by invoice retrieved successfully", count));
-        }
-
-        [HttpGet("count/method/{paymentMethodId}")]
-        public async Task<IActionResult> CountByPaymentMethod(string paymentMethodId)
-        {
-            var count = await _service.CountByPaymentMethodAsync(paymentMethodId, GetUserId());
-            return Ok(new GeneralResponse<int>(true, "Payments count by payment method retrieved successfully", count));
-        }
-
-        [HttpGet("total-paid/invoice/{invoiceId}")]
-        public async Task<IActionResult> GetTotalPaidByInvoice(string invoiceId)
-        {
-            var response = await _service.GetTotalPaidByInvoiceAsync(invoiceId, GetUserId());
-            if (!response.Success) return BadRequest(response);
-            return Ok(response);
-        }
-
-        [HttpGet("total-paid/user")]
-        public async Task<IActionResult> GetTotalPaidByUser()
-        {
-            var response = await _service.GetTotalPaidByUserAsync(GetUserId());
-            if (!response.Success) return BadRequest(response);
-            return Ok(response);
-        }
-
-        [HttpGet("total-paid/method/{paymentMethodId}")]
-        public async Task<IActionResult> GetTotalPaidByPaymentMethod(string paymentMethodId)
-        {
-            var response = await _service.GetTotalPaidByPaymentMethodAsync(paymentMethodId, GetUserId());
-            if (!response.Success) return BadRequest(response);
-            return Ok(response);
-        }
-
-        [HttpGet("revenue/monthly/{year}")]
-        public async Task<IActionResult> GetMonthlyRevenue(int year)
-        {
-            var response = await _service.GetMonthlyRevenueAsync(year, GetUserId());
-            if (!response.Success) return BadRequest(response);
-            return Ok(response);
-        }
-
-        [HttpGet("revenue/by-method")]
-        public async Task<IActionResult> GetRevenueByPaymentMethod()
-        {
-            var response = await _service.GetRevenueByPaymentMethodAsync(GetUserId());
-            if (!response.Success) return BadRequest(response);
+            var response = await _paymentService.GetByPaymentMethodIdAsync(paymentMethodId, GetUserId());
             return Ok(response);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] PaymentCreateDTO dto)
         {
-            var response = await _service.CreateAsync(dto, GetUserId());
-            if (!response.Success) return BadRequest(response);
+            if (!ModelState.IsValid)
+                return BadRequest(new GeneralResponse<string>(false, "Invalid payment data"));
 
-            return Ok(response);
-        }
-
-
-        [HttpPost("range")]
-        public async Task<IActionResult> CreateRange([FromBody] IEnumerable<PaymentCreateDTO> dtos)
-        {
-            var response = await _service.CreateRangeAsync(dtos, GetUserId());
-            if (!response.Success) return BadRequest(response);
-            return Ok(response);
-        }
-
-        [HttpPost("process/{paymentMethodId}")]
-        public async Task<IActionResult> ProcessPayment(string paymentMethodId, [FromBody] PaymentCreateDTO dto)
-        {
-            var response = await _service.ProcessPaymentAsync(paymentMethodId, dto, GetUserId());
-            if (!response.Success) return BadRequest(response);
-            return Ok(response);
+            var response = await _paymentService.CreateAsync(dto, GetUserId());
+            return CreatedAtAction(nameof(GetById), new { id = response.Data?.Id }, response);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] PaymentUpdateDTO dto)
         {
-            var response = await _service.UpdateAsync(id, dto, GetUserId());
-            if (!response.Success) return NotFound(response);
-            return Ok(response);
-        }
+            if (!ModelState.IsValid)
+                return BadRequest(new GeneralResponse<string>(false, "Invalid update data"));
 
-        [HttpPut("range")]
-        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<PaymentUpdateDTO> dtos)
-        {
-            var response = await _service.UpdateRangeAsync(dtos, GetUserId());
-            if (!response.Success) return BadRequest(response);
+            var response = await _paymentService.UpdateAsync(id, dto, GetUserId());
+            if (!response.Success) return NotFound(response);
             return Ok(response);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var response = await _service.DeleteAsync(id, GetUserId());
+            var response = await _paymentService.DeleteAsync(id, GetUserId());
             if (!response.Success) return NotFound(response);
             return Ok(response);
         }
 
-        [HttpDelete("range")]
-        public async Task<IActionResult> DeleteRange([FromBody] IEnumerable<string> ids)
+        [HttpPost("{id}/cancel")]
+        public async Task<IActionResult> Cancel(string id)
         {
-            var response = await _service.DeleteRangeAsync(ids, GetUserId());
-            if (!response.Success) return BadRequest(response);
+            var response = await _paymentService.CancelPaymentAsync(id, GetUserId());
             return Ok(response);
         }
 
-        [HttpPost("refund/{paymentId}")]
-        public async Task<IActionResult> Refund(string paymentId)
+        [HttpPost("{id}/complete")]
+        public async Task<IActionResult> MarkAsCompleted(string id)
         {
-            var response = await _service.RefundPaymentAsync(paymentId, GetUserId());
-            if (!response.Success) return BadRequest(response);
+            var response = await _paymentService.MarkAsCompletedAsync(id, GetUserId());
             return Ok(response);
         }
 
-        [HttpPost("cancel/{paymentId}")]
-        public async Task<IActionResult> Cancel(string paymentId)
+        [HttpPost("{id}/fail")]
+        public async Task<IActionResult> MarkAsFailed(string id, [FromQuery] string reason)
         {
-            var response = await _service.CancelPaymentAsync(paymentId, GetUserId());
-            if (!response.Success) return BadRequest(response);
+            var response = await _paymentService.MarkAsFailedAsync(id, reason, GetUserId());
             return Ok(response);
         }
 
-        [HttpPost("complete/{paymentId}")]
-        public async Task<IActionResult> MarkAsCompleted(string paymentId)
+        [HttpPost("{id}/expire")]
+        public async Task<IActionResult> Expire(string id)
         {
-            var response = await _service.MarkAsCompletedAsync(paymentId, GetUserId());
-            if (!response.Success) return BadRequest(response);
+            var response = await _paymentService.ExpirePaymentAsync(id, GetUserId());
             return Ok(response);
         }
 
-        [HttpPost("fail/{paymentId}")]
-        public async Task<IActionResult> MarkAsFailed(string paymentId, [FromQuery] string reason)
+        [HttpPost("{id}/reactivate")]
+        public async Task<IActionResult> Reactivate(string id)
         {
-            var response = await _service.MarkAsFailedAsync(paymentId, reason, GetUserId());
-            if (!response.Success) return BadRequest(response);
+            var response = await _paymentService.ReactivatePaymentAsync(id, GetUserId());
             return Ok(response);
-        }
-
-        [HttpPost("expire/{paymentId}")]
-        public async Task<IActionResult> Expire(string paymentId)
-        {
-            var response = await _service.ExpirePaymentAsync(paymentId, GetUserId());
-            if (!response.Success) return BadRequest(response);
-            return Ok(response);
-        }
-
-        [HttpPost("reactivate/{paymentId}")]
-        public async Task<IActionResult> Reactivate(string paymentId)
-        {
-            var response = await _service.ReactivatePaymentAsync(paymentId, GetUserId());
-            if (!response.Success) return BadRequest(response);
-            return Ok(response);
-        }
-
-        [HttpGet("exists/{id}")]
-        public async Task<IActionResult> Exists(string id)
-        {
-            var exists = await _service.ExistsAsync(id, GetUserId());
-            return Ok(new GeneralResponse<bool>(true, exists ? "Payment exists" : "Payment not found", exists));
         }
 
         [HttpGet("count")]
         public async Task<IActionResult> Count()
         {
-            var count = await _service.CountAsync(GetUserId());
-            return Ok(new GeneralResponse<int>(true, "Total payments retrieved successfully", count));
+            var count = await _paymentService.CountAsync(GetUserId());
+            return Ok(new { count });
+        }
+
+        [HttpGet("count/invoice/{invoiceId}")]
+        public async Task<IActionResult> CountByInvoice(string invoiceId)
+        {
+            var count = await _paymentService.CountByInvoiceAsync(invoiceId, GetUserId());
+            return Ok(new { count });
+        }
+
+        [HttpGet("count/method/{paymentMethodId}")]
+        public async Task<IActionResult> CountByPaymentMethod(string paymentMethodId)
+        {
+            var count = await _paymentService.CountByPaymentMethodAsync(paymentMethodId, GetUserId());
+            return Ok(new { count });
+        }
+
+        [HttpGet("total/invoice/{invoiceId}")]
+        public async Task<IActionResult> GetTotalPaidByInvoice(string invoiceId)
+        {
+            var response = await _paymentService.GetTotalPaidByInvoiceAsync(invoiceId, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpGet("total/method/{paymentMethodId}")]
+        public async Task<IActionResult> GetTotalPaidByPaymentMethod(string paymentMethodId)
+        {
+            var response = await _paymentService.GetTotalPaidByPaymentMethodAsync(paymentMethodId, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpGet("total/user")]
+        public async Task<IActionResult> GetTotalPaidByUser()
+        {
+            var response = await _paymentService.GetTotalPaidByUserAsync(GetUserId());
+            return Ok(response);
+        }
+
+        [HttpGet("revenue/monthly/{year}")]
+        public async Task<IActionResult> GetMonthlyRevenue(int year)
+        {
+            var response = await _paymentService.GetMonthlyRevenueAsync(year, GetUserId());
+            return Ok(response);
+        }
+
+        [HttpGet("revenue/methods")]
+        public async Task<IActionResult> GetRevenueByPaymentMethod()
+        {
+            var response = await _paymentService.GetRevenueByPaymentMethodAsync(GetUserId());
+            return Ok(response);
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using invoice.Core.DTO.PaymentOptions;
-using invoice.Models.DTO.PurchaseCompletionOptions;
+using invoice.Core.DTO.PurchaseCompletionOptions;
 using invoice.Models.Entities.utils;
 using System.ComponentModel.DataAnnotations;
 

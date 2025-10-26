@@ -2,10 +2,10 @@
 using invoice.Core.Interfaces.Services;
 using invoice.Services;
 using invoice.Services.Payments;
-using invoice.Services.Payments.ApplePay;
-using invoice.Services.Payments.Mada;
+using invoice.Services.Payments.Edfa;
 using invoice.Services.Payments.Paypal;
 using invoice.Services.Payments.Stripe;
+using invoice.Services.Payments.TabPayments;
 
 namespace invoice.Helpers
 {
@@ -26,7 +26,7 @@ namespace invoice.Helpers
             services.AddScoped<IInvoiceItemsService, InvoiceItemsService>();
             services.AddScoped<IPayInvoiceService, PayInvoiceService>();
 
-          //  services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IPaymentLinkService, PaymentLinkService>();
             services.AddScoped<IPaymentMethodService, PaymentMethodService>();
             services.AddScoped<IPaymentGatewayService, PaymentGatewayService>();
@@ -34,8 +34,8 @@ namespace invoice.Helpers
             services.AddScoped<PaymentGatewayFactory>();
             services.AddScoped<StripePaymentService>();
             services.AddScoped<PayPalPaymentService>();
-            services.AddScoped<MadaPaymentService>();
-            services.AddScoped<ApplePayPaymentService>();
+            services.AddScoped<EdfaPaymentService>();
+            services.AddScoped<TabPaymentsService>();
 
             services.AddScoped<IPOSService, POSService>();
             services.AddScoped<IPageService, PageService>();
@@ -53,13 +53,23 @@ namespace invoice.Helpers
             // Register payment gateway options
             services.Configure<StripeOptions>(configuration.GetSection("Stripe"));
             services.Configure<PayPalOptions>(configuration.GetSection("PayPal"));
-            services.Configure<MadaOptions>(configuration.GetSection("Mada"));
-            services.Configure<ApplePayOptions>(configuration.GetSection("ApplePay"));
+            services.Configure<EdfaOptions>(configuration.GetSection("Edfa"));
+            services.Configure<TabPaymentsOptions>(configuration.GetSection("TabPayments"));
 
-            // Configure HTTP clients
             services.AddHttpClient("PayPal", client =>
             {
-                client.BaseAddress = new Uri(configuration["PayPal:BaseUrl"] ?? "https://api-m.sandbox.paypal.com");
+                client.Timeout = TimeSpan.FromSeconds(30);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
+
+            services.AddHttpClient("Edfa", client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(30);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
+
+            services.AddHttpClient("TabPayments", client =>
+            {
                 client.Timeout = TimeSpan.FromSeconds(30);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             });
@@ -69,12 +79,6 @@ namespace invoice.Helpers
                 client.BaseAddress = new Uri("https://api.stripe.com/");
                 client.Timeout = TimeSpan.FromSeconds(30);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
-            });
-
-            services.AddHttpClient("Mada", client =>
-            {
-                client.BaseAddress = new Uri(configuration["Mada:BaseUrl"] ?? "https://secure.mada.com.sa");
-                client.Timeout = TimeSpan.FromSeconds(30);
             });
 
             return services;

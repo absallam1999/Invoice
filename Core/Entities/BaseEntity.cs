@@ -1,10 +1,12 @@
-﻿using invoice.Core.Interfaces;
+﻿using invoice.Helpers;
+using invoice.Core.Interfaces;
+
 namespace invoice.Core.Entities
 {
     public class BaseEntity : IEntity
     {
         public string Id { get; set; } = GenerateShortSequentialId();
-        public DateTime CreatedAt { get; set; } = HelperFunctions.GetSaudiTime();
+        public DateTime CreatedAt { get; set; } = GetSaudiTime.Now();
         public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }

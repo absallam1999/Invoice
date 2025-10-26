@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using invoice.Helpers;
+using System.ComponentModel.DataAnnotations;
 
 namespace invoice.Core.DTO.Payment
 {
@@ -18,7 +19,7 @@ namespace invoice.Core.DTO.Payment
         [Range(1, int.MaxValue, ErrorMessage = "Max usage must be at least 1")]
         public int? MaxUsageCount { get; set; }
 
-        public DateTime? ExpiresAt { get; private set; } = DateTime.UtcNow.AddDays(3);
+        public DateTime? ExpiresAt { get; private set; } = GetSaudiTime.Now().AddDays(3);
 
         [Required(ErrorMessage = "Invoice ID is required")]
         public string InvoiceId { get; set; }
@@ -33,6 +34,6 @@ namespace invoice.Core.DTO.Payment
 
         public string PaymentMethodId { get; set; }
 
-        public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string>? Metadata { get; set; } = new Dictionary<string, string>();
     }
 }

@@ -10,6 +10,7 @@ namespace invoice.Core.DTO.Store
             "numbers, dashes or underscores without spaces.")]
         public string Slug { get; set; }
         public IFormFile? Logo { get; set; }
+
         public string Color { get; set; }
         public string Currency { get; set; }
         public string Country { get; set; }

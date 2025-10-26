@@ -21,9 +21,7 @@ namespace invoice.Services.Payments
 
         public abstract Task<GeneralResponse<PaymentSessionResponse>> CreatePaymentSessionAsync(PaymentCreateDTO dto);
         public abstract Task<GeneralResponse<bool>> CancelPaymentAsync(string paymentId);
-        public abstract Task<GeneralResponse<bool>> RefundPaymentAsync(string paymentId);
         public abstract Task<GeneralResponse<PaymentStatusResponse>> GetPaymentStatusAsync(string paymentId);
-        public abstract Task<GeneralResponse<PaymentWebhookResponse>> ProcessWebhookAsync(string payload, string signature);
 
         protected virtual GeneralResponse<PaymentSessionResponse> ValidatePaymentRequest(PaymentCreateDTO dto)
         {

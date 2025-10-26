@@ -11,8 +11,5 @@ namespace invoice.Core.DTO.Page
         public IFormFile? Image { get; set; }
         public bool InFooter { get; set; } = false;
         public bool InHeader { get; set; } = false;
-
-        //[Required]
-        //public string LanguageId { get; set; }
     }
 }

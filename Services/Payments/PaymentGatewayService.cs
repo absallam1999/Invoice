@@ -3,6 +3,7 @@ using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentResponse;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
+using invoice.Helpers;
 using invoice.Services.Payments;
 
 namespace invoice.Services
@@ -79,33 +80,6 @@ namespace invoice.Services
             }
         }
 
-        public async Task<GeneralResponse<bool>> RefundPaymentAsync(string paymentId, PaymentType paymentType)
-        {
-            try
-            {
-                if (!_gatewayFactory.IsOnlinePayment(paymentType))
-                {
-                    return new GeneralResponse<bool>
-                    {
-                        Success = true,
-                        Message = $"{paymentType} refunds are handled offline",
-                        Data = true
-                    };
-                }
-
-                var gateway = _gatewayFactory.GetGateway(paymentType);
-                return await gateway.RefundPaymentAsync(paymentId);
-            }
-            catch (NotSupportedException ex)
-            {
-                return new GeneralResponse<bool>
-                {
-                    Success = false,
-                    Message = ex.Message
-                };
-            }
-        }
-
         public async Task<GeneralResponse<PaymentStatusResponse>> GetPaymentStatusAsync(string paymentId, PaymentType paymentType)
         {
             try
@@ -120,7 +94,7 @@ namespace invoice.Services
                         {
                             PaymentId = paymentId,
                             Status = PaymentStatus.Completed,
-                            LastUpdated = DateTime.UtcNow
+                            LastUpdated = GetSaudiTime.Now()
                         }
                     };
                 }

@@ -12,8 +12,8 @@ using invoice.Repo.Data;
 namespace invoice.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250915123522_shipping")]
-    partial class shipping
+    [Migration("20251022172008_newMig")]
+    partial class newMig
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -178,6 +178,9 @@ namespace invoice.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("EdfaAccountId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -207,6 +210,9 @@ namespace invoice.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("PaypalEmail")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
@@ -214,6 +220,12 @@ namespace invoice.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripeAccountId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TabAccountId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -327,69 +339,17 @@ namespace invoice.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique()
+                        .HasFilter("[PhoneNumber] IS NOT NULL");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Clients", (string)null);
-                });
-
-            modelBuilder.Entity("invoice.Core.Entities.ContactInfo", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(8)
-                        .HasColumnType("nvarchar(8)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("Facebook")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<string>("Instagram")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Location")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("StoreId")
-                        .HasColumnType("nvarchar(8)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("WhatsApp")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StoreId")
-                        .IsUnique()
-                        .HasFilter("[StoreId] IS NOT NULL");
-
-                    b.ToTable("ContactInformation", (string)null);
                 });
 
             modelBuilder.Entity("invoice.Core.Entities.Currency", b =>
@@ -475,11 +435,11 @@ namespace invoice.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(8)");
 
-                    b.Property<string>("StoreId")
-                        .HasColumnType("nvarchar(8)");
-
                     b.Property<bool>("Tax")
                         .HasColumnType("bit");
+
+                    b.Property<string>("TaxId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("TermsConditions")
                         .HasMaxLength(2000)
@@ -501,7 +461,9 @@ namespace invoice.Migrations
 
                     b.HasIndex("LanguageId");
 
-                    b.HasIndex("StoreId");
+                    b.HasIndex("TaxId")
+                        .IsUnique()
+                        .HasFilter("[TaxId] IS NOT NULL");
 
                     b.HasIndex("UserId");
 
@@ -601,7 +563,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ar",
-                            CreatedAt = new DateTime(2025, 9, 15, 12, 35, 21, 544, DateTimeKind.Utc).AddTicks(5067),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(6393),
                             IsDeleted = false,
                             Name = "Arabic",
                             Target = "Page"
@@ -609,7 +571,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "en",
-                            CreatedAt = new DateTime(2025, 9, 15, 12, 35, 21, 544, DateTimeKind.Utc).AddTicks(5084),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(6455),
                             IsDeleted = false,
                             Name = "English",
                             Target = "Page"
@@ -667,10 +629,13 @@ namespace invoice.Migrations
             modelBuilder.Entity("invoice.Core.Entities.Order", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -683,7 +648,9 @@ namespace invoice.Migrations
                         .HasColumnType("nvarchar(8)");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("IsPaid")
                         .HasColumnType("bit");
@@ -697,6 +664,10 @@ namespace invoice.Migrations
                     b.Property<int>("ShippingMethod")
                         .HasColumnType("int");
 
+                    b.Property<string>("StoreId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(8)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -705,7 +676,56 @@ namespace invoice.Migrations
                     b.HasIndex("InvoiceId")
                         .IsUnique();
 
+                    b.HasIndex("StoreId");
+
                     b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("invoice.Core.Entities.OrderItem", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("LineTotal")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("decimal(18,2)")
+                        .HasComputedColumnSql("[Quantity] * [UnitPrice]", true);
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<int>("Quantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("OrderItems", (string)null);
                 });
 
             modelBuilder.Entity("invoice.Core.Entities.Page", b =>
@@ -823,13 +843,23 @@ namespace invoice.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<DateTime>("Date")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("DATEADD(DAY, 3, GETUTCDATE())");
+
+                    b.Property<string>("GatewaySessionId")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("InvoiceId")
                         .IsRequired()
@@ -840,17 +870,25 @@ namespace invoice.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<string>("Link")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
-                    b.Property<string>("PaymentLinkId")
-                        .HasColumnType("nvarchar(8)");
-
                     b.Property<string>("PaymentMethodId")
                         .IsRequired()
                         .HasColumnType("nvarchar(8)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -861,9 +899,10 @@ namespace invoice.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InvoiceId");
+                    b.HasIndex("GatewaySessionId")
+                        .IsUnique();
 
-                    b.HasIndex("PaymentLinkId");
+                    b.HasIndex("InvoiceId");
 
                     b.HasIndex("PaymentMethodId");
 
@@ -883,59 +922,96 @@ namespace invoice.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<string>("Image")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                    b.Property<DateTime?>("ExpireDate")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("InvoiceId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(8)");
+                    b.Property<bool>("IsActivated")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("Link")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                    b.Property<int?>("MaxPaymentsNumber")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("PaymentsNumber")
-                        .IsRequired()
+                    b.Property<int>("PaymentsNumber")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("int");
 
-                    b.Property<string>("Terms")
+                    b.Property<string>("Slug")
                         .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("Value")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InvoiceId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("PaymentLinks", (string)null);
+                });
+
+            modelBuilder.Entity("invoice.Core.Entities.PaymentLinkPayments", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InvoiceId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PaymentLinkId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<int>("PaymentType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentsNumber")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId")
+                        .IsUnique();
+
+                    b.HasIndex("PaymentLinkId");
+
+                    b.ToTable("PaymentLinkPayments");
                 });
 
             modelBuilder.Entity("invoice.Core.Entities.PaymentMethod", b =>
@@ -973,16 +1049,86 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ca",
-                            CreatedAt = new DateTime(2025, 9, 15, 12, 35, 21, 544, DateTimeKind.Utc).AddTicks(5424),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(6961),
                             IsDeleted = false,
                             Name = "Cash"
                         },
                         new
                         {
+                            Id = "cc",
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7013),
+                            IsDeleted = false,
+                            Name = "CreditCard"
+                        },
+                        new
+                        {
+                            Id = "dc",
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7165),
+                            IsDeleted = false,
+                            Name = "DebitCard"
+                        },
+                        new
+                        {
                             Id = "bt",
-                            CreatedAt = new DateTime(2025, 9, 15, 12, 35, 21, 544, DateTimeKind.Utc).AddTicks(5453),
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7192),
                             IsDeleted = false,
                             Name = "BankTransfer"
+                        },
+                        new
+                        {
+                            Id = "pp",
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7208),
+                            IsDeleted = false,
+                            Name = "PayPal"
+                        },
+                        new
+                        {
+                            Id = "st",
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7224),
+                            IsDeleted = false,
+                            Name = "Stripe"
+                        },
+                        new
+                        {
+                            Id = "ap",
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7240),
+                            IsDeleted = false,
+                            Name = "ApplePay"
+                        },
+                        new
+                        {
+                            Id = "gp",
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7256),
+                            IsDeleted = false,
+                            Name = "GooglePay"
+                        },
+                        new
+                        {
+                            Id = "ma",
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7272),
+                            IsDeleted = false,
+                            Name = "Mada"
+                        },
+                        new
+                        {
+                            Id = "sp",
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7288),
+                            IsDeleted = false,
+                            Name = "STCPay"
+                        },
+                        new
+                        {
+                            Id = "sa",
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7311),
+                            IsDeleted = false,
+                            Name = "Sadad"
+                        },
+                        new
+                        {
+                            Id = "dl",
+                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7326),
+                            IsDeleted = false,
+                            Name = "Delivery"
                         });
                 });
 
@@ -1002,10 +1148,6 @@ namespace invoice.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Image")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("InPOS")
                         .ValueGeneratedOnAdd()
@@ -1027,6 +1169,10 @@ namespace invoice.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<string>("MainImage")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -1045,10 +1191,6 @@ namespace invoice.Migrations
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Url")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -1233,16 +1375,6 @@ namespace invoice.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("invoice.Core.Entities.ContactInfo", b =>
-                {
-                    b.HasOne("invoice.Core.Entities.Store", "Store")
-                        .WithOne("ContactInformations")
-                        .HasForeignKey("invoice.Core.Entities.ContactInfo", "StoreId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Store");
-                });
-
             modelBuilder.Entity("invoice.Core.Entities.Currency", b =>
                 {
                     b.HasOne("invoice.Core.Entities.ApplicationUser", "User")
@@ -1267,10 +1399,9 @@ namespace invoice.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("invoice.Core.Entities.Store", "Store")
-                        .WithMany("Invoices")
-                        .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                    b.HasOne("invoice.Core.Entities.Tax", "TaxEntity")
+                        .WithOne("Invoice")
+                        .HasForeignKey("invoice.Core.Entities.Invoice", "TaxId");
 
                     b.HasOne("invoice.Core.Entities.ApplicationUser", "User")
                         .WithMany("Invoices")
@@ -1282,7 +1413,7 @@ namespace invoice.Migrations
 
                     b.Navigation("Language");
 
-                    b.Navigation("Store");
+                    b.Navigation("TaxEntity");
 
                     b.Navigation("User");
                 });
@@ -1325,7 +1456,34 @@ namespace invoice.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("invoice.Core.Entities.Store", "Store")
+                        .WithMany("Orders")
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Invoice");
+
+                    b.Navigation("Store");
+                });
+
+            modelBuilder.Entity("invoice.Core.Entities.OrderItem", b =>
+                {
+                    b.HasOne("invoice.Core.Entities.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("invoice.Core.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("invoice.Core.Entities.Page", b =>
@@ -1366,11 +1524,6 @@ namespace invoice.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("invoice.Core.Entities.PaymentLink", "PaymentLink")
-                        .WithMany("Payments")
-                        .HasForeignKey("PaymentLinkId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("invoice.Core.Entities.PaymentMethod", "PaymentMethod")
                         .WithMany("Payments")
                         .HasForeignKey("PaymentMethodId")
@@ -1385,8 +1538,6 @@ namespace invoice.Migrations
 
                     b.Navigation("Invoice");
 
-                    b.Navigation("PaymentLink");
-
                     b.Navigation("PaymentMethod");
 
                     b.Navigation("User");
@@ -1394,13 +1545,113 @@ namespace invoice.Migrations
 
             modelBuilder.Entity("invoice.Core.Entities.PaymentLink", b =>
                 {
-                    b.HasOne("invoice.Core.Entities.Invoice", "Invoice")
+                    b.HasOne("invoice.Core.Entities.ApplicationUser", "User")
                         .WithMany("PaymentLinks")
-                        .HasForeignKey("InvoiceId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("invoice.Core.Entities.utils.PaymentOptions", "PaymentOptions", b1 =>
+                        {
+                            b1.Property<string>("PaymentLinkId")
+                                .HasColumnType("nvarchar(8)");
+
+                            b1.Property<bool>("BankTransfer")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(true)
+                                .HasColumnName("BankTransfer");
+
+                            b1.Property<bool>("Cash")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(true)
+                                .HasColumnName("Cash");
+
+                            b1.Property<bool>("PayPal")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(false)
+                                .HasColumnName("PayPal");
+
+                            b1.Property<bool>("Tax")
+                                .HasColumnType("bit");
+
+                            b1.HasKey("PaymentLinkId");
+
+                            b1.ToTable("PaymentLinks");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PaymentLinkId");
+                        });
+
+                    b.OwnsOne("invoice.Models.Entities.utils.PurchaseCompletionOptions", "purchaseOptions", b1 =>
+                        {
+                            b1.Property<string>("PaymentLinkId")
+                                .HasColumnType("nvarchar(8)");
+
+                            b1.Property<bool>("Address")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(true)
+                                .HasColumnName("ClientAddress");
+
+                            b1.Property<bool>("Email")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(true)
+                                .HasColumnName("ClientEmail");
+
+                            b1.Property<bool>("Name")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(true)
+                                .HasColumnName("ClientName");
+
+                            b1.Property<string>("TermsAndConditions")
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("TermsAndConditions");
+
+                            b1.Property<bool>("phone")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bit")
+                                .HasDefaultValue(true)
+                                .HasColumnName("ClientPhone");
+
+                            b1.HasKey("PaymentLinkId");
+
+                            b1.ToTable("PaymentLinks");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PaymentLinkId");
+                        });
+
+                    b.Navigation("PaymentOptions")
+                        .IsRequired();
+
+                    b.Navigation("User");
+
+                    b.Navigation("purchaseOptions")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("invoice.Core.Entities.PaymentLinkPayments", b =>
+                {
+                    b.HasOne("invoice.Core.Entities.Invoice", "Invoice")
+                        .WithOne("PaymentLinkPayment")
+                        .HasForeignKey("invoice.Core.Entities.PaymentLinkPayments", "InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("invoice.Core.Entities.PaymentLink", "PaymentLink")
+                        .WithMany("PaymentLinkPayments")
+                        .HasForeignKey("PaymentLinkId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Invoice");
+
+                    b.Navigation("PaymentLink");
                 });
 
             modelBuilder.Entity("invoice.Core.Entities.Product", b =>
@@ -1457,6 +1708,43 @@ namespace invoice.Migrations
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("bit")
                                 .HasDefaultValue(false);
+
+                            b1.HasKey("StoreId");
+
+                            b1.ToTable("Stores");
+
+                            b1.WithOwner()
+                                .HasForeignKey("StoreId");
+                        });
+
+                    b.OwnsOne("invoice.Core.Entities.utils.ContactInfo", "ContactInformations", b1 =>
+                        {
+                            b1.Property<string>("StoreId")
+                                .HasColumnType("nvarchar(8)");
+
+                            b1.Property<string>("Email")
+                                .HasMaxLength(100)
+                                .HasColumnType("nvarchar(100)");
+
+                            b1.Property<string>("Facebook")
+                                .HasMaxLength(150)
+                                .HasColumnType("nvarchar(150)");
+
+                            b1.Property<string>("Instagram")
+                                .HasMaxLength(150)
+                                .HasColumnType("nvarchar(150)");
+
+                            b1.Property<string>("Location")
+                                .HasMaxLength(200)
+                                .HasColumnType("nvarchar(200)");
+
+                            b1.Property<string>("Phone")
+                                .HasMaxLength(20)
+                                .HasColumnType("nvarchar(20)");
+
+                            b1.Property<string>("WhatsApp")
+                                .HasMaxLength(150)
+                                .HasColumnType("nvarchar(150)");
 
                             b1.HasKey("StoreId");
 
@@ -1570,6 +1858,9 @@ namespace invoice.Migrations
                                 .IsRequired();
                         });
 
+                    b.Navigation("ContactInformations")
+                        .IsRequired();
+
                     b.Navigation("PaymentOptions")
                         .IsRequired();
 
@@ -1606,6 +1897,8 @@ namespace invoice.Migrations
 
                     b.Navigation("Notifications");
 
+                    b.Navigation("PaymentLinks");
+
                     b.Navigation("Payments");
 
                     b.Navigation("Products");
@@ -1635,7 +1928,7 @@ namespace invoice.Migrations
 
                     b.Navigation("PayInvoice");
 
-                    b.Navigation("PaymentLinks");
+                    b.Navigation("PaymentLinkPayment");
 
                     b.Navigation("Payments");
                 });
@@ -1647,7 +1940,7 @@ namespace invoice.Migrations
 
             modelBuilder.Entity("invoice.Core.Entities.PaymentLink", b =>
                 {
-                    b.Navigation("Payments");
+                    b.Navigation("PaymentLinkPayments");
                 });
 
             modelBuilder.Entity("invoice.Core.Entities.PaymentMethod", b =>
@@ -1664,14 +1957,17 @@ namespace invoice.Migrations
 
             modelBuilder.Entity("invoice.Core.Entities.Store", b =>
                 {
-                    b.Navigation("ContactInformations")
-                        .IsRequired();
-
-                    b.Navigation("Invoices");
+                    b.Navigation("Orders");
 
                     b.Navigation("Pages");
 
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("invoice.Core.Entities.Tax", b =>
+                {
+                    b.Navigation("Invoice")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

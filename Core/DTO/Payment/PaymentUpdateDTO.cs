@@ -1,15 +1,11 @@
-﻿using invoice.Core.DTO.Invoice;
-using invoice.Core.DTO.PaymentOptions;
-using invoice.Core.Enums;
-using invoice.Models.DTO.PurchaseCompletionOptions;
-using invoice.Models.Entities.utils;
+﻿using invoice.Core.DTO.PaymentOptions;
+using invoice.Core.DTO.PurchaseCompletionOptions;
 using System.ComponentModel.DataAnnotations;
 
 namespace invoice.Core.DTO.Payment
 {
     public class PaymentUpdateDTO
     {
-
 
         [RegularExpression("^[a-zA-Z0-9_-]*$", ErrorMessage = "Slug must contain only letters, " +
          "numbers, dashes or underscores without spaces.")]
@@ -21,10 +17,8 @@ namespace invoice.Core.DTO.Payment
         public IFormFile? Image { get; set; }
         public bool IsActivated { get; set; }
 
-
         public PaymentOptionsDTO PaymentOptions { get; set; }
         public PurchaseCompletionOptionsUpdateDTO PurchaseOptions { get; set; }
-
        
     }
 }

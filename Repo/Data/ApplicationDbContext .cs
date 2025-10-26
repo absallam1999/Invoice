@@ -1,9 +1,8 @@
-﻿using System.Linq.Expressions;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 ﻿using invoice.Core.Entities;
 using invoice.Core.Enums;
-using invoice.Migrations;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 
 namespace invoice.Repo.Data
 {
@@ -28,8 +27,6 @@ namespace invoice.Repo.Data
         public DbSet<Tax> Taxes { get; set; }
         public DbSet<Currency> Currencies { get; set; }
         public DbSet<Order> Orders { get; set; }
-
-
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -132,12 +129,6 @@ namespace invoice.Repo.Data
                  
                 });
             });
-
         }
-
-
-
     }
-
-
 }

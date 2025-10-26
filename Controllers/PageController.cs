@@ -1,7 +1,5 @@
 ﻿using invoice.Core.DTO.Page;
-using invoice.Core.Entities;
 using invoice.Core.Interfaces.Services;
-using invoice.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -21,15 +19,15 @@ namespace invoice.Controllers
             _pageService = pageService;
             _storeService = storeService;
         }
+
         private string GetUserId() =>
-        User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
         private async Task<string> GetStoreIdAsync()
         {
-            var store = await _storeService.GetByUserAsync(GetUserId());
-            return store.Data.Id;
+            var storeResponse = await _storeService.GetByUserAsync(GetUserId());
+            return storeResponse?.Data?.Id ?? string.Empty;
         }
-
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -46,9 +44,21 @@ namespace invoice.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> Search([FromQuery] string keyword, [FromQuery] string storeId = null, [FromQuery] string languageId = null)
+        public async Task<IActionResult> Search(
+            [FromQuery] string keyword,
+            [FromQuery] string? storeId = null,
+            [FromQuery] string? languageId = null)
         {
             var response = await _pageService.SearchAsync(keyword, storeId, languageId);
+            return Ok(response);
+        }
+
+        [HttpGet("count")]
+        public async Task<IActionResult> Count(
+            [FromQuery] string? storeId = null,
+            [FromQuery] string? languageId = null)
+        {
+            var response = await _pageService.CountAsync(GetUserId(), storeId);
             return Ok(response);
         }
 
@@ -56,27 +66,21 @@ namespace invoice.Controllers
         public async Task<IActionResult> Create([FromForm] PageCreateDTO dto)
         {
             var storeId = await GetStoreIdAsync();
+            if (string.IsNullOrEmpty(storeId))
+                return BadRequest("Store not found for this user.");
 
             var response = await _pageService.CreateAsync(dto, storeId);
             return Ok(response);
         }
 
         [HttpPost("range")]
-        public async Task<IActionResult> CreateRange([FromBody] IEnumerable<Page> dtos)
+        public async Task<IActionResult> CreateRange([FromBody] IEnumerable<PageCreateDTO> dtos)
         {
-            var entities = dtos.Select(dto => new Page
-            {
-                Title = dto.Title,
-                Content = dto.Content,
-                Image = dto.Image,
-                InFooter = dto.InFooter,
-                InHeader = dto.InHeader,
+            var storeId = await GetStoreIdAsync();
+            if (string.IsNullOrEmpty(storeId))
+                return BadRequest("Store not found for this user.");
 
-            });
-            var Store = await _storeService.GetByUserAsync(GetUserId());
-            var storeId = Store.Data.Id;
-
-            var response = await _pageService.CreateRangeAsync(entities);
+            var response = await _pageService.CreateRangeAsync(dtos, storeId);
             return Ok(response);
         }
 
@@ -88,20 +92,9 @@ namespace invoice.Controllers
         }
 
         [HttpPut("range")]
-        public async Task<IActionResult> UpdateRange([FromForm] IEnumerable<PageUpdateDTO> dtos)
+        public async Task<IActionResult> UpdateRange([FromBody] IEnumerable<PageUpdateDTO> dtos)
         {
-            var entities = dtos.Select(dto => new Page
-            {
-
-                Title = dto.Title,
-                Content = dto.Content,
-                // Image = dto.Image,
-                InFooter = dto.InFooter,
-                InHeader = dto.InHeader,
-
-            });
-
-            var response = await _pageService.UpdateRangeAsync(entities);
+            var response = await _pageService.UpdateRangeAsync(dtos);
             return Ok(response);
         }
 

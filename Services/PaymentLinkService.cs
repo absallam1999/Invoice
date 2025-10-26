@@ -1,15 +1,12 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO;
 using invoice.Core.DTO.Client;
-using invoice.Core.DTO.Invoice;
-using invoice.Core.DTO.InvoiceItem;
-using invoice.Core.DTO.Payment;
 using invoice.Core.DTO.PaymentLink;
-using invoice.Core.DTO.Store;
 using invoice.Core.Entities;
 using invoice.Core.Entities.utils;
 using invoice.Core.Enums;
 using invoice.Core.Interfaces.Services;
+using invoice.Helpers;
 using invoice.Models.Entities.utils;
 using invoice.Repo;
 using Microsoft.EntityFrameworkCore;
@@ -51,6 +48,7 @@ namespace invoice.Services
 
             var entity = _mapper.Map<PaymentLink>(dto);
             entity.UserId = userId;
+            entity.ExpireDate = GetSaudiTime.Now().AddDays(7);
 
             var exists = await _paymentLinkRepo.GetBySlugAsync(dto.Slug);
             if (exists != null)
@@ -307,13 +305,13 @@ namespace invoice.Services
 
                 return new GeneralResponse<object> { Success = false, Message = "There are not enough payments left" }; 
             
-            if(paymentlink.ExpireDate != null &&( HelperFunctions.GetSaudiTime() > paymentlink.ExpireDate))
+            if(paymentlink.ExpireDate != null &&( GetSaudiTime.Now() > paymentlink.ExpireDate))
 
                 return new GeneralResponse<object> { Success = false, Message = "Payment link expired" };
 
-            //client
+        //client
 
-            string ClientId;
+        string ClientId;
             var EmailExists = await _clientRepo.ExistsAsync(c => c.Email == dto.Client.Email && c.UserId == userId);
             if (EmailExists)
             {

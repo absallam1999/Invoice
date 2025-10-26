@@ -140,7 +140,7 @@ namespace invoice.Controllers
         }
 
         [HttpPut("{storeId}/settings")]
-        public async Task<IActionResult> UpdateSettings(string storeId, [FromBody] StoreSettingsReadDTO settingsDto, [FromQuery] string userId)
+        public async Task<IActionResult> UpdateSettings(string storeId, [FromBody] StoreSettingsUpdateDTO settingsDto, [FromQuery] string userId)
         {
             var result = await _storeService.UpdateSettingsAsync(storeId, settingsDto, userId);
             return Ok(result);

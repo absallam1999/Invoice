@@ -16,5 +16,11 @@ namespace invoice.Core.DTO.Auth
 
         [EmailAddress]
         public string Email { get; set; }
+
+        [EmailAddress]
+        public string? PaypalEmail { get; set; }
+        public string? EdfaAccountId { get; set; }
+        public string? StripeAccountId { get; set; }
+        public string? TapPaymentsAccountId { get; set; }
     }
 }

@@ -1,22 +1,23 @@
 ﻿using AutoMapper;
 using invoice.Core.DTO;
 using invoice.Core.DTO.Page;
-using invoice.Core.DTO.Product;
 using invoice.Core.Entities;
 using invoice.Core.Interfaces.Services;
-using invoice.Repo;
 using Microsoft.EntityFrameworkCore;
+using invoice.Repo;
 
 namespace invoice.Services
 {
     public class PageService : IPageService
     {
         private readonly IRepository<Page> _pageRepo;
+        private readonly IFileService _fileService;
         private readonly IMapper _mapper;
 
-        public PageService(IRepository<Page> pageRepo, IMapper mapper)
+        public PageService(IRepository<Page> pageRepo, IFileService fileService, IMapper mapper)
         {
             _pageRepo = pageRepo;
+            _fileService = fileService;
             _mapper = mapper;
         }
 
@@ -29,7 +30,6 @@ namespace invoice.Services
             return new GeneralResponse<IEnumerable<GetAllPagesDTO>>(true, "Pages retrieved successfully", dtos);
 
         }
-
 
         public async Task<GeneralResponse<PageReadDTO>> GetByIdAsync(string id)
         {
@@ -46,8 +46,10 @@ namespace invoice.Services
             var page = _mapper.Map<Page>(dto);
             page.StoreId = StoreId;
 
+            if (dto.Image != null)
+                page.Image = await _fileService.UploadImageAsync(dto.Image, "pages");
+
             var response = await _pageRepo.AddAsync(page);
-            // var readDto = _mapper.Map<PageReadDTO>(response);
             var readDto = _mapper.Map<PageReadDTO>(response.Data);
 
 
@@ -56,18 +58,93 @@ namespace invoice.Services
                 : new GeneralResponse<PageReadDTO>() { Success = false, Message = response.Message };
         }
 
+        public async Task<GeneralResponse<IEnumerable<PageReadDTO>>> CreateRangeAsync(IEnumerable<PageCreateDTO> dtos, string storeId)
+        {
+            var pages = new List<Page>();
+
+            foreach (var dto in dtos)
+            {
+                var page = _mapper.Map<Page>(dto);
+                page.StoreId = storeId;
+
+                if (dto.Image != null)
+                    page.Image = await _fileService.UploadImageAsync(dto.Image, "pages");
+
+                pages.Add(page);
+            }
+
+            var response = await _pageRepo.AddRangeAsync(pages);
+
+            return response.Success
+                ? new GeneralResponse<IEnumerable<PageReadDTO>>
+                {
+                    Success = true,
+                    Message = "Pages created successfully.",
+                    Data = _mapper.Map<IEnumerable<PageReadDTO>>(response.Data)
+                }
+                : new GeneralResponse<IEnumerable<PageReadDTO>>
+                {
+                    Success = false,
+                    Message = response.Message
+                };
+        }
+
         public async Task<GeneralResponse<PageReadDTO>> UpdateAsync(string id, PageUpdateDTO dto)
         {
             var existing = await _pageRepo.GetByIdAsync(id);
             if (existing == null)
-                return new GeneralResponse<PageReadDTO>() { Success = false, Message = "Page not found." };
+                return new GeneralResponse<PageReadDTO>(false, "Page not found.");
+
             _mapper.Map(dto, existing);
+
+            if (dto.Image != null)
+                existing.Image = await _fileService.UpdateImageAsync(dto.Image, existing.Image, "pages");
+
             var response = await _pageRepo.UpdateAsync(existing);
-            var readDto = _mapper.Map<PageReadDTO>(response);
+
+            if (!response.Success)
+                return new GeneralResponse<PageReadDTO>(false, response.Message);
+
+            var readDto = _mapper.Map<PageReadDTO>(response.Data);
+
+            return new GeneralResponse<PageReadDTO>(true, "Page updated successfully.", readDto);
+        }
+
+        public async Task<GeneralResponse<IEnumerable<PageReadDTO>>> UpdateRangeAsync(IEnumerable<PageUpdateDTO> dtos)
+        {
+            var updatedPages = new List<Page>();
+
+            foreach (var dto in dtos)
+            {
+                var existing = await _pageRepo.GetByIdAsync(dto.Id);
+                if (existing != null)
+                {
+                    _mapper.Map(dto, existing);
+
+                    if (dto.Image != null)
+                        existing.Image = await _fileService.UpdateImageAsync(dto.Image, existing.Image, "pages");
+
+                    updatedPages.Add(existing);
+                }
+            }
+
+            if (!updatedPages.Any())
+                return new GeneralResponse<IEnumerable<PageReadDTO>> { Success = false, Message = "No valid pages found to update." };
+
+            var response = await _pageRepo.UpdateRangeAsync(updatedPages);
 
             return response.Success
-                ? new GeneralResponse<PageReadDTO>() { Success = true, Message = "Page updated successfully.", Data = readDto }
-                : new GeneralResponse<PageReadDTO>() { Success = false, Message = response.Message };
+                ? new GeneralResponse<IEnumerable<PageReadDTO>>
+                {
+                    Success = true,
+                    Message = "Pages updated successfully.",
+                    Data = _mapper.Map<IEnumerable<PageReadDTO>>(response.Data)
+                }
+                : new GeneralResponse<IEnumerable<PageReadDTO>>
+                {
+                    Success = false,
+                    Message = response.Message
+                };
         }
 
         public async Task<GeneralResponse<bool>> DeleteAsync(string id)
@@ -111,35 +188,6 @@ namespace invoice.Services
             };
         }
 
-        public async Task<GeneralResponse<IEnumerable<Page>>> CreateRangeAsync(IEnumerable<Page> pages)
-        {
-            var response = await _pageRepo.AddRangeAsync(pages);
-            return response.Success
-                ? new GeneralResponse<IEnumerable<Page>>() { Success = true, Message = "Pages created successfully.", Data = response.Data }
-                : new GeneralResponse<IEnumerable<Page>>() { Success = false, Message = response.Message };
-        }
-
-
-        public async Task<GeneralResponse<IEnumerable<Page>>> UpdateRangeAsync(IEnumerable<Page> pages)
-        {
-            var existingPages = new List<Page>();
-            foreach (var page in pages)
-            {
-                var existing = await _pageRepo.GetByIdAsync(page.Id);
-                if (existing != null)
-                {
-                    _mapper.Map(page, existing);
-                    existingPages.Add(existing);
-                }
-            }
-
-            var response = await _pageRepo.UpdateRangeAsync(existingPages);
-            return response.Success
-                ? new GeneralResponse<IEnumerable<Page>>() { Success = true, Message = "Pages updated successfully.", Data = response.Data }
-                : new GeneralResponse<IEnumerable<Page>>() { Success = false, Message = response.Message };
-        }
-
-
         public async Task<GeneralResponse<bool>> DeleteRangeAsync(IEnumerable<string> ids)
         {
             var response = await _pageRepo.DeleteRangeAsync(ids);
@@ -150,13 +198,19 @@ namespace invoice.Services
         {
             return await _pageRepo.ExistsAsync(p => p.Id == id);
         }
-     
 
-        public Task<int> CountAsync(string userId=null ,string storeId = null, string languageId = null)
+
+        public async Task<int> CountAsync(string userId = null, string storeId = null)
         {
-            throw new NotImplementedException();
-        }
+            var query = _pageRepo.GetQueryable();
 
-       
+            if (!string.IsNullOrEmpty(userId))
+                query = query.Where(p => p.Store.UserId == userId);
+
+            if (!string.IsNullOrEmpty(storeId))
+                query = query.Where(p => p.StoreId == storeId);
+
+            return await query.CountAsync();
+        }
     }
 }

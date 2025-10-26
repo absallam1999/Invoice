@@ -8,8 +8,7 @@ namespace invoice.Core.Interfaces.Services
     public interface IPaymentGatewayService
     {
         Task<GeneralResponse<PaymentSessionResponse>> CreatePaymentSessionAsync(PaymentCreateDTO dto, PaymentType type);
-        Task<GeneralResponse<bool>> CancelPaymentAsync(string paymentId, PaymentType paymentType);
-        Task<GeneralResponse<bool>> RefundPaymentAsync(string paymentId, PaymentType paymentType);
         Task<GeneralResponse<PaymentStatusResponse>> GetPaymentStatusAsync(string paymentId, PaymentType paymentType);
+        Task<GeneralResponse<bool>> CancelPaymentAsync(string paymentId, PaymentType paymentType);
     }
 }

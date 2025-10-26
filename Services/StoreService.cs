@@ -185,34 +185,22 @@ namespace invoice.Services
             return new GeneralResponse<StoreReadDTO>(true, "Store retrieved successfully", dto);
         }
 
-
-        public async Task<GeneralResponse<StoreReadDTO>> UpdateAsync(  StoreUpdateDTO dto, string userId)
+        public async Task<GeneralResponse<StoreReadDTO>> UpdateAsync(StoreUpdateDTO dto, string userId)
         {
-            var entity = await _storeRepo.GetSingleByUserIdAsync( userId);
+            var entity = await _storeRepo.GetSingleByUserIdAsync(userId);
             if (entity == null)
                 return new GeneralResponse<StoreReadDTO>(false, "Store not found");
-
-            _mapper.Map(dto, entity);
-            var exists = await _storeRepo.GetBySlugAsync(dto.Slug);
-            if (exists != null && exists.Id!=entity.Id)
-            {
-                return new GeneralResponse<StoreReadDTO>
-                {
-                    Success = false,
-                    Message = "Slug already exists, please choose another name."
-                };
-            }
 
             if (dto.StoreSettings.Logo != null)
             {
                 entity.StoreSettings.Logo = await _fileService.UpdateImageAsync(
                     dto.StoreSettings.Logo,
-                    entity.StoreSettings.Logo, "stores"
-
+                    entity.StoreSettings.Logo,
+                    "stores"
                 );
             }
 
-            if (dto.StoreSettings.CoverImage != null && dto.StoreSettings.CoverImage.Length > 0)
+            if (dto.StoreSettings.CoverImage != null)
             {
                 entity.StoreSettings.CoverImage = await _fileService.UpdateImageAsync(
                     dto.StoreSettings.CoverImage,
@@ -221,20 +209,24 @@ namespace invoice.Services
                 );
             }
 
+            _mapper.Map(dto, entity);
+            var exists = await _storeRepo.GetBySlugAsync(dto.Slug);
+            if (exists != null && exists.Id != entity.Id)
+            {
+                return new GeneralResponse<StoreReadDTO>
+                {
+                    Success = false,
+                    Message = "Slug already exists, please choose another name."
+                };
+            }
 
             await _storeRepo.UpdateAsync(entity);
 
-            var updatedto = _mapper.Map<StoreReadDTO>(entity);
-
-            updatedto.StoreSettings.Logo = _fileService.GetImageUrl(entity.StoreSettings.Logo);
-            updatedto.StoreSettings.CoverImage = _fileService.GetImageUrl(entity.StoreSettings.CoverImage);
-
-            return new GeneralResponse<StoreReadDTO>(true, "Store updated successfully", updatedto);
-
+            return new GeneralResponse<StoreReadDTO>(true, "Store updated successfully", _mapper.Map<StoreReadDTO>(entity));
         }
 
 
-       
+
         #region order
         public async Task<GeneralResponse<object>> CreateOrderAsync(CreateOrderDTO dto, string userId, string storeId)
         {
@@ -348,23 +340,37 @@ namespace invoice.Services
 
 
 
-
-
-
-
-
-
-
-
-
-
-        public async Task<GeneralResponse<bool>> UpdateSettingsAsync(string storeId, StoreSettingsReadDTO settingsDto, string userId)
+        public async Task<GeneralResponse<bool>> UpdateSettingsAsync(
+            string storeId,
+            StoreSettingsUpdateDTO settingsDto,
+            string userId)
         {
             var entity = await _storeRepo.GetByIdAsync(storeId, userId);
             if (entity == null)
                 return new GeneralResponse<bool>(false, "Store not found");
 
-            entity.StoreSettings = _mapper.Map<StoreSettings>(settingsDto);
+            entity.StoreSettings.Color = settingsDto.Color;
+            entity.StoreSettings.Currency = settingsDto.Currency;
+            entity.StoreSettings.purchaseOptions = _mapper.Map<PurchaseCompletionOptions>(settingsDto.PurchaseOptions);
+
+            if (settingsDto.Logo != null)
+            {
+                entity.StoreSettings.Logo = await _fileService.UpdateImageAsync(
+                    settingsDto.Logo,
+                    entity.StoreSettings.Logo,
+                    "stores"
+                );
+            }
+
+            if (settingsDto.CoverImage != null)
+            {
+                entity.StoreSettings.CoverImage = await _fileService.UpdateImageAsync(
+                    settingsDto.CoverImage,
+                    entity.StoreSettings.CoverImage,
+                    "stores"
+                );
+            }
+
             await _storeRepo.UpdateAsync(entity);
 
             return new GeneralResponse<bool>(true, "Settings updated successfully", true);
@@ -493,11 +499,12 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<StoreReadDTO>> GetByUserAsync(string userId)
         {
-            var entities = await _storeRepo.GetAllAsync(userId);
-            return new GeneralResponse<StoreReadDTO>(true, "Stores retrieved successfully", _mapper.Map<StoreReadDTO>(entities));
+            var store = (await _storeRepo.GetByUserIdAsync(userId)).FirstOrDefault();
+            if (store == null)
+                return new GeneralResponse<StoreReadDTO>(false, "No store found for this user");
+
+            return new GeneralResponse<StoreReadDTO>(true, "Store retrieved successfully", _mapper.Map<StoreReadDTO>(store));
         }
-
-
 
         public async Task<GeneralResponse<IEnumerable<StoreReadDTO>>> GetActiveStoresAsync(string userId)
         {
