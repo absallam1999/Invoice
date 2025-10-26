@@ -23,6 +23,7 @@ namespace invoice.Services
         private readonly IRepository<Product> _ProductRepo;
         private readonly IRepository<PayInvoice> _PayInvoiceRepo;
         private readonly IRepository<ApplicationUser> _ApplicationUserRepo;
+        private readonly IRepository<Tax> _TaxRepo;
         private readonly IMapper _mapper;
 
         public InvoiceService(
@@ -35,6 +36,7 @@ namespace invoice.Services
             IRepository<Product> productRepo,
             IRepository<PayInvoice> PayInvoiceRepo,
             IRepository<ApplicationUser> ApplicationUserRepo,
+            IRepository<Tax> TaxRepo,
             IMapper mapper)
         {
             _invoiceItemRepo = invoiceItemRepo;
@@ -46,6 +48,7 @@ namespace invoice.Services
             _ProductRepo = productRepo;
             _PayInvoiceRepo = PayInvoiceRepo;
             _ApplicationUserRepo = ApplicationUserRepo;
+            _TaxRepo = TaxRepo;
             _mapper = mapper;
         }
 
@@ -111,16 +114,18 @@ namespace invoice.Services
                 .Include(x => x.Client)
                 .Include(x => x.InvoiceItems).ThenInclude(i => i.Product).ThenInclude(p => p.Category)
                 .Include(x => x.PayInvoice).ThenInclude(p => p.PaymentMethod)
-                .Include(x => x.User).ThenInclude(u => u.Tax)
+                .Include(x => x.User)
                 .Include(x => x.PaymentLinkPayment).ThenInclude(p => p.PaymentLink)
                 .Include(x => x.Payments)
                 .Include(x => x.Language)
                 .Include(x => x.Order)
+                .Include(x => x.TaxEntity)
 
                 );
 
             if (invoice == null)
                 return new GeneralResponse<InvoiceReadDTO> { Success = false, Message = $"Invoice with Id '{id}' not found." };
+            
 
             return new GeneralResponse<InvoiceReadDTO>
             {

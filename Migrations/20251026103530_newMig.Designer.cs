@@ -12,7 +12,7 @@ using invoice.Repo.Data;
 namespace invoice.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251022172008_newMig")]
+    [Migration("20251026103530_newMig")]
     partial class newMig
     {
         /// <inheritdoc />
@@ -461,9 +461,7 @@ namespace invoice.Migrations
 
                     b.HasIndex("LanguageId");
 
-                    b.HasIndex("TaxId")
-                        .IsUnique()
-                        .HasFilter("[TaxId] IS NOT NULL");
+                    b.HasIndex("TaxId");
 
                     b.HasIndex("UserId");
 
@@ -563,7 +561,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ar",
-                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(6393),
+                            CreatedAt = new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(690),
                             IsDeleted = false,
                             Name = "Arabic",
                             Target = "Page"
@@ -571,7 +569,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "en",
-                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(6455),
+                            CreatedAt = new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(754),
                             IsDeleted = false,
                             Name = "English",
                             Target = "Page"
@@ -1049,84 +1047,84 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ca",
-                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(6961),
+                            CreatedAt = new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1586),
                             IsDeleted = false,
                             Name = "Cash"
                         },
                         new
                         {
                             Id = "cc",
-                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7013),
+                            CreatedAt = new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1675),
                             IsDeleted = false,
                             Name = "CreditCard"
                         },
                         new
                         {
                             Id = "dc",
-                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7165),
+                            CreatedAt = new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1723),
                             IsDeleted = false,
                             Name = "DebitCard"
                         },
                         new
                         {
                             Id = "bt",
-                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7192),
+                            CreatedAt = new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1808),
                             IsDeleted = false,
                             Name = "BankTransfer"
                         },
                         new
                         {
                             Id = "pp",
-                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7208),
+                            CreatedAt = new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1870),
                             IsDeleted = false,
                             Name = "PayPal"
                         },
                         new
                         {
                             Id = "st",
-                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7224),
+                            CreatedAt = new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1898),
                             IsDeleted = false,
                             Name = "Stripe"
                         },
                         new
                         {
                             Id = "ap",
-                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7240),
+                            CreatedAt = new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1914),
                             IsDeleted = false,
                             Name = "ApplePay"
                         },
                         new
                         {
                             Id = "gp",
-                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7256),
+                            CreatedAt = new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1930),
                             IsDeleted = false,
                             Name = "GooglePay"
                         },
                         new
                         {
                             Id = "ma",
-                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7272),
+                            CreatedAt = new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1972),
                             IsDeleted = false,
                             Name = "Mada"
                         },
                         new
                         {
                             Id = "sp",
-                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7288),
+                            CreatedAt = new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1989),
                             IsDeleted = false,
                             Name = "STCPay"
                         },
                         new
                         {
                             Id = "sa",
-                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7311),
+                            CreatedAt = new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(2030),
                             IsDeleted = false,
                             Name = "Sadad"
                         },
                         new
                         {
                             Id = "dl",
-                            CreatedAt = new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7326),
+                            CreatedAt = new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(2054),
                             IsDeleted = false,
                             Name = "Delivery"
                         });
@@ -1400,8 +1398,8 @@ namespace invoice.Migrations
                         .IsRequired();
 
                     b.HasOne("invoice.Core.Entities.Tax", "TaxEntity")
-                        .WithOne("Invoice")
-                        .HasForeignKey("invoice.Core.Entities.Invoice", "TaxId");
+                        .WithMany("Invoices")
+                        .HasForeignKey("TaxId");
 
                     b.HasOne("invoice.Core.Entities.ApplicationUser", "User")
                         .WithMany("Invoices")
@@ -1966,8 +1964,7 @@ namespace invoice.Migrations
 
             modelBuilder.Entity("invoice.Core.Entities.Tax", b =>
                 {
-                    b.Navigation("Invoice")
-                        .IsRequired();
+                    b.Navigation("Invoices");
                 });
 #pragma warning restore 612, 618
         }

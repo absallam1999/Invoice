@@ -20,7 +20,7 @@ namespace invoice.Services.Mappers
                 .ForMember(dest => dest.PayAt, opt => opt.MapFrom(src => src.PayInvoice.PaidAt))
                 .ForMember(dest => dest.Language, opt => opt.MapFrom(src => src.Language))
                 .ForMember(dest => dest.InvoiceItems, opt => opt.MapFrom(src => src.InvoiceItems))
-                .ForMember(dest => dest.TaxInfo, opt => opt.MapFrom(src => src.Tax))
+                .ForMember(dest => dest.TaxInfo, opt => opt.MapFrom(src => src.TaxEntity))
                 .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src.Order))
                 .ForMember(dest => dest.PaymentLinkPayment, opt => opt.MapFrom(src => src.PaymentLinkPayment));
 

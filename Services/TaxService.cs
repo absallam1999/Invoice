@@ -54,16 +54,18 @@ namespace invoice.Services
 
         public async Task<GeneralResponse<TaxReadDTO>> UpdateAsync(TaxReadDTO dto, string userId)
         {
-            var tax =( await _taxRepo.GetByUserIdAsync(userId))?.FirstOrDefault();
+            var tax =( await _taxRepo.GetSingleByUserIdAsync(userId));
             if (tax == null)
                 return new GeneralResponse<TaxReadDTO>(false, "tax not found");
 
-           var NewTax= _mapper.Map(dto, tax);
+
+            var NewTax = _mapper.Map<Tax>(dto);
+            NewTax.UserId = userId;
 
             await _taxRepo.DeleteAsync(tax.Id);
             await _taxRepo.AddAsync(NewTax);
 
-            var readDto = _mapper.Map<TaxReadDTO>(tax);
+            var readDto = _mapper.Map<TaxReadDTO>(NewTax);
             return new GeneralResponse<TaxReadDTO>(true, "tax updated successfully", readDto);
         }
     }

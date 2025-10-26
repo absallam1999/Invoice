@@ -305,6 +305,8 @@ namespace invoice.Services
             {
                 var taxRate = user.Tax.Value / 100m;
                 invoice.FinalValue += invoice.FinalValue * taxRate;
+                invoice.Tax = true;
+                invoice.TaxId=user.Tax.Id;
             }
 
             invoice.Order = _mapper.Map<Order>(dto);

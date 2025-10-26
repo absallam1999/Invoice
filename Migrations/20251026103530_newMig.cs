@@ -741,8 +741,8 @@ namespace invoice.Migrations
                 columns: new[] { "Id", "CreatedAt", "DeletedAt", "Name", "Target", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { "ar", new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(6393), null, "Arabic", "Page", null },
-                    { "en", new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(6455), null, "English", "Page", null }
+                    { "ar", new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(690), null, "Arabic", "Page", null },
+                    { "en", new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(754), null, "English", "Page", null }
                 });
 
             migrationBuilder.InsertData(
@@ -750,18 +750,18 @@ namespace invoice.Migrations
                 columns: new[] { "Id", "CreatedAt", "DeletedAt", "Name", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { "ap", new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7240), null, "ApplePay", null },
-                    { "bt", new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7192), null, "BankTransfer", null },
-                    { "ca", new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(6961), null, "Cash", null },
-                    { "cc", new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7013), null, "CreditCard", null },
-                    { "dc", new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7165), null, "DebitCard", null },
-                    { "dl", new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7326), null, "Delivery", null },
-                    { "gp", new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7256), null, "GooglePay", null },
-                    { "ma", new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7272), null, "Mada", null },
-                    { "pp", new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7208), null, "PayPal", null },
-                    { "sa", new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7311), null, "Sadad", null },
-                    { "sp", new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7288), null, "STCPay", null },
-                    { "st", new DateTime(2025, 10, 22, 20, 20, 7, 267, DateTimeKind.Unspecified).AddTicks(7224), null, "Stripe", null }
+                    { "ap", new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1914), null, "ApplePay", null },
+                    { "bt", new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1808), null, "BankTransfer", null },
+                    { "ca", new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1586), null, "Cash", null },
+                    { "cc", new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1675), null, "CreditCard", null },
+                    { "dc", new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1723), null, "DebitCard", null },
+                    { "dl", new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(2054), null, "Delivery", null },
+                    { "gp", new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1930), null, "GooglePay", null },
+                    { "ma", new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1972), null, "Mada", null },
+                    { "pp", new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1870), null, "PayPal", null },
+                    { "sa", new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(2030), null, "Sadad", null },
+                    { "sp", new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1989), null, "STCPay", null },
+                    { "st", new DateTime(2025, 10, 26, 13, 35, 27, 450, DateTimeKind.Unspecified).AddTicks(1898), null, "Stripe", null }
                 });
 
             migrationBuilder.CreateIndex(
@@ -856,9 +856,7 @@ namespace invoice.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Invoices_TaxId",
                 table: "Invoices",
-                column: "TaxId",
-                unique: true,
-                filter: "[TaxId] IS NOT NULL");
+                column: "TaxId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Invoices_UserId",

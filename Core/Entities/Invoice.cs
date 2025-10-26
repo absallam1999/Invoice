@@ -1,5 +1,6 @@
 ﻿using invoice.Core.Entities;
 using invoice.Core.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace invoice.Core.Entities
 {
@@ -27,9 +28,10 @@ namespace invoice.Core.Entities
         public string LanguageId { get; set; } = "ar";
         public Language Language { get; set; }  
         
-        public string? TaxId { get; set; } 
+        public string? TaxId { get; set; }
+        [ForeignKey(nameof(TaxId))]
         public Tax? TaxEntity { get; set; }
-       
+
         public List<Payment> Payments { get; set; } = new();     //??
         public PayInvoice? PayInvoice { get; set; }
         public List<InvoiceItem>? InvoiceItems { get; set; } 
