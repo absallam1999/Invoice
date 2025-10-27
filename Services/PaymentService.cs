@@ -112,15 +112,23 @@ namespace invoice.Services
             if (dto == null)
                 return new GeneralResponse<PaymentReadDTO>(false, "Payment data is required.");
 
-            var invoice = await _invoiceRepo.GetByIdAsync(dto.InvoiceId, userId);
+            var invoice = await _invoiceRepo.GetByIdAsync(dto.InvoiceId, userId, q => q.Include(i => i.Payments));
+
             if (invoice == null)
                 return new GeneralResponse<PaymentReadDTO>(false, "Invoice not found.");
+
+            if (invoice.Payments?.Any() == true)
+                return new GeneralResponse<PaymentReadDTO>(false,
+                    $"Invoice with ID: #{invoice.Id} already has existing payment.");
 
             var payment = _mapper.Map<Payment>(dto);
             payment.UserId = userId;
             payment.Status = PaymentStatus.Pending;
             payment.Type = await DeterminePaymentTypeAsync(dto.PaymentMethodId);
             payment.ExpiresAt ??= GetSaudiTime.Now().AddDays(7);
+
+            payment.GatewaySessionId = Guid.NewGuid().ToString();
+            payment.Link = payment.Link ?? string.Empty;
 
             try
             {
@@ -130,7 +138,7 @@ namespace invoice.Services
 
                     if (sessionResponse.Success && sessionResponse.Data != null)
                     {
-                        payment.GatewaySessionId = sessionResponse.Data.SessionId;
+                        payment.GatewaySessionId = sessionResponse.Data.SessionId ?? payment.GatewaySessionId;
                         payment.Link = sessionResponse.Data.PaymentUrl ?? payment.Link;
                         payment.ExpiresAt = sessionResponse.Data.ExpiresAt == default
                             ? payment.ExpiresAt
@@ -145,7 +153,6 @@ namespace invoice.Services
                     {
                         _logger.LogWarning("Failed to create gateway session: {Message}", sessionResponse.Message);
                         payment.Status = PaymentStatus.Failed;
-                        payment.GatewaySessionId = sessionResponse.Data?.SessionId ?? Guid.NewGuid().ToString();
 
                         await _paymentRepo.AddAsync(payment);
                         await _paymentRepo.SaveChangesAsync();
@@ -156,7 +163,6 @@ namespace invoice.Services
                 }
                 else
                 {
-                    payment.GatewaySessionId = Guid.NewGuid().ToString();
                     _logger.LogInformation("Offline payment created (Type={PaymentType}).", payment.Type);
                 }
 
@@ -165,39 +171,13 @@ namespace invoice.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating payment or gateway session.");
-
-                try
-                {
-                    if (string.IsNullOrEmpty(payment.Id))
-                        await _paymentRepo.AddAsync(payment);
-                    else
-                        await _paymentRepo.UpdateAsync(payment);
-
-                    payment.Status = PaymentStatus.Failed;
-                    payment.GatewaySessionId ??= Guid.NewGuid().ToString();
-                    await _paymentRepo.SaveChangesAsync();
-                }
-                catch (Exception innerEx)
-                {
-                    _logger.LogError(innerEx, "Error saving failed payment state.");
-                }
-
+                _logger.LogError(ex, "Error creating payment or gateway session for Payment {PaymentId}.", payment.Id);
                 return new GeneralResponse<PaymentReadDTO>(false,
-                    $"Failed to create payment session: {ex.Message}");
+                    $"Failed to create payment: {ex.Message}");
             }
 
             var readDto = _mapper.Map<PaymentReadDTO>(payment);
             return new GeneralResponse<PaymentReadDTO>(true, "Payment created successfully.", readDto);
-        }
-
-        private async Task<PaymentType> DeterminePaymentTypeAsync(string paymentMethodId)
-        {
-            if (string.IsNullOrWhiteSpace(paymentMethodId))
-                return PaymentType.None;
-
-            var method = await _paymentMethodRepo.GetByIdAsync(paymentMethodId);
-            return method?.Name ?? PaymentType.None;
         }
 
         #endregion
@@ -469,6 +449,19 @@ namespace invoice.Services
                 .ToDictionary(g => g.Key, g => g.Sum(p => p.Cost));
 
             return new GeneralResponse<IDictionary<string, decimal>> { Success = true, Data = byMethod };
+        }
+
+        #endregion
+
+        #region Helpers
+
+        private async Task<PaymentType> DeterminePaymentTypeAsync(string paymentMethodId)
+        {
+            if (string.IsNullOrWhiteSpace(paymentMethodId))
+                return PaymentType.None;
+
+            var method = await _paymentMethodRepo.GetByIdAsync(paymentMethodId);
+            return method?.Name ?? PaymentType.None;
         }
 
         #endregion

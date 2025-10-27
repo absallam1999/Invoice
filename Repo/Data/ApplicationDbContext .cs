@@ -60,6 +60,7 @@ namespace invoice.Repo.Data
                 new PaymentMethod { Id = "bt", Name = PaymentType.BankTransfer },
                 new PaymentMethod { Id = "pp", Name = PaymentType.PayPal },
                 new PaymentMethod { Id = "st", Name = PaymentType.Stripe },
+                new PaymentMethod { Id = "tp", Name = PaymentType.TabPayments},
                 new PaymentMethod { Id = "ap", Name = PaymentType.ApplePay },
                 new PaymentMethod { Id = "gp", Name = PaymentType.GooglePay },
                 new PaymentMethod { Id = "ma", Name = PaymentType.Mada },

@@ -51,9 +51,9 @@ namespace invoice.Helpers
         public static IServiceCollection AddPaymentGatewayOptions(this IServiceCollection services, IConfiguration configuration)
         {
             // Register payment gateway options
+            services.Configure<EdfaOptions>(configuration.GetSection("Edfa"));
             services.Configure<StripeOptions>(configuration.GetSection("Stripe"));
             services.Configure<PayPalOptions>(configuration.GetSection("PayPal"));
-            services.Configure<EdfaOptions>(configuration.GetSection("Edfa"));
             services.Configure<TabPaymentsOptions>(configuration.GetSection("TabPayments"));
 
             services.AddHttpClient("PayPal", client =>

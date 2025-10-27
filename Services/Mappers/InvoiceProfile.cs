@@ -22,7 +22,8 @@ namespace invoice.Services.Mappers
                 .ForMember(dest => dest.InvoiceItems, opt => opt.MapFrom(src => src.InvoiceItems))
                 .ForMember(dest => dest.TaxInfo, opt => opt.MapFrom(src => src.TaxEntity))
                 .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src.Order))
-                .ForMember(dest => dest.PaymentLinkPayment, opt => opt.MapFrom(src => src.PaymentLinkPayment));
+                .ForMember(dest => dest.PaymentLinkPayment, opt => opt.MapFrom(src => src.PaymentLinkPayment))
+                .ForMember(dest => dest.Payments, opt => opt.MapFrom(src => src.Payments));
 
             CreateMap<Tax, TaxReadDTO>();
 

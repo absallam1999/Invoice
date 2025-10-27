@@ -81,15 +81,24 @@ namespace invoice.Services.Payments
                 : input.Substring(0, maxLength - 3) + "...";
         }
 
-        protected string NormalizeDomain(string domain)
+        protected string NormalizeDomain(string baseUrl)
         {
-            if (string.IsNullOrEmpty(domain))
-                return domain;
+            if (string.IsNullOrWhiteSpace(baseUrl))
+                return string.Empty;
 
-            if (!domain.EndsWith("/"))
-                return domain + "/";
+            // Trim trailing slashes
+            var url = baseUrl.Trim();
+            // Remove trailing "/api" or "/v1" etc. if present (common in base urls)
+            if (url.EndsWith("/api", StringComparison.OrdinalIgnoreCase))
+                url = url.Substring(0, url.Length - 4);
+            if (url.EndsWith("/v1", StringComparison.OrdinalIgnoreCase) || url.EndsWith("/v2", StringComparison.OrdinalIgnoreCase))
+                url = url.Substring(0, url.LastIndexOf('/'));
 
-            return domain;
+            // Ensure trailing slash for safe concatenation
+            if (!url.EndsWith("/"))
+                url += "/";
+
+            return url;
         }
     }
 }

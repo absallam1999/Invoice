@@ -58,7 +58,8 @@ namespace invoice.Controllers
                 return BadRequest(new GeneralResponse<string>(false, "Invalid payment data"));
 
             var response = await _paymentService.CreateAsync(dto, GetUserId());
-            return CreatedAtAction(nameof(GetById), new { id = response.Data?.Id }, response);
+
+            return Created($"api/payments/{response.Data?.Id}", response);
         }
 
         [HttpPut("{id}")]

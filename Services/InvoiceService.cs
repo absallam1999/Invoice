@@ -149,8 +149,6 @@ namespace invoice.Services
                 .Include(x => x.Language)
                 .Include(x => x.Order)
                 .Include(x => x.User).ThenInclude(u=>u.Currency)
-                
-
                 );
 
             if (invoice == null)
