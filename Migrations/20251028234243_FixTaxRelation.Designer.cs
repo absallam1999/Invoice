@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using invoice.Repo.Data;
 
@@ -11,9 +12,11 @@ using invoice.Repo.Data;
 namespace invoice.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251028234243_FixTaxRelation")]
+    partial class FixTaxRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -546,7 +549,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ar",
-                            CreatedAt = new DateTime(2025, 10, 29, 3, 1, 20, 718, DateTimeKind.Unspecified).AddTicks(6143),
+                            CreatedAt = new DateTime(2025, 10, 29, 2, 42, 41, 419, DateTimeKind.Unspecified).AddTicks(5074),
                             IsDeleted = false,
                             Name = "Arabic",
                             Target = "Page"
@@ -554,7 +557,7 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "en",
-                            CreatedAt = new DateTime(2025, 10, 29, 3, 1, 20, 718, DateTimeKind.Unspecified).AddTicks(6200),
+                            CreatedAt = new DateTime(2025, 10, 29, 2, 42, 41, 419, DateTimeKind.Unspecified).AddTicks(5209),
                             IsDeleted = false,
                             Name = "English",
                             Target = "Page"
@@ -1032,84 +1035,84 @@ namespace invoice.Migrations
                         new
                         {
                             Id = "ca",
-                            CreatedAt = new DateTime(2025, 10, 29, 3, 1, 20, 718, DateTimeKind.Unspecified).AddTicks(6635),
+                            CreatedAt = new DateTime(2025, 10, 29, 2, 42, 41, 419, DateTimeKind.Unspecified).AddTicks(5574),
                             IsDeleted = false,
                             Name = "Cash"
                         },
                         new
                         {
                             Id = "cc",
-                            CreatedAt = new DateTime(2025, 10, 29, 3, 1, 20, 718, DateTimeKind.Unspecified).AddTicks(6670),
+                            CreatedAt = new DateTime(2025, 10, 29, 2, 42, 41, 419, DateTimeKind.Unspecified).AddTicks(5616),
                             IsDeleted = false,
                             Name = "CreditCard"
                         },
                         new
                         {
                             Id = "dc",
-                            CreatedAt = new DateTime(2025, 10, 29, 3, 1, 20, 718, DateTimeKind.Unspecified).AddTicks(6698),
+                            CreatedAt = new DateTime(2025, 10, 29, 2, 42, 41, 419, DateTimeKind.Unspecified).AddTicks(5627),
                             IsDeleted = false,
                             Name = "DebitCard"
                         },
                         new
                         {
                             Id = "bt",
-                            CreatedAt = new DateTime(2025, 10, 29, 3, 1, 20, 718, DateTimeKind.Unspecified).AddTicks(6710),
+                            CreatedAt = new DateTime(2025, 10, 29, 2, 42, 41, 419, DateTimeKind.Unspecified).AddTicks(5637),
                             IsDeleted = false,
                             Name = "BankTransfer"
                         },
                         new
                         {
                             Id = "pp",
-                            CreatedAt = new DateTime(2025, 10, 29, 3, 1, 20, 718, DateTimeKind.Unspecified).AddTicks(6723),
+                            CreatedAt = new DateTime(2025, 10, 29, 2, 42, 41, 419, DateTimeKind.Unspecified).AddTicks(5647),
                             IsDeleted = false,
                             Name = "PayPal"
                         },
                         new
                         {
                             Id = "st",
-                            CreatedAt = new DateTime(2025, 10, 29, 3, 1, 20, 718, DateTimeKind.Unspecified).AddTicks(6735),
+                            CreatedAt = new DateTime(2025, 10, 29, 2, 42, 41, 419, DateTimeKind.Unspecified).AddTicks(5657),
                             IsDeleted = false,
                             Name = "Stripe"
                         },
                         new
                         {
                             Id = "ap",
-                            CreatedAt = new DateTime(2025, 10, 29, 3, 1, 20, 718, DateTimeKind.Unspecified).AddTicks(6746),
+                            CreatedAt = new DateTime(2025, 10, 29, 2, 42, 41, 419, DateTimeKind.Unspecified).AddTicks(5667),
                             IsDeleted = false,
                             Name = "ApplePay"
                         },
                         new
                         {
                             Id = "gp",
-                            CreatedAt = new DateTime(2025, 10, 29, 3, 1, 20, 718, DateTimeKind.Unspecified).AddTicks(6758),
+                            CreatedAt = new DateTime(2025, 10, 29, 2, 42, 41, 419, DateTimeKind.Unspecified).AddTicks(5677),
                             IsDeleted = false,
                             Name = "GooglePay"
                         },
                         new
                         {
                             Id = "ma",
-                            CreatedAt = new DateTime(2025, 10, 29, 3, 1, 20, 718, DateTimeKind.Unspecified).AddTicks(6770),
+                            CreatedAt = new DateTime(2025, 10, 29, 2, 42, 41, 419, DateTimeKind.Unspecified).AddTicks(5687),
                             IsDeleted = false,
                             Name = "Mada"
                         },
                         new
                         {
                             Id = "sp",
-                            CreatedAt = new DateTime(2025, 10, 29, 3, 1, 20, 718, DateTimeKind.Unspecified).AddTicks(6782),
+                            CreatedAt = new DateTime(2025, 10, 29, 2, 42, 41, 419, DateTimeKind.Unspecified).AddTicks(5700),
                             IsDeleted = false,
                             Name = "STCPay"
                         },
                         new
                         {
                             Id = "sa",
-                            CreatedAt = new DateTime(2025, 10, 29, 3, 1, 20, 718, DateTimeKind.Unspecified).AddTicks(6799),
+                            CreatedAt = new DateTime(2025, 10, 29, 2, 42, 41, 419, DateTimeKind.Unspecified).AddTicks(5710),
                             IsDeleted = false,
                             Name = "Sadad"
                         },
                         new
                         {
                             Id = "dl",
-                            CreatedAt = new DateTime(2025, 10, 29, 3, 1, 20, 718, DateTimeKind.Unspecified).AddTicks(6811),
+                            CreatedAt = new DateTime(2025, 10, 29, 2, 42, 41, 419, DateTimeKind.Unspecified).AddTicks(5719),
                             IsDeleted = false,
                             Name = "Delivery"
                         });

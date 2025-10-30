@@ -1,4 +1,5 @@
 ﻿using invoice.Core.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace invoice.Core.Entities
 {
@@ -11,6 +12,7 @@ namespace invoice.Core.Entities
 
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
+        [InverseProperty("Tax")]
         public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 
 

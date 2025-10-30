@@ -132,6 +132,15 @@ namespace invoice.Repo.Data
                  
                 });
             });
+            builder.Entity<Invoice>()
+                .HasOne(i => i.Tax)
+                .WithMany(t => t.Invoices)
+                .HasForeignKey(i => i.TaxId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+
+
 
         }
 

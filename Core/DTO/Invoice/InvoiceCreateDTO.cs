@@ -1,13 +1,14 @@
 ﻿using invoice.Core.DTO.InvoiceItem;
-using invoice.Core.DTO.Payment;
 using invoice.Core.Enums;
+using System.Text.Json.Serialization;
 
 namespace invoice.Core.DTO.Invoice
 {
     public class InvoiceCreateDTO
     {
+        [JsonPropertyName("Tax")]
 
-        public bool Tax { get; set; } = false;
+        public bool HaveTax { get; set; } = false;
         public DiscountType? DiscountType { get; set; }
         public decimal? DiscountValue { get; set; }
         public decimal FinalValue { get; set; }

@@ -4,6 +4,8 @@ using invoice.Core.DTO.InvoiceItem;
 using invoice.Core.DTO.Language;
 using invoice.Core.DTO.Tax;
 using invoice.Core.DTO.PayInvoice;
+using System.Text.Json.Serialization;
+
 
 namespace invoice.Core.DTO.Invoice
 {
@@ -12,7 +14,8 @@ namespace invoice.Core.DTO.Invoice
         public string Id { get; set; }
         public string UserId { get; set; }
         public string Code { get; set; }
-        public bool Tax { get; set; }
+        [JsonPropertyName("Tax")]
+        public bool HaveTax { get; set; }
         public decimal Value { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

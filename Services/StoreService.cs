@@ -313,7 +313,7 @@ namespace invoice.Services
             {
                 var taxRate = user.Tax.Value / 100m;
                 invoice.FinalValue += invoice.FinalValue * taxRate;
-                invoice.Tax = true;
+                invoice.HaveTax = true;
                 invoice.TaxId=user.Tax.Id;
             }
 

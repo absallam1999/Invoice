@@ -53,13 +53,15 @@ namespace invoice.Services
             if (product == null)
                 return new GeneralResponse<ProductReadDTO>(false, "Product not found");
 
-
+            
             string? mainImagePath = null;
-         
+
             if (dto.MainImage != null && dto.MainImage.Length > 0)
+            {
                 mainImagePath = await _fileService.UpdateImageAsync(dto.MainImage, product.MainImage, "products");
 
-
+            }
+           
             _mapper.Map(dto, product);
             product.MainImage = mainImagePath;
 

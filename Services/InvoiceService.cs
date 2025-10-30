@@ -9,6 +9,7 @@ using invoice.Repo;
 using Microsoft.EntityFrameworkCore;
 using invoice.Core.DTO.PayInvoice;
 using invoice.Core.DTO.Store;
+using invoice.Core.DTO.Tax;
 
 namespace invoice.Services
 {
@@ -119,19 +120,29 @@ namespace invoice.Services
                 .Include(x => x.Payments)
                 .Include(x => x.Language)
                 .Include(x => x.Order)
-                .Include(x => x.TaxEntity)
+                .Include(x => x.Tax)
+                .IgnoreQueryFilters()
 
                 );
 
-            if (invoice == null)
-                return new GeneralResponse<InvoiceReadDTO> { Success = false, Message = $"Invoice with Id '{id}' not found." };
-            
+          
+
+            var dto = _mapper.Map<InvoiceReadDTO>(invoice);
+            if (dto.TaxInfo == null)
+            {
+                dto.TaxInfo = new TaxReadDTO
+                { 
+                    TaxName = invoice.Tax?.TaxName,
+                    TaxNumber = invoice.Tax?.TaxNumber,
+                    Value = invoice.Tax?.Value ?? 0
+                };
+            }
 
             return new GeneralResponse<InvoiceReadDTO>
             {
                 Success = true,
                 Message = "Invoice retrieved successfully.",
-                Data = _mapper.Map<InvoiceReadDTO>(invoice)
+                Data = dto
             };
         }
         public async Task<GeneralResponse<InvoicewithUserDTO>> GetByIdWithUserAsync(string id)
@@ -143,23 +154,35 @@ namespace invoice.Services
                 .Include(x => x.Client)
                 .Include(x => x.InvoiceItems).ThenInclude(i => i.Product).ThenInclude(p => p.Category)
                 .Include(x => x.PayInvoice).ThenInclude(p => p.PaymentMethod)
-                .Include(x => x.User).ThenInclude(u => u.Tax)
+                .Include(x => x.User)
                 .Include(x => x.PaymentLinkPayment.PaymentLink)
                 .Include(x => x.Payments)
                 .Include(x => x.Language)
                 .Include(x => x.Order)
                 .Include(x => x.User).ThenInclude(u=>u.Currency)
-                
+                .Include(x => x.Tax)
+                .IgnoreQueryFilters()
 
                 );
 
             if (invoice == null)
                 return new GeneralResponse<InvoicewithUserDTO> { Success = false, Message = $"Invoice with Id '{id}' not found." };
+            
+            var dto = _mapper.Map<InvoicewithUserDTO>(invoice);
+            if (dto.TaxInfo == null)
+            {
+                dto.TaxInfo = new TaxReadDTO
+                {
+                    TaxName = invoice.Tax?.TaxName,
+                    TaxNumber = invoice.Tax?.TaxNumber,
+                    Value = invoice.Tax?.Value ?? 0
+                };
+            }
             return new GeneralResponse<InvoicewithUserDTO>
             {
                 Success = true,
                 Message = "Invoice retrieved successfully.",
-                Data = _mapper.Map<InvoicewithUserDTO>(invoice)
+                Data = dto
             };
         }
 
@@ -295,7 +318,7 @@ namespace invoice.Services
             if (invoice.FinalValue < 0)
                 invoice.FinalValue = 0;
 
-            if (dto.Tax && user.Tax?.Value > 0)
+            if (dto.HaveTax && user.Tax?.Value > 0)
             {
                 var taxRate = user.Tax.Value / 100m;
                 invoice.FinalValue += invoice.FinalValue * taxRate;
@@ -451,7 +474,7 @@ namespace invoice.Services
 
             if (invoice.FinalValue < 0) invoice.FinalValue = 0;
 
-            if (dto.Tax && user.Tax?.Value > 0)
+            if (dto.HaveTax && user.Tax?.Value > 0)
             {
                 var taxRate = user.Tax.Value / 100m;
                 invoice.FinalValue += invoice.FinalValue * taxRate;

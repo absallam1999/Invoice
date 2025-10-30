@@ -8,7 +8,7 @@ namespace invoice.Core.Entities
     {
         public string Code { get; set; }
         public decimal Value { get; set; }
-        public bool Tax { get; set; } = false;
+       public bool HaveTax { get; set; } = false;
         public DiscountType? DiscountType { get; set; }
         public decimal? DiscountValue { get; set; }
         public decimal FinalValue { get; set; }
@@ -29,8 +29,9 @@ namespace invoice.Core.Entities
         public Language Language { get; set; }  
         
         public string? TaxId { get; set; }
-        [ForeignKey(nameof(TaxId))]
-        public Tax? TaxEntity { get; set; }
+        [ForeignKey("TaxId")]
+        [InverseProperty("Invoices")]
+        public Tax? Tax { get; set; }
 
         public List<Payment> Payments { get; set; } = new();     //??
         public PayInvoice? PayInvoice { get; set; }
