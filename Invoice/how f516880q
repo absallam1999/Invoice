@@ -1,0 +1,54 @@
+[33mf516880[m[33m ([m[1;36mHEAD -> [m[1;32mmenna[m[33m, [m[1;31morigin/menna2[m[33m)[m HEAD@{0}: rebase (abort): returning to refs/heads/menna
+[33m17e2306[m HEAD@{1}: commit: 'updates'
+[33m86790a3[m HEAD@{2}: commit: 'images'
+[33md2f9f0c[m HEAD@{3}: checkout: moving from menna to d2f9f0c
+[33m3f70725[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/masrer[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{4}: commit (merge): fixconflict1
+[33md2f9f0c[m HEAD@{5}: commit: 'updatepl'
+[33m764876f[m[33m ([m[1;31morigin/menna[m[33m)[m HEAD@{6}: commit: updates
+[33m5b96a89[m HEAD@{7}: commit: 'update'
+[33mc189ae6[m HEAD@{8}: commit: 'fixerror'
+[33m3fd4437[m HEAD@{9}: commit: 'complete_paymentlink'
+[33mc81ab42[m HEAD@{10}: commit: 'updatepaymentlink3'
+[33mda6534a[m HEAD@{11}: commit: 'updatepaymentlink2'
+[33mb291a6f[m HEAD@{12}: commit: update paymentlink
+[33mf81816e[m HEAD@{13}: commit: update some endpoints
+[33m95b1d2f[m HEAD@{14}: reset: moving to 95b1d2f
+[33mf516880[m[33m ([m[1;36mHEAD -> [m[1;32mmenna[m[33m, [m[1;31morigin/menna2[m[33m)[m HEAD@{15}: checkout: moving from menna to menna
+[33mf516880[m[33m ([m[1;36mHEAD -> [m[1;32mmenna[m[33m, [m[1;31morigin/menna2[m[33m)[m HEAD@{16}: reset: moving to f516880
+[33mf516880[m[33m ([m[1;36mHEAD -> [m[1;32mmenna[m[33m, [m[1;31morigin/menna2[m[33m)[m HEAD@{17}: checkout: moving from 95b1d2f3df39276c6279075e2800ce9d4d7dd916 to menna
+[33m95b1d2f[m HEAD@{18}: commit: fix conflict
+[33mc1d7143[m HEAD@{19}: rebase (start): checkout origin/master
+[33mf516880[m[33m ([m[1;36mHEAD -> [m[1;32mmenna[m[33m, [m[1;31morigin/menna2[m[33m)[m HEAD@{20}: checkout: moving from menna to menna
+[33mf516880[m[33m ([m[1;36mHEAD -> [m[1;32mmenna[m[33m, [m[1;31morigin/menna2[m[33m)[m HEAD@{21}: commit: store
+[33m08b0cd2[m HEAD@{22}: commit: update invoice client prodect
+[33m0a14e4c[m HEAD@{23}: checkout: moving from master to menna
+[33m6c1fe4b[m[33m ([m[1;32mmaster[m[33m)[m HEAD@{24}: checkout: moving from menna to master
+[33m0a14e4c[m HEAD@{25}: checkout: moving from master to menna
+[33m6c1fe4b[m[33m ([m[1;32mmaster[m[33m)[m HEAD@{26}: checkout: moving from menna to master
+[33m0a14e4c[m HEAD@{27}: checkout: moving from master to menna
+[33m6c1fe4b[m[33m ([m[1;32mmaster[m[33m)[m HEAD@{28}: checkout: moving from menna to master
+[33m0a14e4c[m HEAD@{29}: checkout: moving from master to menna
+[33m6c1fe4b[m[33m ([m[1;32mmaster[m[33m)[m HEAD@{30}: checkout: moving from menna to master
+[33m0a14e4c[m HEAD@{31}: commit: change dbcon
+[33m2fec6c6[m HEAD@{32}: checkout: moving from master to menna
+[33m6c1fe4b[m[33m ([m[1;32mmaster[m[33m)[m HEAD@{33}: checkout: moving from menna to master
+[33m2fec6c6[m HEAD@{34}: checkout: moving from master to menna
+[33m6c1fe4b[m[33m ([m[1;32mmaster[m[33m)[m HEAD@{35}: checkout: moving from menna to master
+[33m2fec6c6[m HEAD@{36}: checkout: moving from master to menna
+[33m6c1fe4b[m[33m ([m[1;32mmaster[m[33m)[m HEAD@{37}: checkout: moving from menna to master
+[33m2fec6c6[m HEAD@{38}: checkout: moving from master to menna
+[33m6c1fe4b[m[33m ([m[1;32mmaster[m[33m)[m HEAD@{39}: commit: Save changes
+[33maaee6c2[m HEAD@{40}: commit: add store
+[33m4444d72[m HEAD@{41}: commit: add store
+[33m11b84b0[m HEAD@{42}: commit: fix errors
+[33m11f4a97[m HEAD@{43}: commit: update pos 2
+[33me130ec2[m HEAD@{44}: commit: update pos
+[33m03fc29d[m HEAD@{45}: commit: add pos
+[33m61b1752[m HEAD@{46}: commit: update invoice 2
+[33m1cf4537[m HEAD@{47}: commit: update invoice2
+[33md6a174f[m HEAD@{48}: commit: add invoice
+[33m5375a78[m HEAD@{49}: commit: product updated
+[33m877260d[m HEAD@{50}: commit: update client
+[33m2032630[m HEAD@{51}: commit: client updated
+[33me941acc[m HEAD@{52}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33m93ec98f[m HEAD@{53}: clone: from https://github.com/absallam1999/Invoice
